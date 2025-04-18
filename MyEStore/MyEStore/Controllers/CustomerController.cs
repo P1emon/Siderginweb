@@ -122,6 +122,8 @@ namespace MyEStore.Controllers
                 MatKhau = hashedPassword,  // Store the hashed password
                 HoTen = model.FullName,
                 Email = model.Email,
+                DienThoai = model.PhoneNumber,
+                DiaChi = model.Address,
                 // Thêm các trường khác nếu cần
             };
 

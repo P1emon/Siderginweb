@@ -1,41 +1,164 @@
 ﻿@model MyEStore.Models.LoginVM
-@Html.Partial("livechat") 
+@Html.Partial("livechat")
 @{
     ViewData["Title"] = "Login";
+    Layout=null;
 }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập | MyEStore</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/login.css" />
 
-<div class="container d-flex justify-content-center align-items-center min-vh-100" style="background-color: #f8f9fa;">
-    <div class="p-5 rounded shadow-lg" style="background-color: #ffffff; max-width: 400px; width: 100%;">
-        <h2 class="text-center fw-bold mb-4" style="color: #000;">Chào mừng bạn trở lại</h2>
-        <p class="text-center text-muted mb-4">Vui lòng nhập thông tin đăng nhập của bạn để tiếp tục.</p>
-        <form asp-action="Login">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <div class="text-danger mb-3">@ViewBag.ThongBao</div>
-            <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
-            <div class="form-group mb-3">
-                <label asp-for="UserName" class="form-label fw-bold">Tên tài khoản</label>
-                <input asp-for="UserName" class="form-control" style="border: 1px solid #ddd; border-radius: 5px;" />
-                <span asp-validation-for="UserName" class="text-danger"></span>
+</head>
+<body>
+    <div class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
+        <div class="login-container row g-0">
+            <!-- Left side with illustration -->
+            <div class="col-md-6 login-left">
+                <div class="login-banner">
+                    <div class="floating-bubble"></div>
+                    <div class="floating-bubble"></div>
+                    <div class="floating-bubble"></div>
+
+                    <div class="d-flex justify-content-center">
+                        <div class="login-logo">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+
+                    <h1 class="welcome-text">SiderGin</h1>
+                    <p class="mb-5">Trải nghiệm mua sắm hoàn hảo dành cho bạn</p>
+
+                    <div class="mb-5">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="feature-text">Với sản phẩm chất lượng</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="feature-text">Giao hàng nhanh chóng trong 24h</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="feature-text">Bảo mật thông tin tuyệt đối</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-4">
-                <label asp-for="Password" class="form-label fw-bold">Mật khẩu</label>
-                <input asp-for="Password" type="password" class="form-control" style="border: 1px solid #ddd; border-radius: 5px;" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+
+            <!-- Right side with login form -->
+            <div class="col-md-6 bg-white">
+                <div class="login-form">
+                    <h2 class="text-center fw-bold mb-2">Chào mừng <span class="text-highlight">trở lại</span></h2>
+                    <p class="text-center text-muted mb-4">Vui lòng đăng nhập để tiếp tục </p>
+
+                    <form asp-action="Login">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="text-danger mb-3">@ViewBag.ThongBao</div>
+                        <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+
+                        <div class="mb-4">
+                            <label asp-for="UserName" class="form-label">Tên tài khoản</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input asp-for="UserName" class="form-control input-with-icon" placeholder="Nhập tên tài khoản của bạn" />
+                            </div>
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-icon">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input asp-for="Password" type="password" class="form-control input-with-icon" placeholder="••••••••" id="password-field" />
+                                <span class="toggle-password" onclick="togglePassword()">
+                                    <i class="far fa-eye" id="password-toggle-icon"></i>
+                                </span>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label remember-me" for="rememberMe">
+                                    Ghi nhớ đăng nhập
+                                </label>
+                            </div>
+                            <a href="/Customer/ForgotPassword" class="forgot-password">Quên mật khẩu?</a>
+                        </div>
+
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-login">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                            </button>
+                        </div>
+                    </form>
+
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            Chưa có tài khoản?
+                            <a href="/Customer/Register" class="register-link">Đăng ký ngay</a>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-dark btn-lg">Đăng nhập</button>
-            </div>
-        </form>
-        <p class="text-center mt-4 text-muted">
-            Bạn đã có tài khoản?
-            <a href="/Customer/Register" class="text-decoration-none" style="color: #000;">Đăng ký</a>
-        </p>
-        <p class="text-center mt-4 text-muted">
-            <a href="/Customer/ForgotPassword" class="text-decoration-none" style="color: #000;">Quên mật khẩu?</a>
-        </p>
+        </div>
     </div>
-</div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password-field');
+            const toggleIcon = document.getElementById('password-toggle-icon');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Optional: Add some subtle animations
+        document.addEventListener('DOMContentLoaded', function () {
+            // Animate form fields when focused
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach(control => {
+                control.addEventListener('focus', function () {
+                    this.style.transform = 'scale(1.02)';
+                });
+
+                control.addEventListener('blur', function () {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>

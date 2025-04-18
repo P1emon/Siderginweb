@@ -1,47 +1,194 @@
 ﻿@model MyEStore.Models.RegisterVM
-@Html.Partial("livechat") 
+@Html.Partial("livechat")
 @{
     ViewData["Title"] = "Register";
+    Layout = null;
 }
 
-<div class="container d-flex justify-content-center align-items-center min-vh-100" style="background-color: #f8f9fa;">
-    <div class="p-5 rounded shadow-lg" style="background-color: #ffffff; max-width: 500px; width: 100%;">
-        <h2 class="text-center fw-bold mb-4" style="color: #000;">Tạo tài khoản của bạn</h2>
-        <p class="text-center text-muted mb-4">Hãy tham gia để mua sắm củng chúng tôi ngay hôm nay!</p>
-        <form asp-action="Register" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <div class="text-danger mb-3">@ViewBag.ThongBao</div>
-            <div class="form-group mb-3">
-                <label asp-for="UserName" class="form-label fw-bold">Tên tài khoản</label>
-                <input asp-for="UserName" class="form-control" style="border: 1px solid #ddd; border-radius: 5px;" />
-                <span asp-validation-for="UserName" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Password" class="form-label fw-bold">Mật khẩu</label>
-                <input asp-for="Password" type="password" class="form-control" style="border: 1px solid #ddd; border-radius: 5px;" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="FullName" class="form-label fw-bold">Họ và Tên</label>
-                <input asp-for="FullName" class="form-control" style="border: 1px solid #ddd; border-radius: 5px;" />
-                <span asp-validation-for="FullName" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-4">
-                <label asp-for="Email" class="form-label fw-bold">Email</label>
-                <input asp-for="Email" type="email" class="form-control" style="border: 1px solid #ddd; border-radius: 5px;" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-dark btn-lg">Đăng ký</button>
-            </div>
-        </form>
-        <p class="text-center mt-4 text-muted">
-            Bạn đã có tài khoản?
-            <a href="/Customer/Login" class="text-decoration-none" style="color: #000;">Đăng nhập</a>
-        </p>
-    </div>
-</div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký | MyEStore</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/register.css" />
+</head>
+<body>
+    <div class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
+        <div class="register-container row g-0">
+            <!-- Left side image -->
+            <div class="col-md-5 register-image">
+                <div class="animated-bg">
+                    <div class="circle"></div>
+                    <div class="circle"></div>
+                    <div class="circle"></div>
+                </div>
+                <h2 class="welcome-text">Chào mừng bạn!</h2>
+                <p class="mb-4">Tham gia ngay để trải nghiệm mua sắm tuyệt vời cùng chúng tôi</p>
 
+                <ul class="features-list">
+                    <li><i class="fas fa-check"></i> Sản phẩm chất lượng cao</li>
+                    <li><i class="fas fa-check"></i> Giao hàng nhanh chóng</li>
+                    <li><i class="fas fa-check"></i> Khuyến mãi hấp dẫn</li>
+                    <li><i class="fas fa-check"></i> Hỗ trợ khách hàng 24/7</li>
+                </ul>
+
+            </div>
+
+            <!-- Right side form -->
+            <div class="col-md-7 p-5 bg-white">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold">Tạo <span class="text-highlight">tài khoản</span> mới</h3>
+                    <p class="text-muted">Điền thông tin của bạn để bắt đầu mua sắm</p>
+                </div>
+
+
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="text-danger mb-3">@ViewBag.ThongBao</div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group input-animation">
+                                <label asp-for="UserName" class="form-label">
+                                    <i class="fas fa-user me-2 text-primary"></i>Tên tài khoản
+                                </label>
+                                <input asp-for="UserName" class="form-control" placeholder="Nhập tên tài khoản" />
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group input-animation">
+                                <label asp-for="FullName" class="form-label">
+                                    <i class="fas fa-id-card me-2 text-primary"></i>Họ và Tên
+                                </label>
+                                <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên" />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="Email" class="form-label">
+                                <i class="fas fa-envelope me-2 text-primary"></i>Email
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="example@email.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="Password" class="form-label">
+                                <i class="fas fa-lock me-2 text-primary"></i>Mật khẩu
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                            <div class="password-strength mt-2">
+                                <div class="d-flex justify-content-between">
+                                    <small>Yếu</small>
+                                    <small>Mạnh</small>
+                                </div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="PhoneNumber" class="form-label">
+                                <i class="fas fa-phone me-2 text-primary"></i>Số điện thoại
+                            </label>
+                            <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="0912345678" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-group input-animation">
+                            <label asp-for="Address" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>Địa chỉ
+                            </label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Nhập địa chỉ đầy đủ của bạn"></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-register py-3">
+                            <i class="fas fa-user-plus me-2"></i>Tạo tài khoản
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <p class="text-muted">
+                        Bạn đã có tài khoản?
+                        <a href="/Customer/Login" class="text-decoration-none fw-bold">Đăng nhập ngay</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('Password');
+            const icon = this.querySelector('i');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Simple password strength checker
+        document.getElementById('Password').addEventListener('input', function () {
+            const password = this.value;
+            const progressBar = document.querySelector('.password-strength .progress-bar');
+            let strength = 0;
+
+            if (password.length > 6) strength += 20;
+            if (password.length > 10) strength += 20;
+            if (/[A-Z]/.test(password)) strength += 20;
+            if (/[0-9]/.test(password)) strength += 20;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+
+            progressBar.style.width = strength + '%';
+
+            if (strength <= 40) {
+                progressBar.className = 'progress-bar bg-danger';
+            } else if (strength <= 80) {
+                progressBar.className = 'progress-bar bg-warning';
+            } else {
+                progressBar.className = 'progress-bar bg-success';
+            }
+        });
+    </script>
+</body>
+</html>
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
