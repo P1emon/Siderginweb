@@ -1,51 +1,61 @@
 ﻿@model IEnumerable<MyEStore.Entities.HoaDon>
 @Html.Partial("livechat")
+<style>
+
+</style>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử giao dịch</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Lịch sử đơn hàng</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="~/css/historyorder.css" />
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Bộ lọc -->
         <div class="filter-sidebar">
             <h3 class="filter-title">Bộ lọc</h3>
-            <input type="text" id="searchInput" placeholder="Tìm mã đơn hàng..." class="filter-input">
+            <input type="text" id="searchInput" placeholder="Tìm mã đơn hàng..." class="filter-input" />
             <select id="statusFilter" class="filter-select">
                 <option value="">Tất cả trạng thái</option>
                 <option value="Đã thanh toán">Đã thanh toán</option>
+                <option value="Chưa thanh toán">Chưa thanh toán</option>
             </select>
         </div>
+
+        <!-- Nội dung đơn hàng -->
         <div class="main-content">
             <h1 class="page-title">Lịch sử đơn hàng</h1>
             <div class="order-list">
                 @foreach (var order in Model)
                 {
                     var totalAmount = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia);
-                    <div class="order-panel" data-order-id="@order.MaHd" data-status="Đã thanh toán">
+                    var isPaid = order.MaTrangThai == 1;
+                    var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
+                    var statusBadgeClass = isPaid ? "badge-success" : "badge-danger";
+                    <div class="order-panel" data-order-id="@order.MaHd" data-status="@statusText">
                         <div class="panel-header" onclick="togglePanel(this)">
                             <div class="panel-meta">
                                 <span class="order-id">#@order.MaHd</span>
                                 <span class="order-date">@order.NgayDat.ToString("dd/MM/yyyy")</span>
                             </div>
                             <div class="panel-status">
-                                <span class="badge badge-success">Đã thanh toán</span>
+                                <span class="badge @statusBadgeClass">@statusText</span>
                             </div>
                             <i class="fas fa-chevron-down panel-toggle"></i>
                         </div>
-                        <div class="panel-details">
+                        <div class="panel-details" style="display: none;">
                             <div class="detail-item">
-                                <span class="label">Tổng tiền</span>
-                                <span class="value">@totalAmount.ToString("F0") đ</span>
+                                <span class="label">Tổng tiền:</span>
+                                <span class="value">@totalAmount.ToString("N0") đ</span>
                             </div>
                             <div class="detail-item">
-                                <span class="label">Hành động</span>
-                                <a href="@Url.Action("OrderDetails", "Customer", new { id = order.MaHd })" class="btn btn-view">
+                                <span class="label">Hành động:</span>
+                                <a href="@Url.Action("OrderDetails", "Customer", new { id = order.MaHd })" class="btn btn-info btn-sm">
                                     <i class="fas fa-eye"></i> Xem chi tiết
                                 </a>
                             </div>
@@ -55,14 +65,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function togglePanel(header) {
             const details = header.nextElementSibling;
             const toggleIcon = header.querySelector('.panel-toggle');
-            details.style.display = details.style.display === 'block' ? 'none' : 'block';
-            toggleIcon.className = details.style.display === 'block' ? 'fas fa-chevron-up panel-toggle' : 'fas fa-chevron-down panel-toggle';
+            const isVisible = details.style.display === 'block';
+            details.style.display = isVisible ? 'none' : 'block';
+            toggleIcon.className = isVisible ? 'fas fa-chevron-down panel-toggle' : 'fas fa-chevron-up panel-toggle';
         }
 
         document.getElementById('searchInput').addEventListener('input', filterOrders);
