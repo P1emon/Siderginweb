@@ -2,13 +2,321 @@
     ViewData["Title"] = "Privacy Policy";
     var hostName = "https://localhost:7238/";
 }
-<h1>@ViewData["Title"]</h1>
-<style>
 
-    @@font-face{
-        font-family: myOngDo;
-        src: url("@hostName/font/vniongdo.ttf");
-    }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MyEStore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        @@font-face {
+            font-family: 'myOngDo';
+            src: url('@hostName/font/vniongdo.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
 
-<p style="font-family:myOngDo;">Use this page to detail your site's privacy policy.</p>
+        :root {
+            --primary-color: #1A5F7A; /* Deep blue */
+            --secondary-color: #FF7F50; /* Coral */
+            --tertiary-color: #FFC107; /* Yellow */
+            --accent-color: #2EC4B6; /* Teal */
+            --highlight-color: #6B48FF; /* Purple */
+            --bg-light: #F8F9FA; /* Light gray */
+            --text-dark: #333333;
+            --text-muted: #6c757d;
+            --card-bg-1: #E6F0FA; /* Light blue */
+            --card-bg-2: #FFEDE6; /* Light coral */
+            --card-bg-3: #FFF8E1; /* Light yellow */
+            --card-bg-4: #E6FAF8; /* Light teal */
+        }
+
+        body {
+            font-family: 'Poppins', 'myOngDo', sans-serif;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            margin: 0;
+            padding: 0;
+        }
+
+        .privacy-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+            .privacy-header h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin: 0;
+                font-family: 'myOngDo', 'Poppins', sans-serif;
+            }
+
+            .privacy-header p {
+                font-size: 1.1rem;
+                margin: 0.5rem 0 0;
+                color: var(--tertiary-color);
+            }
+
+        .privacy-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+            .privacy-section h2 {
+                font-size: 1.8rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .privacy-section p, .privacy-section ul {
+                font-size: 1rem;
+                line-height: 1.7;
+                color: var(--text-dark);
+            }
+
+            .privacy-section ul {
+                padding-left: 1.5rem;
+                margin-bottom: 0;
+            }
+
+                .privacy-section ul li {
+                    margin-bottom: 0.5rem;
+                }
+
+            .privacy-section a {
+                color: var(--highlight-color);
+                text-decoration: none;
+            }
+
+        /* Color-blocked sections */
+        .section-1 {
+            background: var(--card-bg-1);
+            color: var(--primary-color);
+        }
+
+        .section-2 {
+            background: var(--card-bg-2);
+            color: var(--secondary-color);
+        }
+
+        .section-3 {
+            background: var(--card-bg-3);
+            color: var(--tertiary-color);
+        }
+
+        .section-4 {
+            background: var(--card-bg-4);
+            color: var(--accent-color);
+        }
+
+        .section-5 {
+            background: var(--card-bg-1);
+            color: var(--primary-color);
+        }
+
+        .section-6 {
+            background: var(--card-bg-2);
+            color: var(--secondary-color);
+        }
+
+        .section-7 {
+            background: var(--card-bg-3);
+            color: var(--tertiary-color);
+        }
+
+        .section-8 {
+            background: var(--card-bg-4);
+            color: var(--accent-color);
+        }
+
+        .contact-card {
+            background: var(--highlight-color);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+            .contact-card h3 {
+                font-size: 1.6rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+            }
+
+            .contact-card p {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .contact-card a {
+                color: var(--tertiary-color);
+                text-decoration: none;
+            }
+
+        .last-updated {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 2rem;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        /* Print Styles */
+        @@media print {
+            body, .privacy-container, .privacy-section, .contact-card {
+                background: white;
+                color: var(--text-dark);
+                box-shadow: none;
+            }
+
+            .privacy-header {
+                background: none;
+                color: var(--text-dark);
+            }
+
+                .privacy-header p, .contact-card a {
+                    color: var(--primary-color);
+                }
+        }
+    </style>
+</head>
+<body>
+    <div class="privacy-container">
+        <div class="privacy-header">
+            <h1>Privacy Policy</h1>
+            <p>Your trust matters to us. Learn how MyEStore protects your personal information.</p>
+        </div>
+
+        <div class="privacy-section section-1">
+            <h2><i class="fas fa-user-shield"></i> Information We Collect</h2>
+            <p>We gather data to enhance your shopping experience and provide quality services:</p>
+            <ul>
+                <li><strong>Personal Information:</strong> Name, email, phone number, and billing/shipping addresses provided during registration or checkout.</li>
+                <li><strong>Account Details:</strong> Login credentials, preferences, and settings stored in your MyEStore account.</li>
+                <li><strong>Transaction Data:</strong> Order history, payment details (securely processed via PayPal), and delivery information.</li>
+                <li><strong>Usage Data:</strong> Browsing patterns, IP address, device type, and site interactions.</li>
+                <li><strong>Cookies:</strong> Data files that improve functionality, like saving your cart or preferences.</li>
+            </ul>
+        </div>
+
+        <div class="privacy-section section-2">
+            <h2><i class="fas fa-cogs"></i> How We Use Your Information</h2>
+            <p>We use your data to deliver a seamless and personalized experience:</p>
+            <ul>
+                <li>Process orders, send confirmations, and manage deliveries.</li>
+                <li>Tailor recommendations based on your browsing and purchase history.</li>
+                <li>Analyze site usage to improve our services and user experience.</li>
+                <li>Send promotional offers or updates (with your consent).</li>
+                <li>Protect against fraud and secure your account.</li>
+            </ul>
+        </div>
+
+        <div class="privacy-section section-3">
+            <h2><i class="fas fa-share-alt"></i> Sharing Your Information</h2>
+            <p>We share data only when necessary and with trusted parties:</p>
+            <ul>
+                <li><strong>Service Providers:</strong> Partners for payment (e.g., PayPal), shipping, or support, under strict confidentiality.</li>
+                <li><strong>Legal Requirements:</strong> To comply with laws or protect MyEStore’s rights, like responding to legal requests.</li>
+                <li><strong>Business Changes:</strong> During mergers or acquisitions, with your consent.</li>
+            </ul>
+            <p>We do not sell your personal information to third parties.</p>
+        </div>
+
+        <div class="privacy-section section-4">
+            <h2><i class="fas fa-user-check"></i> Your Rights and Choices</h2>
+            <p>You have control over your data and can:</p>
+            <ul>
+                <li>View or edit your profile at <a href="@hostName/Customer/Profile">MyEStore account</a>.</li>
+                <li>Request data deletion by contacting us (subject to legal obligations).</li>
+                <li>Opt out of marketing emails via unsubscribe links.</li>
+                <li>Control cookies through browser settings or our consent tool.</li>
+            </ul>
+            <p>Additional rights (e.g., data portability) may apply in regions like the EU or California.</p>
+        </div>
+
+        <div class="privacy-section section-5">
+            <h2><i class="fas fa-cookie-bite"></i> Cookies and Tracking</h2>
+            <p>We use cookies to improve your experience:</p>
+            <ul>
+                <li><strong>Essential Cookies:</strong> Enable core features like cart and login.</li>
+                <li><strong>Analytics Cookies:</strong> Track site usage for improvements.</li>
+                <li><strong>Advertising Cookies:</strong> Support personalized ads (optional).</li>
+            </ul>
+            <p>Disabling cookies may affect site functionality.</p>
+        </div>
+
+        <div class="privacy-section section-6">
+            <h2><i class="fas fa-lock"></i> Data Security</h2>
+            <p>We safeguard your data with:</p>
+            <ul>
+                <li>SSL/TLS encryption for sensitive information.</li>
+                <li>Regular system audits and updates.</li>
+                <li>Limited access to data by authorized staff only.</li>
+            </ul>
+            <p>Please protect your account credentials, as no system is fully secure.</p>
+        </div>
+
+        <div class="privacy-section section-7">
+            <h2><i class="fas fa-globe"></i> International Data Transfers</h2>
+            <p>Your data may be transferred globally (e.g., for hosting or payments). We comply with laws like GDPR or CCPA, using safeguards such as standard contractual clauses.</p>
+        </div>
+
+        <div class="privacy-section section-8">
+            <h2><i class="fas fa-file-alt"></i> Changes to This Policy</h2>
+            <p>We may revise this policy to reflect new practices or laws. Updates will be posted here, with major changes notified via email or site notice. Check back regularly.</p>
+        </div>
+
+        <div class="contact-card">
+            <h3>Contact Us</h3>
+            <p>For questions about your privacy, reach out to our team:</p>
+            <p>Email: <a href="mailto:privacy@myestore.com">privacy@myestore.com</a></p>
+            <p>Phone: <a href="tel:+8423456789">+84 234 567 89</a></p>
+            <p>Address: 123 Đường Số 1, Quận 1, TP. Hồ Chí Minh, Việt Nam</p>
+        </div>
+
+        <div class="last-updated">
+            Last updated: April 18, 2025
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

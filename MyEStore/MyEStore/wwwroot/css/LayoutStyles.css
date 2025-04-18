@@ -1,5 +1,4 @@
-﻿
-:root {
+﻿:root {
     --primary-color: #1A5F7A;
     --secondary-color: #FF7F50;
     --tertiary-color: #FFC107;
@@ -106,7 +105,7 @@ nav ul {
 
 /* Footer Styles */
 .site-footer {
-    background-color: var(--bg-light);
+    background: linear-gradient(180deg, #F8F9FA 0%, #E6ECEF 100%);
     color: var(--text-dark);
     font-family: 'Poppins', sans-serif;
     position: relative;
@@ -116,7 +115,7 @@ nav ul {
 
 .footer-wave {
     position: absolute;
-    top: -100px;
+    top: -120px;
     left: 0;
     width: 100%;
     overflow: hidden;
@@ -126,23 +125,31 @@ nav ul {
 .footer-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 1rem 2rem;
+    padding: 4rem 1rem 2rem;
 }
 
 .footer-content {
     display: flex;
     flex-wrap: wrap;
     gap: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 2rem;
 }
 
 .brand-column, .company-info, .footer-links {
     flex: 1 1 250px;
+    padding: 0 1rem;
+}
+
+.brand-column {
+    border-right: 1px solid var(--border-color);
 }
 
 .footer-logo h2 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     margin-bottom: 1rem;
     color: var(--primary-color);
+    font-weight: 600;
 }
 
 .footer-logo .highlight {
@@ -151,36 +158,51 @@ nav ul {
 
 .brand-description {
     margin-bottom: 1.5rem;
-    line-height: 1.6;
+    line-height: 1.7;
+    font-size: 0.95rem;
+    font-weight: 400;
 }
 
 .social-icons {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    flex-direction: column;
+    gap: 0.8rem;
 }
 
-    .social-icons a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 38px;
-        height: 38px;
+.social-link {
+    display: flex;
+    align-items: center;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+    .social-link i {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
         border-radius: 50%;
         background-color: var(--primary-color);
         color: white;
+        margin-right: 10px;
         transition: all 0.3s ease;
     }
 
-        .social-icons a:hover {
+    .social-link:hover {
+        color: var(--secondary-color);
+    }
+
+        .social-link:hover i {
             background-color: var(--secondary-color);
-            transform: translateY(-3px);
+            transform: scale(1.1);
         }
 
 .footer-content h3 {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 600;
     position: relative;
     padding-bottom: 0.5rem;
@@ -191,14 +213,14 @@ nav ul {
         position: absolute;
         bottom: 0;
         left: 0;
-        width: 40px;
+        width: 50px;
         height: 3px;
         background-color: var(--secondary-color);
     }
 
 .contact-grid {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .contact-column {
@@ -209,14 +231,26 @@ nav ul {
         margin-bottom: 1rem;
         display: flex;
         align-items: flex-start;
+        font-size: 0.9rem;
+        font-weight: 400;
     }
 
     .contact-column i {
         color: var(--secondary-color);
-        margin-right: 10px;
+        margin-right: 12px;
         width: 20px;
         margin-top: 4px;
     }
+
+    .contact-column a {
+        color: var(--text-dark);
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+        .contact-column a:hover {
+            color: var(--secondary-color);
+        }
 
 .footer-links ul {
     list-style: none;
@@ -231,9 +265,11 @@ nav ul {
 .footer-links a {
     color: var(--text-dark);
     text-decoration: none;
-    transition: color 0.3s;
+    font-size: 0.9rem;
+    font-weight: 400;
     display: flex;
     align-items: center;
+    transition: all 0.3s ease;
 }
 
     .footer-links a i {
@@ -244,6 +280,7 @@ nav ul {
 
     .footer-links a:hover {
         color: var(--secondary-color);
+        padding-left: 5px;
     }
 
 .footer-bottom {
@@ -251,6 +288,7 @@ nav ul {
     color: white;
     padding: 1.5rem 1rem;
     text-align: center;
+    font-size: 0.9rem;
 }
 
     .footer-bottom p {
@@ -260,6 +298,7 @@ nav ul {
     .footer-bottom a {
         color: var(--tertiary-color);
         text-decoration: none;
+        font-weight: 500;
     }
 
         .footer-bottom a:hover {

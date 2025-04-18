@@ -1,0 +1,233 @@
+﻿:root {
+    --primary-color: #2c3e50; /* Dark blue-gray */
+    --secondary-color: #f8f9fa; /* Light gray */
+    --accent-color: #007bff; /* Bootstrap primary blue */
+    --border-color: #dee2e6;
+    --text-muted: #6c757d;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    background-color: var(--secondary-color);
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    color: var(--text-muted);
+}
+
+.profile-container {
+    max-width: 600px;
+    margin: 3rem auto;
+}
+
+.profile-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #007bff, #00c4ff);
+    padding: 1.5rem;
+    color: #fff;
+    position: relative;
+}
+
+    .card-header h4 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+.card-body {
+    padding: 2rem;
+}
+
+.nav-tabs {
+    border-bottom: none;
+    background: #f1f3f5;
+    padding: 0.5rem 1rem;
+}
+
+    .nav-tabs .nav-link {
+        color: var(--text-muted);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        margin: 0 0.25rem;
+        transition: all 0.3s ease;
+    }
+
+        .nav-tabs .nav-link.active {
+            background: #fff;
+            color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: #e9ecef;
+        }
+
+.tab-content {
+    padding: 2rem;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.input-container {
+    position: relative;
+}
+
+.form-control,
+.form-select {
+    height: 48px;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+.input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.edit-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--accent-color);
+    transition: color 0.2s ease;
+}
+
+    .edit-icon:hover {
+        color: #0056b3;
+    }
+
+.form-label {
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.form-select {
+    padding-right: 2rem;
+    background-position: right 0.75rem center;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--accent-color);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background: #0056b3;
+        transform: translateY(-1px);
+    }
+
+.btn-outline-primary {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-primary:hover {
+        background: var(--accent-color);
+        color: #fff;
+    }
+
+.alert {
+    border-radius: 8px;
+    margin-top: 1rem;
+    padding: 0.75rem;
+}
+
+.avatar-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.address-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+    .address-preview p {
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+.current-address {
+    background: #e9ecef;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+    .current-address p {
+        margin: 0;
+        color: var(--primary-color);
+    }
+
+.collapse-toggle {
+    cursor: pointer;
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+    .collapse-toggle:hover {
+        text-decoration: underline;
+    }
+
+@media (max-width: 576px) {
+    .profile-container {
+        margin: 1rem;
+    }
+
+    .tab-content,
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .btn-primary {
+        padding: 0.5rem 1rem;
+    }
+}

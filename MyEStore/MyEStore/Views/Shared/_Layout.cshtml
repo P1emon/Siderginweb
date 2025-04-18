@@ -13,18 +13,13 @@
 <body>
     <!-- Header -->
     <header>
-        <div class="logo">  
-                   <a asp-area="" asp-controller="Products" asp-action="Index">
-                       <h1<span class="highlight">S</span>idergin</h1></a>  
-               </div>
+        <div class="logo">
+            <a asp-area="" asp-controller="Products" asp-action="Index">
+                <h1><span class="highlight">S</span>idergin</h1>
+            </a>
+        </div>
         <nav>
             <ul>
-                @* <li class="nav-item dropdown">
-                    <a class="dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Danh mục</a>
-                    <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                        @await Component.InvokeAsync("Loai")
-                    </ul>
-                </li> *@
                 <li class="nav-item">
                     <a class="nav-link" asp-area="" asp-controller="News" asp-action="Index">Tin tức</a>
                 </li>
@@ -41,7 +36,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                             <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
                             <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
-                            <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li>
+                            @* <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li> *@
                             <li>
                                 <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
                                     <i class="bi bi-bell"></i> Thông báo
@@ -74,8 +69,14 @@
     <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-wave">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100">
-                <path fill="#1A5F7A" fill-opacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120">
+                <defs>
+                    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#1A5F7A;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FF7F50;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <path fill="url(#waveGradient)" fill-opacity="0.9" d="M0,80L80,85C160,90,320,100,480,95C640,90,800,70,960,65C1120,60,1280,70,1360,75L1440,80L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
             </svg>
         </div>
 
@@ -85,12 +86,12 @@
                     <div class="footer-logo">
                         <h2><span class="highlight">S</span>idergin</h2>
                     </div>
-                    <p class="brand-description">Chúng tôi cung cấp các sản phẩm bổ sung sắt và vitamin chất lượng cao, giúp cải thiện sức khỏe và tăng cường hệ miễn dịch..</p>
+                    <p class="brand-description">Chúng tôi cung cấp các sản phẩm bổ sung sắt và vitamin chất lượng cao, giúp cải thiện sức khỏe và tăng cường hệ miễn dịch.</p>
                     <div class="social-icons">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" aria-label="Facebook" class="social-link"><i class="fab fa-facebook-f"></i> Facebook</a>
+                        <a href="#" aria-label="Instagram" class="social-link"><i class="fab fa-instagram"></i> Instagram</a>
+                        <a href="#" aria-label="YouTube" class="social-link"><i class="fab fa-youtube"></i> YouTube</a>
+                        <a href="#" aria-label="TikTok" class="social-link"><i class="fab fa-tiktok"></i> TikTok</a>
                     </div>
                 </div>
 
@@ -101,11 +102,11 @@
                             <div class="contact-column">
                                 <p><i class="fas fa-map-marker-alt"></i> 123 Đường Số 1, Quận 1, TP. Hồ Chí Minh</p>
                                 <p><i class="fas fa-id-card"></i> Mã số: 123456789</p>
-                                <p><i class="fas fa-phone"></i> Điện thoại: <a href="tel:0123456789">0123456789</a></p>
+                                <p><i class="fas fa-phone"></i> <a href="tel:0123456789">0123456789</a></p>
                             </div>
                             <div class="contact-column">
-                                <p><i class="fab fa-whatsapp"></i> Zalo: <a href="https://zalo.me/0123456789">0123456789</a></p>
-                                <p><i class="fas fa-envelope"></i> Email: <a href="mailto:support@myestore.com">support@myestore.com</a></p>
+                                <p><i class="fab fa-whatsapp"></i> <a href="https://zalo.me/0123456789">Zalo: 0123456789</a></p>
+                                <p><i class="fas fa-envelope"></i> <a href="mailto:support@sidergin.com">support@sidergin.com</a></p>
                                 <p><i class="far fa-clock"></i> Thứ 2 - Thứ 6: 8:00 - 17:30</p>
                             </div>
                         </div>
@@ -126,7 +127,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2025 SIDERGIN - Nhà phân phối Thuốc Việt số 1. Tất cả quyền được bảo lưu.</p>
+            <p>© 2025 SIDERGIN - Nhà phân phối Thuốc Việt số 1. Tất cả quyền được bảo lưu.</p>
             <a href="/Home/Privacy">Chính sách bảo mật</a>
         </div>
     </footer>
@@ -136,4 +137,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

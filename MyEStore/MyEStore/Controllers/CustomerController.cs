@@ -6,9 +6,9 @@ using MyEStore.Entities;
 using MyEStore.Models;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.CodeAnalysis.Scripting;
 using System.Net.Mail;
 using System.Net;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace MyEStore.Controllers
 {
@@ -31,7 +31,6 @@ namespace MyEStore.Controllers
         {
             ViewBag.ReturnUrl = ReturnUrl;
 
-            // Tìm người dùng trong cơ sở dữ liệu
             var kh = _ctx.KhachHangs.SingleOrDefault(p => p.MaKh == model.UserName);
             if (kh == null || !BCrypt.Net.BCrypt.Verify(model.Password, kh.MatKhau))
             {
@@ -39,21 +38,18 @@ namespace MyEStore.Controllers
                 return View();
             }
 
-            // Tạo các claims cho user
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, kh.HoTen),
-        new Claim(ClaimTypes.Email, kh.Email),
-        new Claim("UserId", kh.MaKh),
-        new Claim(ClaimTypes.Role, "Administrator") // Tùy thuộc vào vai trò trong DB
-    };
+            {
+                new Claim(ClaimTypes.Name, kh.HoTen),
+                new Claim(ClaimTypes.Email, kh.Email),
+                new Claim("UserId", kh.MaKh),
+                new Claim(ClaimTypes.Role, "Administrator")
+            };
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            // Đăng nhập bằng cookie authentication
             await HttpContext.SignInAsync(claimPrincipal);
 
-            // Điều hướng đến ReturnUrl nếu có, nếu không chuyển đến trang khác
             if (!string.IsNullOrEmpty(ReturnUrl))
             {
                 return Redirect(ReturnUrl);
@@ -62,15 +58,13 @@ namespace MyEStore.Controllers
             return RedirectToAction("Index", "Cart");
         }
 
-
-
         [Authorize]
         public IActionResult PurchaseOrder()
         {
             return View();
         }
 
-        [Authorize(Roles ="Accountant")]
+        [Authorize(Roles = "Accountant")]
         public IActionResult Statistics()
         {
             return View();
@@ -88,14 +82,12 @@ namespace MyEStore.Controllers
             return Redirect("/");
         }
 
-        // GET: Register
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // POST: Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Register(RegisterVM model)
@@ -105,26 +97,22 @@ namespace MyEStore.Controllers
                 return View(model);
             }
 
-            // Check if username or email already exists
             if (_ctx.KhachHangs.Any(kh => kh.MaKh == model.UserName || kh.Email == model.Email))
             {
                 ViewBag.ThongBao = "Username or Email already exists.";
                 return View(model);
             }
 
-            // Hash the password before saving it
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
-            // Create new customer
             var newCustomer = new KhachHang
             {
                 MaKh = model.UserName,
-                MatKhau = hashedPassword,  // Store the hashed password
+                MatKhau = hashedPassword,
                 HoTen = model.FullName,
                 Email = model.Email,
                 DienThoai = model.PhoneNumber,
                 DiaChi = model.Address,
-                // Thêm các trường khác nếu cần
             };
 
             _ctx.KhachHangs.Add(newCustomer);
@@ -133,7 +121,7 @@ namespace MyEStore.Controllers
             TempData["ThongBao"] = "Account successfully created! Please log in.";
             return RedirectToAction("Login");
         }
-        // GET: Profile
+
         [HttpGet]
         public IActionResult Profile()
         {
@@ -154,16 +142,17 @@ namespace MyEStore.Controllers
             var model = new ProfileVM
             {
                 FullName = customer.HoTen,
-                Email = customer.Email
+                Email = customer.Email,
+                PhoneNumber = customer.DienThoai,
+                DiaChi = customer.DiaChi // Thêm DiaChi vào ProfileVM
             };
 
             return View(model);
         }
 
-        // POST: Profile
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Profile(ProfileVM model)
+        public IActionResult Profile(ProfileUpdateVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -194,6 +183,7 @@ namespace MyEStore.Controllers
 
             customer.HoTen = model.FullName;
             customer.Email = model.Email;
+            customer.DienThoai = model.PhoneNumber;
 
             _ctx.SaveChanges();
 
@@ -201,15 +191,13 @@ namespace MyEStore.Controllers
             return RedirectToAction("Profile");
         }
 
-
-        // POST: Change Password
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangePassword(string Password, string NewPassword, string ConfirmPassword)
+        public IActionResult ChangePassword(ChangePasswordVM model)
         {
-            if (string.IsNullOrEmpty(Password) || string.IsNullOrEmpty(NewPassword) || string.IsNullOrEmpty(ConfirmPassword))
+            if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Vui lòng điền đủ thông tin.";
+                TempData["Error"] = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
                 return RedirectToAction("Profile");
             }
 
@@ -227,30 +215,67 @@ namespace MyEStore.Controllers
                 return NotFound("Customer not found.");
             }
 
-            // Validate current password using Bcrypt
-            if (!BCrypt.Net.BCrypt.Verify(Password, customer.MatKhau))
+            if (!BCrypt.Net.BCrypt.Verify(model.Password, customer.MatKhau))
             {
                 TempData["Error"] = "Mật khẩu hiện tại không chính xác.";
                 return RedirectToAction("Profile");
             }
 
-            // Validate new password and confirmation
-            if (NewPassword != ConfirmPassword)
+            if (model.NewPassword != model.ConfirmPassword)
             {
                 TempData["Error"] = "Mật khẩu mới và mật khẩu xác nhận không khớp.";
                 return RedirectToAction("Profile");
             }
 
-            // Hash new password using Bcrypt
-            customer.MatKhau = BCrypt.Net.BCrypt.HashPassword(NewPassword);
+            customer.MatKhau = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
             _ctx.SaveChanges();
 
             TempData["Success"] = "Mật khẩu của bạn đã được thay đổi thành công.";
             return RedirectToAction("Profile");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult UpdateAddress(string province, string district, string ward, string streetAddress, string diaChi)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
-        // Hiển thị lịch sử giao dịch của khách hàng
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var customer = _ctx.KhachHangs.SingleOrDefault(kh => kh.MaKh == userId);
+
+            if (customer == null)
+            {
+                TempData["Error"] = "Không tìm thấy thông tin người dùng.";
+                return RedirectToAction("Profile");
+            }
+
+            // Validate input
+            if (string.IsNullOrWhiteSpace(province) || string.IsNullOrWhiteSpace(district) ||
+                string.IsNullOrWhiteSpace(ward) || string.IsNullOrWhiteSpace(streetAddress) ||
+                string.IsNullOrWhiteSpace(diaChi))
+            {
+                TempData["Error"] = "Vui lòng nhập đầy đủ thông tin địa chỉ.";
+                return RedirectToAction("Profile");
+            }
+
+            try
+            {
+                customer.DiaChi = diaChi; // Lưu địa chỉ đầy đủ
+                _ctx.SaveChanges();
+                TempData["Success"] = "Cập nhật địa chỉ nhận hàng thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi khi cập nhật địa chỉ: {ex.Message}";
+            }
+
+            return RedirectToAction("Profile");
+        }
+
         public IActionResult TransactionHistory()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
@@ -262,15 +287,13 @@ namespace MyEStore.Controllers
 
             var orders = _ctx.HoaDons
                 .Where(hd => hd.MaKh == userId)
-                .Include(hd => hd.ChiTietHds) // Đảm bảo bạn đang nạp ChiTietHds cùng với HoaDons
+                .Include(hd => hd.ChiTietHds)
                 .OrderByDescending(hd => hd.NgayDat)
                 .ToList();
 
             return View(orders);
         }
 
-
-        // Hiển thị chi tiết hóa đơn và các sản phẩm đã mua
         [Authorize]
         public IActionResult OrderDetails(int id)
         {
@@ -290,7 +313,7 @@ namespace MyEStore.Controllers
                         ct.SoLuong,
                         ct.DonGia,
                         ProductName = ct.MaHhNavigation.TenHh,
-                        Hinh = ct.MaHhNavigation.Hinh // Lấy thông tin hình ảnh từ bảng HangHoa
+                        Hinh = ct.MaHhNavigation.Hinh
                     }).ToList()
                 }).FirstOrDefault();
 
@@ -366,17 +389,13 @@ namespace MyEStore.Controllers
             }
             catch (SmtpException ex)
             {
-                // Xử lý lỗi gửi email
                 Console.WriteLine($"SMTP Exception: {ex.Message}");
                 throw;
             }
         }
-
         #endregion
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult UpdateAddress(string hoTen, string soDienThoai, string diaChi)
+        public IActionResult Thongbao()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
@@ -385,63 +404,6 @@ namespace MyEStore.Controllers
                 return RedirectToAction("Login");
             }
 
-            var customer = _ctx.KhachHangs.SingleOrDefault(kh => kh.MaKh == userId);
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            try
-            {
-                // Cập nhật thông tin
-                customer.HoTen = hoTen;
-                customer.DienThoai = soDienThoai;
-                customer.DiaChi = diaChi;
-
-                _ctx.SaveChanges();
-
-                TempData["Success"] = "Cập nhật thành công thông tin nhận hàng.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Đã xảy ra lỗi khi cập nhật thông tin: " + ex.Message;
-            }
-
-            return RedirectToAction("Address");
-        }
-
-        [HttpGet]
-        public IActionResult Address()
-        {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-
-            if (userId == null)
-            {
-                return RedirectToAction("Login");
-            }
-
-            var customer = _ctx.KhachHangs.SingleOrDefault(kh => kh.MaKh == userId);
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            // Truyền thông tin khách hàng vào View
-            return View(customer);
-        }
-        // Cập nhật phương thức trong Controller - OrderDetails
-       public IActionResult Thongbao()
-        {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-
-            if (userId == null)
-            {
-                return RedirectToAction("Login");
-            }
-
-            // Lấy ngày hôm nay (bỏ phần thời gian)
             var today = DateTime.Today;
 
             var orders = _ctx.HoaDons
@@ -465,13 +427,10 @@ namespace MyEStore.Controllers
                 DaysToDelivery = o.DaysToDelivery
             }).ToList();
 
-            // Lấy số lượng đơn hàng sắp giao trong vòng 7 ngày tới
             var upcomingDeliveriesCount = orders.Count(o => o.DaysToDelivery.HasValue && o.DaysToDelivery.Value <= 99);
-            // Truyền số lượng thông báo vào View
             ViewData["UpcomingDeliveriesCount"] = upcomingDeliveriesCount;
 
             return View(model);
         }
-
     }
 }
