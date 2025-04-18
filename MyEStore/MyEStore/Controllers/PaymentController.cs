@@ -6,27 +6,32 @@ using MyEStore.Helpers;
 using MyEStore.Models;
 using MyEStore.Servicess;
 using Newtonsoft.Json;
+using System.Net.Mail;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
+using System.Net;
+using System.Net.Mail;
 namespace MyEStore.Controllers
 {
-	[Authorize]
-	public class PaymentController : Controller
-	{
-		private readonly PaypalClient _paypalClient;
-		private readonly MyeStoreContext _ctx;
+    [Authorize]
+    public class PaymentController : Controller
+    {
+        private readonly PaypalClient _paypalClient;
+        private readonly MyeStoreContext _ctx;
         private readonly IConfiguration _configuration;
         private readonly IVnpayService _vnpayService;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(PaypalClient paypalClient, MyeStoreContext ctx, IConfiguration configuration, IVnpayService vnpayService)
+        public PaymentController(PaypalClient paypalClient, MyeStoreContext ctx, IConfiguration configuration, IVnpayService vnpayService, ILogger<PaymentController> logger)
         {
             _paypalClient = paypalClient;
             _ctx = ctx;
             _configuration = configuration;
             _vnpayService = vnpayService;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -190,24 +195,24 @@ namespace MyEStore.Controllers
         }
 
         public IActionResult Index()
-		{
-			ViewBag.PaypalClientId = _paypalClient.ClientId;
-			return View(CartItems);
-		}
+        {
+            ViewBag.PaypalClientId = _paypalClient.ClientId;
+            return View(CartItems);
+        }
 
-		const string CART_KEY = "MY_CART";
-		public List<CartItem> CartItems
-		{
-			get
-			{
-				var carts = HttpContext.Session.Get<List<CartItem>>(CART_KEY);
-				if (carts == null)
-				{
-					carts = new List<CartItem>();
-				}
-				return carts;
-			}
-		}
+        const string CART_KEY = "MY_CART";
+        public List<CartItem> CartItems
+        {
+            get
+            {
+                var carts = HttpContext.Session.Get<List<CartItem>>(CART_KEY);
+                if (carts == null)
+                {
+                    carts = new List<CartItem>();
+                }
+                return carts;
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> PaypalOrder(CancellationToken cancellationToken)
@@ -483,5 +488,268 @@ namespace MyEStore.Controllers
                 return View("MomoFail");
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> CodPayment(DateTime ngayGiao)
+        {
+            try
+            {
+                if (CartItems == null || !CartItems.Any())
+                {
+                    ViewBag.Message = "Giỏ hàng của bạn đang trống.";
+                    return View("MomoFail");
+                }
+
+                var userId = User.FindFirstValue("UserId");
+                var userProfile = _ctx.KhachHangs.FirstOrDefault(u => u.MaKh == userId);
+                string customerAddress = userProfile?.DiaChi ?? "N/A";
+
+                var hoaDon = new HoaDon
+                {
+                    MaKh = userId,
+                    NgayDat = DateTime.Now,
+                    HoTen = User.Identity?.Name ?? "Khách hàng",
+                    DiaChi = customerAddress,
+                    CachThanhToan = "COD",
+                    CachVanChuyen = "Giao tận nơi",
+                    MaTrangThai = 0,
+                    NgayGiao = ngayGiao,
+                    GhiChu = "Thanh toán khi nhận hàng (COD)"
+                };
+
+                _ctx.HoaDons.Add(hoaDon);
+                await _ctx.SaveChangesAsync();
+
+                foreach (var item in CartItems)
+                {
+                    var cthd = new ChiTietHd
+                    {
+                        MaHd = hoaDon.MaHd,
+                        MaHh = item.MaHh,
+                        DonGia = item.DonGia,
+                        SoLuong = item.SoLuong,
+                        GiamGia = 1
+                    };
+                    _ctx.ChiTietHds.Add(cthd);
+                }
+                await _ctx.SaveChangesAsync();
+
+                HttpContext.Session.Set(CART_KEY, new List<CartItem>());
+
+                // Gửi email
+                try
+                {
+                    string customerEmail = userProfile?.Email ?? "Không rõ";
+                    string userName = userProfile?.HoTen ?? hoaDon.HoTen;
+                    string phone = userProfile?.DienThoai ?? "Không rõ";
+                    string adminEmail = _configuration["EmailSettings:AdminEmail"] ?? "phannguyendangkhoa0915@gmail.com";
+
+                    await SendCustomerEmail(customerEmail, hoaDon, phone, userName);
+                    await SendAdminEmail(adminEmail, hoaDon, phone, userName, customerEmail);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi khi gửi email COD");
+                }
+
+                ViewBag.Message = "Đặt hàng COD thành công!";
+                return View("Success");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = "Lỗi xử lý: " + ex.Message;
+                return View("MomoFail");
+            }
+        }
+
+        private async Task SendCustomerEmail(string email, HoaDon order, string phone, string userName)
+        {
+            if (string.IsNullOrEmpty(email)) return;
+
+            string smtpServer = _configuration["EmailSettings:SmtpServer"];
+            int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+            string senderEmail = _configuration["EmailSettings:SenderEmail"];
+            string senderPassword = _configuration["EmailSettings:SenderPassword"];
+
+            string orderDateFormatted = order.NgayDat.ToString("dd/MM/yyyy HH:mm");
+            string formattedAmount = _ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong * ct.DonGia).ToString("N0") + " VNĐ";
+
+            using var smtpClient = new SmtpClient(smtpServer)
+            {
+                Port = smtpPort,
+                Credentials = new NetworkCredential(senderEmail, senderPassword),
+                EnableSsl = true,
+            };
+
+            string subject = $"Xác nhận đơn hàng COD #{order.MaHd} - SIDERGIN";
+            string body = $@"
+            <!DOCTYPE html>
+            <html lang='vi'>
+            <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <title>Xác nhận đơn hàng</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #f5f5f5;
+                        color: #333;
+                    }}
+                    .container {{
+                        max-width: 600px;
+                        margin: 30px auto;
+                        background-color: #fff;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+                    }}
+                    .header {{
+                        background: linear-gradient(135deg, #6e5ff8 0%, #7d4de3 100%);
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                    }}
+                    .header h1 {{
+                        margin: 0;
+                        font-size: 26px;
+                    }}
+                    .content {{
+                        padding: 30px 20px;
+                    }}
+                    .content p {{
+                        line-height: 1.6;
+                    }}
+                    .highlight {{
+                        font-weight: bold;
+                        color: #6e5ff8;
+                    }}
+                    .order-info {{
+                        background-color: #f9f9f9;
+                        padding: 20px;
+                        border-radius: 6px;
+                        margin-top: 15px;
+                    }}
+                    .order-info p {{
+                        margin: 8px 0;
+                    }}
+                    .btn {{
+                        display: inline-block;
+                        padding: 10px 25px;
+                        background: linear-gradient(135deg, #6e5ff8 0%, #7d4de3 100%);
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 50px;
+                        margin-top: 20px;
+                    }}
+                    .footer {{
+                        text-align: center;
+                        padding: 20px;
+                        font-size: 13px;
+                        color: #777;
+                        border-top: 1px solid #eee;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>ĐƠN HÀNG CỦA BẠN ĐÃ ĐƯỢC XÁC NHẬN</h1>
+                    </div>
+                    <div class='content'>
+                        <p>Xin chào <span class='highlight'>{userName}</span>,</p>
+                        <p>Cảm ơn bạn đã đặt hàng tại <strong>SIDERGIN</strong>. Chúng tôi đã nhận được đơn hàng của bạn và đang tiến hành xử lý.</p>
+
+                        <div class='order-info'>
+                            <p><strong>🧾 Mã đơn hàng:</strong> #{order.MaHd}</p>
+                            <p><strong>📅 Ngày đặt:</strong> {orderDateFormatted}</p>
+                            <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
+                            <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
+                            <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
+                            <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
+                            <p><strong>📅 Ngày giao dự kiến:</strong> {order.NgayGiao?.ToString("dd/MM/yyyy") ?? "Chưa xác định"}</p>
+                            <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
+                        </div>
+
+                        <p>Chúng tôi sẽ sớm liên hệ để xác nhận và tiến hành giao hàng.</p>
+                        <a href='https://sidergin.com/orders/track/{order.MaHd}' class='btn'>Theo dõi đơn hàng</a>
+                    </div>
+                    <div class='footer'>
+                        © 2025 SIDERGIN - Cảm ơn bạn đã mua sắm cùng chúng tôi!<br/>
+                        Mọi thắc mắc vui lòng liên hệ: support@sidergin.com | 📞 0123 456 789
+                    </div>
+                </div>
+            </body>
+            </html>";
+
+
+            var mailMessage = new MailMessage(senderEmail, email, subject, body) { IsBodyHtml = true };
+            
+            try
+            {
+                await smtpClient.SendMailAsync(mailMessage);
+                _logger.LogInformation($"Đã gửi email đến {email}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Gửi mail thất bại tới {email}: {ex.Message}");
+            }
+
+        }
+
+        private async Task SendAdminEmail(string email, HoaDon order, string phone, string userName, string customerEmail)
+        {
+            if (string.IsNullOrEmpty(email)) return;
+
+            string smtpServer = _configuration["EmailSettings:SmtpServer"];
+            int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+            string senderEmail = _configuration["EmailSettings:SenderEmail"];
+            string senderPassword = _configuration["EmailSettings:SenderPassword"];
+
+            string formattedAmount = _ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong * ct.DonGia).ToString("N0") + " VNĐ";
+
+            using var smtpClient = new SmtpClient(smtpServer)
+            {
+                Port = smtpPort,
+                Credentials = new NetworkCredential(senderEmail, senderPassword),
+                EnableSsl = true,
+            };
+
+            string subject = $"📦 [SIDERGIN] Thông báo đơn hàng COD mới #{order.MaHd}";
+
+            string body = $@"
+                <h2>📢 Thông báo đơn hàng COD mới</h2>
+                <p>Xin chào Admin,</p>
+                <p>Một đơn hàng mới đã được khách hàng đặt thành công.</p>
+                <hr>
+                <p><strong>🧾 Mã đơn hàng:</strong> {order.MaHd}</p>
+                <p><strong>👤 Họ tên khách hàng:</strong> {userName}</p>
+                <p><strong>📧 Email:</strong> {customerEmail ?? "Không có"}</p>
+                <p><strong>📞 Số điện thoại:</strong> {phone}</p>
+                <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
+                <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
+                <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
+                <p><strong>📅 Ngày nhận hàng (dự kiến):</strong> {order.NgayGiao?.ToString("dd/MM/yyyy") ?? "Không xác định"}</p>
+                <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
+                <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
+                <hr>
+                <p>📞 Vui lòng liên hệ với khách hàng để xác nhận đơn hàng sớm nhất có thể.</p>
+                <p>Trân trọng,</p>
+                <p><strong>Hệ thống quản lý đơn hàng - SIDERGIN</strong></p>";
+            var mailMessage = new MailMessage(senderEmail, email, subject, body) { IsBodyHtml = true };
+            
+            try
+            {
+                await smtpClient.SendMailAsync(mailMessage);
+                _logger.LogInformation($"Đã gửi email đến {email}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Gửi mail thất bại tới {email}: {ex.Message}");
+            }
+
+        }
+
+
     }
 }

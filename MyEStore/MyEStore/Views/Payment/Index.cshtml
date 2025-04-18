@@ -29,15 +29,15 @@
                             <tbody>
                                 @foreach (var item in Model)
                                 {
-                                    <tr>
-                                        <td>
-                                            <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="img-thumbnail rounded" style="width: 80px; height: 80px;">
-                                        </td>
-                                        <td>@item.TenHh</td>
-                                        <td>@item.DonGia.ToString("#,##0.00") đ</td>
-                                        <td>@item.SoLuong</td>
-                                        <td class="text-danger fw-bold">@item.ThanhTien.ToString("#,##0.00") đ</td>
-                                    </tr>
+                                        <tr>
+                                            <td>
+                                                <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="img-thumbnail rounded" style="width: 80px; height: 80px;">
+                                            </td>
+                                            <td>@item.TenHh</td>
+                                            <td>@item.DonGia.ToString("#,##0.00") đ</td>
+                                            <td>@item.SoLuong</td>
+                                            <td class="text-danger fw-bold">@item.ThanhTien.ToString("#,##0.00") đ</td>
+                                        </tr>
                                 }
                             </tbody>
                         </table>
@@ -74,6 +74,10 @@
                         <form id="paymentForm" method="post" action="@Url.Action("PaypalCapture", "Payment")">
                             <div id="paypal-button-container"></div>
                         </form>
+                        <form method="post" action="/Payment/CodPayment" onsubmit="return handleCodSubmit(event)">
+                            <input type="hidden" name="ngayGiao" id="codNgayGiao" />
+                            <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">Thanh Toán Khi Nhận Hàng (COD)</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -82,6 +86,25 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function handleCodSubmit(event) {
+        const ngayGiao = document.getElementById('ngayGiao').value;
+        if (!ngayGiao || !isFutureDate(ngayGiao)) {
+            event.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Vui lòng chọn một ngày giao hàng hợp lệ.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#d33'
+            });
+            return false;
+        }
+
+        document.getElementById('codNgayGiao').value = ngayGiao;
+        return true;
+    }
+</script>
 
 <script>
     // Lấy ngày hiện tại
@@ -174,5 +197,5 @@
 </script>
 
 @section Scripts {
-    <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
+        <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
 }
