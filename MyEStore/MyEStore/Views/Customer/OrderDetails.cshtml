@@ -1,80 +1,121 @@
 ﻿@model dynamic
 @Html.Partial("livechat")
 <link rel="stylesheet" href="~/css/Orderdetail.css" />
-<div class="container">
-    <h2>Chi tiết đơn hàng (ID: @Model.MaHd)</h2>
-    <p><strong>Ngày đặt:</strong> @Model.NgayDat.ToString("dd/MM/yyyy")</p>
-    <p><strong>Khách hàng:</strong> @Model.HoTen</p>
-    <p><strong>Địa chỉ:</strong> @Model.DiaChi</p>
-    <p><strong>Phương thức thanh toán:</strong> @Model.CachThanhToan</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" />
+<div class="order-wrapper">
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('order-details')">Thông tin đơn hàng</button>
+        <button class="tab-btn" onclick="showTab('products')">Sản phẩm</button>
+        <button class="tab-btn" onclick="showTab('summary')">Tổng kết</button>
+    </nav>
 
-    <div class="currency-select">
-        <label for="currency">Chọn đơn vị tiền tệ: </label>
-        <select id="currency" onchange="updateCurrency()">
-            <option value="VND">VND</option>
-            <option value="USD">USD</option>
-        </select>
+    <div class="tab-content">
+        <div id="order-details" class="tab-pane active">
+            <h2>Đơn hàng #@Model.MaHd</h2>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="label">Ngày đặt</span>
+                    <span>@Model.NgayDat.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Khách hàng</span>
+                    <span>@Model.HoTen</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Địa chỉ</span>
+                    <span>@Model.DiaChi</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Thanh toán</span>
+                    <span>@Model.CachThanhToan</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="products" class="tab-pane">
+            <h2>Sản phẩm</h2>
+            <div class="product-list">
+                @foreach (var product in Model.Products)
+                {
+                    <div class="product-item">
+                        <img src="~/Hinh/HangHoa/@product.Hinh" alt="@product.ProductName" class="product-img" />
+                        <div class="product-info">
+                            <h3>@product.ProductName</h3>
+                            <div class="product-meta">
+                                <span>Số lượng: @product.SoLuong</span>
+                                <span>Đơn giá: <span class="currency" data-value="@product.DonGia">@product.DonGia</span></span>
+                                <span>Tổng: <span class="currency" data-value="@(product.DonGia * product.SoLuong)">@(product.DonGia * product.SoLuong)</span></span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div id="summary" class="tab-pane">
+            <h2>Tổng kết</h2>
+            <div class="summary-content">
+                <div class="summary-item">
+                    <span class="label">Mã đơn hàng</span>
+                    <span>#@Model.MaHd</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Tổng cộng</span>
+                    <span id="totalPrice">0.00</span>
+                    <span id="currencySymbol">VND</span>
+                </div>
+                <div class="currency-select">
+                    <label for="currency">Tiền tệ:</label>
+                    <select id="currency" onchange="updateCurrency()">
+                        <option value="VND" selected>VND</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h3>Sản phẩm</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Hình ảnh</th>
-                <th>Tên sản phẩm</th>
-                <th>Số lượng</th>
-                <th>Đơn giá</th>
-                <th>Tổng</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var product in Model.Products)
-            {
-                <tr>
-                    <td>
-                        <img src="~/Hinh/HangHoa/@product.Hinh" alt="@product.ProductName" class="img-product" />
-                    </td>
-                    <td>@product.ProductName</td>
-                    <td>@product.SoLuong</td>
-                    <td>@product.DonGia</td>
-                    <td class="currency">@product.DonGia * @product.SoLuong</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <div class="total-price">
-        <p><strong>Tổng cộng: </strong><span id="totalPrice"></span> <span id="currencySymbol">VND</span></p>
-    </div>
-
-    <button class="btn" onclick="window.print()">In đơn hàng</button>
+    <button class="btn btn-print" onclick="window.print()">In đơn hàng</button>
 </div>
 
 <script>
-    // Calculate total based on selected currency
-    function updateCurrency() {
-        var currency = document.getElementById("currency").value;
-        var total = 0;
-
-        // Get all rows of the table
-        var rows = document.querySelectorAll("table tbody tr");
-        rows.forEach(function(row) {
-            var unitPrice = parseFloat(row.cells[3].textContent);  // Unit price
-            var quantity = parseInt(row.cells[2].textContent);  // Quantity
-            total += unitPrice * quantity;
-        });
-
-        // Update total value based on currency selected
-        if (currency === "USD") {
-            total /= 25400;  // Convert VND to USD (1 USD = 25,000 VND)
-            document.getElementById("currencySymbol").textContent = "USD";
-        } else {
-            document.getElementById("currencySymbol").textContent = "VND";
-        }
-
-        document.getElementById("totalPrice").textContent = total.toFixed(2);
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
     }
 
-    // Call function to calculate total when the page loads
+    function updateCurrency() {
+        const currency = document.getElementById("currency").value;
+        let total = 0;
+        const products = document.querySelectorAll(".product-item");
+
+        products.forEach(product => {
+            const unitPrice = parseFloat(product.querySelectorAll(".currency")[0].dataset.value);
+            const quantity = parseInt(product.querySelector(".product-meta span:nth-child(1)").textContent.split(": ")[1]);
+            const productTotal = unitPrice * quantity;
+            total += productTotal;
+
+            // Update displayed prices
+            const priceCells = product.querySelectorAll(".currency");
+            priceCells.forEach(cell => {
+                const value = parseFloat(cell.dataset.value);
+                cell.textContent = currency === "USD" ? (value / 25400).toFixed(2) : value.toFixed(2);
+            });
+        });
+
+        // Update total and currency symbol
+        const finalTotal = currency === "USD" ? total / 25400 : total;
+        document.getElementById("totalPrice").textContent = finalTotal.toFixed(2);
+        document.getElementById("currencySymbol").textContent = currency;
+    }
+
+    // Store original values for currency conversion
+    document.querySelectorAll(".currency").forEach(cell => {
+        cell.dataset.value = cell.textContent;
+    });
+
+    // Initialize currency on page load
     updateCurrency();
 </script>

@@ -3,80 +3,67 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MyEStore</title>
+    <title>@ViewData["Title"] - SIDERGIN - Chăm sóc sức khỏe</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/LayoutStyles.css" asp-append-version="true" />
 </head>
 <body>
     <!-- Header -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-shop"></i> MyEStore
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Danh mục</a>
-                            <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                                @await Component.InvokeAsync("Loai")
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Trang chủ</a>
-                        </li>
+        <div class="logo">  
+                   <a asp-area="" asp-controller="Products" asp-action="Index">
+                       <h1<span class="highlight">S</span>idergin</h1></a>  
+               </div>
+        <nav>
+            <ul>
+                @* <li class="nav-item dropdown">
+                    <a class="dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Danh mục</a>
+                    <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+                        @await Component.InvokeAsync("Loai")
                     </ul>
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
-                                <i class="bi bi-cart"></i> Giỏ hàng
-                                <span class="badge bg-danger" id="cart-count">0</span>
-                            </a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Chào <b>@User.Identity.Name</b></a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li>
-                                    @* <li>
-                                        <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#notificationModal">
-                                            <i class="bi bi-bell"></i> Thông báo
-                                        </a>
-                                    </li> *@
-                                    <li >
-                                            <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
-                                            <i class="bi bi-bell"></i> Thông báo
-                                            @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
-                                            {
-                                                  <span class="badge bg-danger">@ViewData["UpcomingDeliveriesCount"]</span>
-                                            }
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" asp-area="" asp-controller="Customer" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
-                                </ul>
+                </li> *@
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="News" asp-action="Index">Tin tức</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
+                        <i class="bi bi-cart"></i> Giỏ hàng
+                        <span class="badge bg-danger" id="cart-count">0</span>
+                    </a>
+                </li>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <li class="nav-item dropdown">
+                        <a class="dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Chào <b>@User.Identity.Name</b></a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li>
+                            <li>
+                                <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
+                                    <i class="bi bi-bell"></i> Thông báo
+                                    @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
+                                    {
+                                        <span class="badge bg-danger">@ViewData["UpcomingDeliveriesCount"]</span>
+                                    }
+                                </a>
                             </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Customer" asp-action="Register">Đăng ký</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Customer" asp-action="Login">Đăng nhập</a></li>
-                        }
-                    </ul>
-                </div>
-            </div>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" asp-area="" asp-controller="Customer" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Customer" asp-action="Register">Đăng ký</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Customer" asp-action="Login">Đăng nhập</a></li>
+                }
+            </ul>
         </nav>
     </header>
-
-    @RenderSection("Scripts", required: false)
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -84,31 +71,69 @@
         </main>
     </div>
 
-   @*  <!-- Modal Alert -->
-    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-white">
-                    <h5 class="modal-title" id="notificationModalLabel"><i class="bi bi-exclamation-circle"></i> Thông báo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-wave">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100">
+                <path fill="#1A5F7A" fill-opacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+            </svg>
+        </div>
+
+        <div class="footer-wrapper">
+            <div class="footer-content">
+                <div class="brand-column">
+                    <div class="footer-logo">
+                        <h2><span class="highlight">S</span>idergin</h2>
+                    </div>
+                    <p class="brand-description">Chúng tôi cung cấp các sản phẩm bổ sung sắt và vitamin chất lượng cao, giúp cải thiện sức khỏe và tăng cường hệ miễn dịch..</p>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    Chức năng "Thông báo" hiện đang được cập nhật. Vui lòng quay lại sau!
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+
+                <div class="footer-content">
+                    <div class="company-info">
+                        <h3><span class="highlight">S</span>idergin - Nhà phân phối Thuốc Việt số 1</h3>
+                        <div class="contact-grid">
+                            <div class="contact-column">
+                                <p><i class="fas fa-map-marker-alt"></i> 123 Đường Số 1, Quận 1, TP. Hồ Chí Minh</p>
+                                <p><i class="fas fa-id-card"></i> Mã số: 123456789</p>
+                                <p><i class="fas fa-phone"></i> Điện thoại: <a href="tel:0123456789">0123456789</a></p>
+                            </div>
+                            <div class="contact-column">
+                                <p><i class="fab fa-whatsapp"></i> Zalo: <a href="https://zalo.me/0123456789">0123456789</a></p>
+                                <p><i class="fas fa-envelope"></i> Email: <a href="mailto:support@myestore.com">support@myestore.com</a></p>
+                                <p><i class="far fa-clock"></i> Thứ 2 - Thứ 6: 8:00 - 17:30</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer-links">
+                        <h3>Chính sách hỗ trợ</h3>
+                        <ul>
+                            <li><a href="#"><i class="fas fa-angle-right"></i> Chính sách mua hàng</a></li>
+                            <li><a href="#"><i class="fas fa-angle-right"></i> Phương thức thanh toán</a></li>
+                            <li><a href="#"><i class="fas fa-angle-right"></i> Chính sách vận chuyển</a></li>
+                            <li><a href="#"><i class="fas fa-angle-right"></i> Chính sách đổi trả hàng</a></li>
+                            <li><a href="#"><i class="fas fa-angle-right"></i> Bảo mật thông tin khách hàng</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-    </div> *@
 
-    <footer class="border-top footer text-muted bg-dark text-white mt-4">
-        <div class="container text-center py-3">
-            &copy; 2024 - MyEStore - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-light">Privacy</a>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SIDERGIN - Nhà phân phối Thuốc Việt số 1. Tất cả quyền được bảo lưu.</p>
+            <a href="/Home/Privacy">Chính sách bảo mật</a>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

@@ -1,0 +1,235 @@
+﻿<!-- Views/News/Index.cshtml -->
+@model List<NewsItem>
+
+@{
+    ViewData["Title"] = "Tin tức Y tế Việt Nam";
+}
+<link rel="stylesheet" href="~/css/News.css">
+
+<div class="news-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="hero-title">Tin Tức Y Tế Việt Nam</h1>
+                    <p class="hero-subtitle">Tổng hợp tin tức y tế từ các nguồn chính thống uy tín nhất</p>
+                </div>
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="hero-graphic">
+                        <i class="fas fa-heartbeat pulse-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container content-section">
+        <!-- Search and Categories -->
+        <div class="filter-section">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <div class="category-tabs">
+                        <a href="@Url.Action("Index")" class="category-tab @(ViewBag.CurrentCategory == "all" ? "active" : "")">
+                            <i class="fas fa-globe-asia"></i> Tất cả
+                        </a>
+                        <a href="@Url.Action("Index", new { category = "Y tế" })" class="category-tab @(ViewBag.CurrentCategory == "Y tế" ? "active" : "")">
+                            <i class="fas fa-hospital"></i> Y tế
+                        </a>
+                        <a href="@Url.Action("Index", new { category = "Sức khỏe" })" class="category-tab @(ViewBag.CurrentCategory == "Sức khỏe" ? "active" : "")">
+                            <i class="fas fa-heartbeat"></i> Sức khỏe
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="search-box">
+                        <input type="text" id="newsSearch" placeholder="Tìm kiếm tin tức..." class="form-control">
+                        <button type="button" class="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured News (first item highlighted) -->
+        @if (Model.Any())
+        {
+            <div class="featured-news">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="featured-article">
+                            <div class="image-container">
+                                @if (!string.IsNullOrEmpty(Model.First().ImageUrl))
+                                {
+                                    <img src="@Model.First().ImageUrl" alt="@Model.First().Title" class="featured-image">
+                                }
+                                else
+                                {
+                                    <div class="featured-image-placeholder">
+                                        <i class="fas fa-newspaper"></i>
+                                    </div>
+                                }
+                                <div class="overlay-gradient"></div>
+                                <span class="category-badge">@Model.First().Category</span>
+                                @if (Model.First().PublishDate.Date == DateTime.Now.Date)
+                                {
+                                    <span class="trending-badge"><i class="fas fa-bolt"></i> Mới nhất</span>
+                                }
+                            </div>
+                            <div class="featured-content">
+                                <div class="meta-info">
+                                    <div class="source">
+                                        <img src="@Model.First().LogoUrl" alt="@Model.First().SourceName" class="source-logo">
+                                        <span>@Model.First().SourceName</span>
+                                    </div>
+                                    <div class="date">
+                                        <i class="far fa-clock"></i>
+                                        @Model.First().PublishDate.ToString("dd/MM/yyyy HH:mm")
+                                    </div>
+                                </div>
+                                <h2 class="title">@Model.First().Title</h2>
+                                <p class="description">@Model.First().Description</p>
+                                <div class="read-more">
+                                    <a href="@Model.First().Link" target="_blank" class="btn-read">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
+                                    <span class="reading-time"><i class="far fa-file-alt"></i> 5 phút đọc</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="trending-news">
+                            <h3 class="section-title"><i class="fas fa-chart-line"></i> Xu hướng</h3>
+                            <div class="trending-list">
+                                @foreach (var item in Model.Skip(1).Take(3))
+                                {
+                                    <div class="trending-item">
+                                        <span class="number">@(Model.IndexOf(item))</span>
+                                        <div class="trending-content">
+                                            <a href="@item.Link" target="_blank" class="trending-title">@item.Title</a>
+                                            <div class="trending-meta">
+                                                <span class="source">@item.SourceName</span>
+                                                <span class="category">@item.Category</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Latest News Grid -->
+        <div class="latest-news">
+            <h3 class="section-title"><i class="fas fa-newspaper"></i> Tin mới nhất</h3>
+
+            <div class="news-grid">
+                <div class="row g-4">
+                    @foreach (var newsItem in Model.Skip(4))
+                    {
+                        <div class="col-lg-4 col-md-6 news-item-wrapper">
+                            <div class="news-card">
+                                <div class="card-image">
+                                    @if (!string.IsNullOrEmpty(newsItem.ImageUrl))
+                                    {
+                                        <img src="@newsItem.ImageUrl" alt="@newsItem.Title">
+                                    }
+                                    else
+                                    {
+                                        <div class="image-placeholder">
+                                            <i class="fas fa-newspaper"></i>
+                                        </div>
+                                    }
+                                    <span class="category-label">@newsItem.Category</span>
+                                </div>
+                                <div class="card-content">
+                                    <div class="meta-bar">
+                                        <div class="source-info">
+                                            <img src="@newsItem.LogoUrl" alt="@newsItem.SourceName" class="source-icon">
+                                            <span>@newsItem.SourceName</span>
+                                        </div>
+                                        <div class="time-info">
+                                            <i class="far fa-clock"></i>
+                                            @newsItem.PublishDate.ToString("dd/MM/yyyy")
+                                        </div>
+                                    </div>
+                                    <h4 class="news-title">@newsItem.Title</h4>
+                                    <p class="news-excerpt">@newsItem.Description</p>
+                                    <div class="card-footer">
+                                        <a href="@newsItem.Link" target="_blank" class="read-link">Đọc bài viết <i class="fas fa-external-link-alt"></i></a>
+                                        <span class="read-time">4 phút</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="no-results">
+                    <div class="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Không có tin tức phù hợp với tiêu chí tìm kiếm của bạn.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Newsletter Section -->
+        <div class="newsletter-section">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <h3>Nhận tin tức mới nhất</h3>
+                    <p>Đăng ký nhận thông báo về các tin tức y tế mới nhất qua email</p>
+                </div>
+                <div class="col-md-5">
+                    <div class="subscription-form">
+                        <input type="email" placeholder="Email của bạn" class="form-control">
+                        <button type="button" class="subscribe-btn">Đăng ký</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tự động chọn "Tất cả" khi không có tham số
+        if (!window.location.search.includes('category=')) {
+            document.querySelectorAll('.category-tab').forEach(function(tab) {
+                if (tab.textContent.includes('Tất cả')) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        // Tìm kiếm tin tức
+        const searchInput = document.getElementById('newsSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                const newsItems = document.querySelectorAll('.news-item-wrapper');
+
+                newsItems.forEach(function(item) {
+                    const title = item.querySelector('.news-title').textContent.toLowerCase();
+                    const description = item.querySelector('.news-excerpt').textContent.toLowerCase();
+
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
