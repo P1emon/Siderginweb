@@ -1,0 +1,80 @@
+﻿@model dynamic
+@Html.Partial("livechat")
+<link rel="stylesheet" href="~/css/Orderdetail.css" />
+<div class="container">
+    <h2>Chi tiết đơn hàng (ID: @Model.MaHd)</h2>
+    <p><strong>Ngày đặt:</strong> @Model.NgayDat.ToString("dd/MM/yyyy")</p>
+    <p><strong>Khách hàng:</strong> @Model.HoTen</p>
+    <p><strong>Địa chỉ:</strong> @Model.DiaChi</p>
+    <p><strong>Phương thức thanh toán:</strong> @Model.CachThanhToan</p>
+
+    <div class="currency-select">
+        <label for="currency">Chọn đơn vị tiền tệ: </label>
+        <select id="currency" onchange="updateCurrency()">
+            <option value="VND">VND</option>
+            <option value="USD">USD</option>
+        </select>
+    </div>
+
+    <h3>Sản phẩm</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Hình ảnh</th>
+                <th>Tên sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Tổng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.Products)
+            {
+                <tr>
+                    <td>
+                        <img src="~/Hinh/HangHoa/@product.Hinh" alt="@product.ProductName" class="img-product" />
+                    </td>
+                    <td>@product.ProductName</td>
+                    <td>@product.SoLuong</td>
+                    <td>@product.DonGia</td>
+                    <td class="currency">@product.DonGia * @product.SoLuong</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="total-price">
+        <p><strong>Tổng cộng: </strong><span id="totalPrice"></span> <span id="currencySymbol">VND</span></p>
+    </div>
+
+    <button class="btn" onclick="window.print()">In đơn hàng</button>
+</div>
+
+<script>
+    // Calculate total based on selected currency
+    function updateCurrency() {
+        var currency = document.getElementById("currency").value;
+        var total = 0;
+
+        // Get all rows of the table
+        var rows = document.querySelectorAll("table tbody tr");
+        rows.forEach(function(row) {
+            var unitPrice = parseFloat(row.cells[3].textContent);  // Unit price
+            var quantity = parseInt(row.cells[2].textContent);  // Quantity
+            total += unitPrice * quantity;
+        });
+
+        // Update total value based on currency selected
+        if (currency === "USD") {
+            total /= 25400;  // Convert VND to USD (1 USD = 25,000 VND)
+            document.getElementById("currencySymbol").textContent = "USD";
+        } else {
+            document.getElementById("currencySymbol").textContent = "VND";
+        }
+
+        document.getElementById("totalPrice").textContent = total.toFixed(2);
+    }
+
+    // Call function to calculate total when the page loads
+    updateCurrency();
+</script>

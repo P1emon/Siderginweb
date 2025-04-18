@@ -1,0 +1,188 @@
+﻿@model MyEStore.Models.ProfileVM
+
+<!-- Profile Page -->
+<div class="container py-5" id="profilePage">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient text-black text-center position-relative">
+            <h5 class="fw-bold">Thông tin cá nhân</h5>
+            <i class="bi bi-x-lg text-danger position-absolute top-0 end-0 m-2" id="closeProfilePage" role="button" aria-label="Close"></i>
+        </div>
+        <div class="card-body p-5">
+            <form asp-action="Profile" method="post" id="profileForm">
+                <!-- Full Name -->
+                <div class="mb-4 position-relative">
+                    <label asp-for="FullName" class="form-label fw-bold">Họ và Tên</label>
+                    <input asp-for="FullName" class="form-control form-control-lg" readonly />
+                    <i class="bi bi-pencil-square text-primary position-absolute top-50 end-0 translate-middle-y me-3" role="button" aria-label="Edit" onclick="toggleEdit(this, 'FullName')"></i>
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-4 position-relative">
+                    <label asp-for="Email" class="form-label fw-bold">Email</label>
+                    <input asp-for="Email" type="email" class="form-control form-control-lg" readonly />
+                    <i class="bi bi-pencil-square text-primary position-absolute top-50 end-0 translate-middle-y me-3" role="button" aria-label="Edit" onclick="toggleEdit(this, 'Email')"></i>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary btn-lg" id="saveBtn" disabled>Lưu thông tin</button>
+                    <button type="button" class="btn btn-outline-primary btn-lg" id="changePasswordBtn">Đổi mật khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Page -->
+<div class="container py-5" id="changePasswordPage" style="display:none">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient text-black text-center">
+            <h5 class="fw-bold">Đổi mật khẩu</h5>
+            <i class="bi bi-x-lg text-danger position-absolute top-0 end-0 m-2" id="closeChangePasswordPage" role="button" aria-label="Close"></i>
+        </div>
+        <div class="card-body p-5">
+            <form asp-action="ChangePassword" method="post">
+                <!-- Current Password -->
+                <div class="mb-4">
+                    <label asp-for="Password" class="form-label fw-bold">Mật khẩu hiện tại</label>
+                    <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu hiện tại" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <!-- New Password -->
+                <div class="mb-4">
+                    <label asp-for="NewPassword" class="form-label fw-bold">Mật khẩu mới</label>
+                    <input asp-for="NewPassword" type="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu mới" required />
+                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label asp-for="ConfirmPassword" class="form-label fw-bold">Nhập lại mật khẩu</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" placeholder="Nhập lại mật khẩu mới" required />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <!-- Save Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">Đổi mật khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Transition Effect Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const changePasswordBtn = document.getElementById("changePasswordBtn");
+        const profilePage = document.getElementById("profilePage");
+        const changePasswordPage = document.getElementById("changePasswordPage");
+        const closeProfilePage = document.getElementById("closeProfilePage");
+        const closeChangePasswordPage = document.getElementById("closeChangePasswordPage");
+
+        changePasswordBtn.addEventListener("click", function () {
+            profilePage.style.transition = "opacity 0.5s";
+            profilePage.style.opacity = "0";
+            setTimeout(() => {
+                profilePage.style.display = "none";
+                changePasswordPage.style.display = "block";
+                changePasswordPage.style.opacity = "0";
+                changePasswordPage.style.transition = "opacity 0.5s";
+                setTimeout(() => {
+                    changePasswordPage.style.opacity = "1";
+                }, 10);
+            }, 500);
+        });
+
+        closeProfilePage.addEventListener("click", function () {
+            profilePage.style.transition = "opacity 0.5s";
+            profilePage.style.opacity = "0";
+            setTimeout(() => {
+                history.back();
+            }, 500);
+        });
+
+        closeChangePasswordPage.addEventListener("click", function () {
+            changePasswordPage.style.transition = "opacity 0.5s";
+            changePasswordPage.style.opacity = "0";
+            setTimeout(() => {
+                history.back();
+            }, 500);
+        });
+    });
+</script>
+<script>
+    // Toggle edit mode for input fields
+    function toggleEdit(icon, fieldName) {
+        const input = document.querySelector(`[name="${fieldName}"]`);
+        if (input.hasAttribute('readonly')) {
+            input.removeAttribute('readonly');
+            icon.classList.replace('bi-pencil-square', 'bi-check-square');
+            document.getElementById('saveBtn').disabled = false;
+        } else {
+            input.setAttribute('readonly', '');
+            icon.classList.replace('bi-check-square', 'bi-pencil-square');
+        }
+    }
+</script>
+
+<!-- Styling -->
+<style>
+    /* Header Gradient */
+    .card-header.bg-gradient {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+    }
+
+    /* Card Design */
+    .card {
+        border-radius: 20px;
+    }
+
+    /* Form Control Styling */
+    .form-control-lg {
+        border-radius: 10px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        .form-control-lg:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 8px rgba(106, 17, 203, 0.5);
+        }
+
+    /* Button Styling */
+    .btn-primary {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+        }
+
+    .btn-outline-primary {
+        border-color: #6a11cb;
+        color: #6a11cb;
+    }
+
+        .btn-outline-primary:hover {
+            background: #6a11cb;
+            color: #fff;
+        }
+
+    /* Close Icon Styling */
+    .bi-x-lg {
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+        .bi-x-lg.text-danger {
+            color: red;
+        }
+
+            .bi-x-lg.text-danger:hover {
+                color: darkred;
+            }
+</style>
