@@ -53,12 +53,16 @@ public partial class MyeStoreContext : DbContext
 
     public virtual DbSet<YeuThich> YeuThiches { get; set; }
 
+    public virtual DbSet<HangHoaChiTiet> HangHoaChiTiets { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=LAPTOP-QBAUIQJE\\PIEMON;Initial Catalog=MyESidergin;Integrated Security=True;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<HangHoa>().Ignore(hh => hh.HangHoaChiTiet);
+
         modelBuilder.Entity<BanBe>(entity =>
         {
             entity.HasKey(e => e.MaBb).HasName("PK_Promotions");
@@ -149,6 +153,25 @@ public partial class MyeStoreContext : DbContext
                 .HasForeignKey(d => d.MaCd)
                 .HasConstraintName("FK_GopY_ChuDe");
         });
+        modelBuilder.Entity<HangHoaChiTiet>(entity =>
+        {
+            entity.HasKey(e => e.MaChiTiet); // Primary key
+            entity.HasIndex(e => e.MaHh).IsUnique(); // Ensure MaHh is unique
+
+            entity.Property(e => e.CongDung).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.DoiTuongSuDung).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.QuyCachDongGoi).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ThanhPhan).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.CongNgheDacBiet).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.LoiIchNoiBat).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.LuuY).IsRequired().HasMaxLength(500);
+
+            entity.HasOne(h => h.HangHoa)
+                .WithOne(c => c.HangHoaChiTiet)
+                .HasForeignKey<HangHoaChiTiet>(c => c.MaHh)
+                .OnDelete(DeleteBehavior.Cascade); // Ensure proper delete behavior
+        });
+
 
         modelBuilder.Entity<HangHoa>(entity =>
         {
@@ -171,6 +194,10 @@ public partial class MyeStoreContext : DbContext
             entity.Property(e => e.TenHh)
                 .HasMaxLength(50)
                 .HasColumnName("TenHH");
+
+            entity.HasOne(h => h.HangHoaChiTiet)
+            .WithOne(c => c.HangHoa)
+            .HasForeignKey<HangHoaChiTiet>(c => c.MaHh);
 
             entity.HasOne(d => d.MaLoaiNavigation).WithMany(p => p.HangHoas)
                 .HasForeignKey(d => d.MaLoai)

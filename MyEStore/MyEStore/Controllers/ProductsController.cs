@@ -3,6 +3,7 @@ using MyEStore.Entities;
 using System.Linq;
 using MyEStore.Helpers;
 using MyEStore.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyEStore.Controllers
 {
@@ -18,21 +19,19 @@ namespace MyEStore.Controllers
         [HttpGet("san-pham/{categorySlug}/{productSlug}")]
         public IActionResult Detail(string categorySlug, string productSlug)
         {
-            // Lấy sản phẩm từ slug
-            var hangHoa = _ctx.HangHoas.SingleOrDefault(p => p.TenAlias == productSlug);
+            // Lấy sản phẩm từ slug, bao gồm thông tin chi tiết và danh mục
+            var hangHoa = _ctx.HangHoas
+                .Include(h => h.HangHoaChiTiet) // Sửa từ HangHoaChiTiets thành HangHoaChiTiet
+                .Include(h => h.MaLoaiNavigation)
+                .SingleOrDefault(p => p.TenAlias == productSlug);
+
             if (hangHoa == null)
             {
                 return NotFound();
             }
 
-            // Kiểm tra slug của danh mục để đảm bảo URL đúng
-            var loai = _ctx.Loais.SingleOrDefault(l => l.MaLoai == hangHoa.MaLoai);
-            if (loai == null)
-            {
-                return NotFound();
-            }
-
-            var expectedCategorySlug = SlugHelper.GenerateSlug(loai.TenLoaiAlias);
+            // Kiểm tra slug của danh mục
+            var expectedCategorySlug = SlugHelper.GenerateSlug(hangHoa.MaLoaiNavigation.TenLoaiAlias);
 
             // Nếu categorySlug không khớp, chuyển hướng đến URL chính xác
             if (categorySlug != expectedCategorySlug)
@@ -40,28 +39,24 @@ namespace MyEStore.Controllers
                 return RedirectToActionPermanent("Detail", new { categorySlug = expectedCategorySlug, productSlug });
             }
 
-            // Truyền slug hình ảnh và các thông tin cần thiết vào ViewData
+            // Truyền slug hình ảnh
             ViewData["ImageUrl"] = "~/Hinh/HangHoa/" + hangHoa.Hinh;
 
             return View(hangHoa);
         }
 
+        // Các action khác (Index, Search) giữ nguyên
         public IActionResult Index(int? cateid, int page = 1, int pageSize = 10)
         {
             var data = _ctx.HangHoas.AsQueryable();
 
             if (cateid.HasValue)
             {
-                // Lọc theo MaLoai
                 data = data.Where(hh => hh.MaLoai == cateid.Value);
-
-                // Lấy tên loại tương ứng
                 var tenLoai = _ctx.Loais
                     .Where(l => l.MaLoai == cateid.Value)
                     .Select(l => l.TenLoai)
                     .FirstOrDefault();
-
-                // Gán tên loại vào ViewData["Title"]
                 ViewData["Title"] = tenLoai ?? "Danh sách hàng hóa";
             }
             else
@@ -69,12 +64,9 @@ namespace MyEStore.Controllers
                 ViewData["Title"] = "Danh sách hàng hóa";
             }
 
-            // Tổng số sản phẩm
             int totalItems = data.Count();
-
-            // Lấy dữ liệu phân trang
             var result = data
-                .OrderBy(hh => hh.MaHh) // Sắp xếp theo mã sản phẩm (hoặc thuộc tính khác)
+                .OrderBy(hh => hh.MaHh)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(hh => new HangHoaVM
@@ -86,10 +78,9 @@ namespace MyEStore.Controllers
                     Hinh = hh.Hinh
                 }).ToList();
 
-            // Truyền thêm dữ liệu phân trang
             ViewData["CurrentPage"] = page;
             ViewData["TotalPages"] = (int)Math.Ceiling((double)totalItems / pageSize);
-            ViewData["CateId"] = cateid; // Truyền cateid để giữ nguyên danh mục
+            ViewData["CateId"] = cateid;
 
             return View(result);
         }
@@ -115,6 +106,5 @@ namespace MyEStore.Controllers
             ViewData["Title"] = $"Kết quả tìm kiếm cho '{query}'";
             return View("Index", results);
         }
-
     }
 }

@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<MyeStoreContext>(options => {
-	options.UseSqlServer(builder.Configuration.GetConnectionString("MyDb"));
+builder.Services.AddDbContext<MyeStoreContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyDb"));
 });
 
 builder.Services.AddDistributedMemoryCache();
@@ -26,13 +27,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Forbidden/";
     });
 
-//đăng ký PaymentClient dạng Singleton
+// Register PaymentClient as Singleton
 builder.Services.AddSingleton(x =>
-	new PaypalClient(
-		builder.Configuration["PayPalOptions:ClientId"],
-		builder.Configuration["PayPalOptions:ClientSecret"],
-		builder.Configuration["PayPalOptions:Mode"]
-	)
+    new PaypalClient(
+        builder.Configuration["PayPalOptions:ClientId"],
+        builder.Configuration["PayPalOptions:ClientSecret"],
+        builder.Configuration["PayPalOptions:Mode"]
+    )
 );
 
 builder.Services.AddSingleton<IVnpayService, VnPayService>();
@@ -42,14 +43,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-	app.UseExceptionHandler("/Home/Error");
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-	app.UseHsts();
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
-
-
-
-app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -60,25 +56,26 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
 
 app.MapControllerRoute(
-	name: "default",
-	pattern: "{controller=Products}/{action=Index}/{id?}");
+    name: "default",
+    pattern: "{controller=Products}/{action=Index}/{id?}"
+);
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "productDetail",
-        pattern: "san-pham/{categorySlug}/{productSlug}",
-        defaults: new { controller = "Products", action = "Detail" });
+app.MapControllerRoute(
+    name: "productDetail",
+    pattern: "san-pham/{categorySlug}/{productSlug}",
+    defaults: new { controller = "Products", action = "Detail" }
+);
 
-    endpoints.MapDefaultControllerRoute();
-});
 app.MapControllerRoute(
     name: "search",
     pattern: "tim-kiem",
-    defaults: new { controller = "Products", action = "Search" });
-
+    defaults: new { controller = "Products", action = "Search" }
+);
 
 app.Run();

@@ -1,0 +1,188 @@
+﻿@model MyEStore.Models.HangHoaVM
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Thêm sản phẩm | Admin MyEStore</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/register.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container my-5">
+        <div class="register-container bg-white p-5 rounded-3 shadow-lg">
+            <h2 class="fw-bold text-center mb-4">Thêm <span class="text-highlight">sản phẩm</span> mới</h2>
+            <form asp-action="AddProduct" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger text-center" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                    </div>
+                }
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success text-center" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    </div>
+                }
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="MaHh" class="form-label">
+                                <i class="fas fa-barcode me-2 text-primary"></i>Mã hàng hóa
+                            </label>
+                            <input asp-for="MaHh" class="form-control" placeholder="Nhập mã hàng hóa" />
+                            <span asp-validation-for="MaHh" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="TenHh" class="form-label">
+                                <i class="fas fa-box me-2 text-primary"></i>Tên hàng hóa
+                            </label>
+                            <input asp-for="TenHh" class="form-control" placeholder="Nhập tên hàng hóa" />
+                            <span asp-validation-for="TenHh" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="TenAlias" class="form-label">
+                                <i class="fas fa-tag me-2 text-primary"></i>Tên alias
+                            </label>
+                            <input asp-for="TenAlias" class="form-control" placeholder="Nhập tên alias" />
+                            <span asp-validation-for="TenAlias" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="MaLoai" class="form-label">
+                                <i class="fas fa-layer-group me-2 text-primary"></i>Loại hàng hóa
+                            </label>
+                            <select asp-for="MaLoai" class="form-control" asp-items="@ViewBag.LoaiList">
+                                <option value="">-- Chọn loại --</option>
+                            </select>
+                            <span asp-validation-for="MaLoai" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="MaNcc" class="form-label">
+                                <i class="fas fa-truck me-2 text-primary"></i>Nhà cung cấp
+                            </label>
+                            <select asp-for="MaNcc" class="form-control" asp-items="@ViewBag.NhaCungCapList">
+                                <option value="">-- Chọn nhà cung cấp --</option>
+                            </select>
+                            <span asp-validation-for="MaNcc" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="DonGia" class="form-label">
+                                <i class="fas fa-money-bill me-2 text-primary"></i>Đơn giá
+                            </label>
+                            <input asp-for="DonGia" type="number" step="0.01" class="form-control" placeholder="Nhập đơn giá" />
+                            <span asp-validation-for="DonGia" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="MoTaDonVi" class="form-label">
+                                <i class="fas fa-ruler me-2 text-primary"></i>Mô tả đơn vị
+                            </label>
+                            <input asp-for="MoTaDonVi" class="form-control" placeholder="Nhập mô tả đơn vị (VD: Hộp, Chai)" />
+                            <span asp-validation-for="MoTaDonVi" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group input-animation">
+                            <label asp-for="GiamGia" class="form-label">
+                                <i class="fas fa-percent me-2 text-primary"></i>Giảm giá (%)
+                            </label>
+                            <input asp-for="GiamGia" type="number" step="0.01" class="form-control" placeholder="Nhập % giảm giá" />
+                            <span asp-validation-for="GiamGia" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-group input-animation">
+                        <label asp-for="NgaySx" class="form-label">
+                            <i class="fas fa-calendar me-2 text-primary"></i>Ngày sản xuất
+                        </label>
+                        <input asp-for="NgaySx" type="date" class="form-control" />
+                        <span asp-validation-for="NgaySx" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-group input-animation">
+                        <label asp-for="Hinh" class="form-label">
+                            <i class="fas fa-image me-2 text-primary"></i>Hình ảnh
+                        </label>
+                        <input type="file" name="HinhFile" class="form-control" accept="image/*" />
+                        <span asp-validation-for="Hinh" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="form-group input-animation">
+                        <label asp-for="MoTa" class="form-label">
+                            <i class="fas fa-comment me-2 text-primary"></i>Mô tả
+                        </label>
+                        <textarea asp-for="MoTa" class="form-control" rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
+                        <span asp-validation-for="MoTa" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-register py-3">
+                        <i class="fas fa-plus me-2"></i>Thêm sản phẩm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        @if (TempData["Success"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    html: '@TempData["Success"].ToString().Replace("; ", "<br>")',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3a86ff'
+                });
+            </text>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    html: '@TempData["Error"].ToString().Replace("; ", "<br>")',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3a86ff'
+                });
+            </text>
+        }
+    </script>
+</body>
+</html>
