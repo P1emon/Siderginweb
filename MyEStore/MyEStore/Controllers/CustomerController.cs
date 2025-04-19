@@ -9,12 +9,15 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
 using System.Net;
 using System.Security.Cryptography;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace MyEStore.Controllers
 {
     public class CustomerController : Controller
     {
         private readonly MyeStoreContext _ctx;
+        private readonly HttpClient _httpClient = new HttpClient();
         public CustomerController(MyeStoreContext ctx)
         {
             _ctx = ctx;
@@ -271,6 +274,33 @@ namespace MyEStore.Controllers
             return View("ActivationResult");
         }
 
+
+        private async Task<bool> IsRealEmail(string email)
+        {
+            string apiKey = "03424848e67c47c19fe0a512b4b8d768"; // Thay bằng key bạn nhận được
+            string requestUrl = $"https://emailvalidation.abstractapi.com/v1/?api_key={apiKey}&email={email}";
+
+            try
+            {
+                var response = await _httpClient.GetAsync(requestUrl);
+                if (!response.IsSuccessStatusCode)
+                    return false;
+
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<EmailVerificationResult>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                // Bạn có thể kiểm tra nhiều thuộc tính hơn nếu muốn
+                return result.Deliverability == "DELIVERABLE";
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -291,6 +321,13 @@ namespace MyEStore.Controllers
                 ViewBag.ThongBao = "Username or Email already exists.";
                 return View(model);
             }
+            // Kiểm tra email có thực sự tồn tại không
+            if (!await IsRealEmail(model.Email))
+            {
+                ViewBag.ThongBao = "Email không hợp lệ hoặc không tồn tại. Vui lòng sử dụng địa chỉ email thực.";
+                return View(model);
+            }
+
 
             var randomKey = GenerateRandomKey();
             var activationCode = Guid.NewGuid().ToString();
@@ -317,38 +354,46 @@ namespace MyEStore.Controllers
 
             var activationLink = Url.Action("ActivateAccount", "Customer", new { code = activationCode }, Request.Scheme);
             var message = $@"
-            <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
-                <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
-                    <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
-                        <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
-                        <p style='color: #666; margin: 5px 0 0;'>Chào mừng bạn đến với SiderGin!</p>
-                    </div>
-                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {newCustomer.HoTen},</h2>
-                    <p style='line-height: 1.6; margin-bottom: 20px;'>Cảm ơn bạn đã đăng ký tài khoản tại <strong>SiderGin</strong>. Vui lòng kích hoạt tài khoản của bạn trong vòng <strong>5 phút</strong> bằng cách nhấp vào liên kết bên dưới:</p>
-                    <div style='text-align: center; margin: 25px 0;'>
-                        <a href='{activationLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Kích hoạt tài khoản</a>
-                    </div>
-                    <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu gửi lại email kích hoạt tại trang đăng nhập.</p>
-                    <p style='line-height: 1.6;'>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi qua:</p>
-                    <div style='display: flex; margin: 15px 0 25px;'>
-                        <div style='margin-right: 20px;'>
-                            <p style='margin: 0; color: #666;'>
-                                <span style='font-size: 16px;'>📞</span> Hotline
-                            </p>
-                            <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
-                        </div>
-                        <div>
-                            <p style='margin: 0; color: #666;'>
-                                <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
-                            </p>
-                            <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
-                        </div>
-                    </div>
-                    <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
-                        <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
-                    </div>
-                </div>
-            </div>";
+  <html>
+  <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Kích hoạt tài khoản SiderGin</title>
+  </head>
+  <body style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+      <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+          <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+              <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+              <p style='color: #666; margin: 5px 0 0;'>Chào mừng bạn đến với SiderGin!</p>
+          </div>
+          <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {newCustomer.HoTen},</h2>
+          <p style='line-height: 1.6; margin-bottom: 20px;'>Cảm ơn bạn đã đăng ký tài khoản tại <strong>SiderGin</strong>. Vui lòng kích hoạt tài khoản của bạn trong vòng <strong>5 phút</strong> bằng cách nhấp vào liên kết bên dưới:</p>
+          <div style='text-align: center; margin: 25px 0;'>
+              <a href='{activationLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Kích hoạt tài khoản</a>
+          </div>
+          <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu gửi lại email kích hoạt tại trang đăng nhập.</p>
+          <p style='line-height: 1.6;'>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi qua:</p>
+          <div style='display: flex; margin: 15px 0 25px;'>
+              <div style='margin-right: 20px;'>
+                  <p style='margin: 0; color: #666;'>
+                      <span style='font-size: 16px;'>📞</span> Hotline
+                  </p>
+                  <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+              </div>
+              <div>
+                  <p style='margin: 0; color: #666;'>
+                      <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                  </p>
+                  <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+              </div>
+          </div>
+          <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+              <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+          </div>
+      </div>
+  </body>
+  </html>";
+
 
             await SendEmail(newCustomer.Email, "Kích hoạt tài khoản SiderGin", message);
 
@@ -682,7 +727,6 @@ namespace MyEStore.Controllers
             }
             return Convert.ToBase64String(randomBytes);
         }
-
         private async Task SendEmail(string toEmail, string subject, string message)
         {
             var client = new SmtpClient("smtp.gmail.com")
@@ -697,9 +741,21 @@ namespace MyEStore.Controllers
                 From = new MailAddress("truongminhduc4002@gmail.com", "Sidergin Support"),
                 Subject = subject,
                 Body = message,
-                IsBodyHtml = true
+                IsBodyHtml = true,
+                Priority = MailPriority.Normal,
+                HeadersEncoding = System.Text.Encoding.UTF8,
+                SubjectEncoding = System.Text.Encoding.UTF8,
+                BodyEncoding = System.Text.Encoding.UTF8
             };
+
             mailMessage.To.Add(toEmail);
+            mailMessage.ReplyToList.Add(new MailAddress("truongminhduc4002@gmail.com", "Sidergin Support"));
+
+            // Header chuẩn hóa
+            mailMessage.Headers.Add("X-Priority", "3");
+            mailMessage.Headers.Add("X-MSMail-Priority", "Normal");
+            mailMessage.Headers.Add("Importance", "Normal");
+            mailMessage.Headers.Add("X-Mailer", "Sidergin App");
 
             try
             {
@@ -711,6 +767,7 @@ namespace MyEStore.Controllers
                 throw;
             }
         }
+
 
         public IActionResult Thongbao()
         {

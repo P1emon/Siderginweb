@@ -57,7 +57,7 @@ public partial class MyeStoreContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-QBAUIQJE\\PIEMON;Initial Catalog=MyESidergin;Integrated Security=True;Trust Server Certificate=True");
+        => optionsBuilder.UseSqlServer("Data Source=ACERNITRO5\\ACERSERVER;Initial Catalog=MyESidergin;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -286,21 +286,32 @@ public partial class MyeStoreContext : DbContext
             entity.Property(e => e.MaKh)
                 .HasMaxLength(20)
                 .HasColumnName("MaKH");
-            entity.Property(e => e.DiaChi).HasMaxLength(60);
+
+            entity.Property(e => e.DiaChi)
+                .HasColumnType("nvarchar(max)");
+
             entity.Property(e => e.DienThoai).HasMaxLength(24);
+
             entity.Property(e => e.Email).HasMaxLength(50);
+
             entity.Property(e => e.Hinh)
                 .HasMaxLength(50)
                 .HasDefaultValue("Photo.gif");
+
             entity.Property(e => e.HoTen).HasMaxLength(50);
-            entity.Property(e => e.MatKhau).HasMaxLength(50);
+
+            entity.Property(e => e.MatKhau)
+                .HasColumnType("nvarchar(max)");
+
             entity.Property(e => e.NgaySinh)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.RandomKey)
                 .HasMaxLength(50)
                 .IsUnicode(false);
         });
+
 
         modelBuilder.Entity<Loai>(entity =>
         {
