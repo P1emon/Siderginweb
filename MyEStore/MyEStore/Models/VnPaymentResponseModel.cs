@@ -2,6 +2,8 @@
 {
     public class VnPaymentResponseModel
     {
+        internal string ResponseCode;
+
         public bool Success { get; set; }
         public string PaymentMethod { get; set; }
         public string OrderDescription { get; set; }

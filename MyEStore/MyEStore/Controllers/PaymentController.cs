@@ -280,9 +280,9 @@ namespace MyEStore.Controllers
                         DiaChi = customerAddress,
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
-                        MaTrangThai = 0,
+                        MaTrangThai = 1,
                         NgayGiao = ngayGiaoDate,
-                        GhiChu = $"reference_id={reference}, transactionId={transactionId}"
+                        GhiChu = $"Thanh toán thành công, reference_id={reference}, transactionId={transactionId}"
                     };
                     _ctx.Add(hoaDon);
                     _ctx.SaveChanges();
@@ -300,11 +300,28 @@ namespace MyEStore.Controllers
                         _ctx.Add(cthd);
                     }
                     _ctx.SaveChanges();
+                    try
+                    {
+                        string customerEmail = userProfile?.Email ?? "Không rõ";
+                        string userName = userProfile?.HoTen ?? hoaDon.HoTen;
+                        string phone = userProfile?.DienThoai ?? "Không rõ";
+                        string adminEmail = _configuration["EmailSettings:AdminEmail"] ?? "phannguyendangkhoa0915@gmail.com";
+
+                        await SendCustomerEmail(customerEmail, hoaDon, phone, userName);
+                        await SendAdminEmail(adminEmail, hoaDon, phone, userName, customerEmail);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Lỗi khi gửi email Paypal");
+                    }
 
                     HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
                     TempData["TransactionId"] = transactionId;
                     TempData["ReferenceId"] = reference;
+                    // Gửi email cho khách hàng và admin
+
+
 
                     return RedirectToAction("Success");
                 }
@@ -415,6 +432,10 @@ namespace MyEStore.Controllers
         {
             return View();
         }
+        public IActionResult VnpayCancel()
+        {
+            return View();
+        }
         [HttpGet]
         [HttpPost]
         [Route("Payment/VnpayCallback")]
@@ -422,12 +443,10 @@ namespace MyEStore.Controllers
         {
             try
             {
-                // Lấy phản hồi từ VNPay
                 var response = _vnpayService.PaymentExcute(Request.Query);
 
-                if (response.Success)
+                if (response.ResponseCode == "00" && response.Success)
                 {
-                    // Kiểm tra hóa đơn đã tồn tại dựa trên TransactionId
                     var existingOrder = _ctx.HoaDons.FirstOrDefault(h => h.GhiChu.Contains($"TransactionId={response.TransactionId}"));
 
                     if (existingOrder != null)
@@ -436,7 +455,6 @@ namespace MyEStore.Controllers
                         return View("Success");
                     }
 
-                    // Tìm hóa đơn đang chờ thanh toán dựa trên OrderId
                     var pendingOrder = _ctx.HoaDons.FirstOrDefault(h =>
                         h.GhiChu.Contains("Đang chờ thanh toán VNPay") && h.MaTrangThai == 0);
 
@@ -444,21 +462,16 @@ namespace MyEStore.Controllers
 
                     if (pendingOrder != null)
                     {
-                        pendingOrder.MaTrangThai = 1; // Hoàn tất
+                        pendingOrder.MaTrangThai = 1;
                         pendingOrder.GhiChu = $"Thanh toán thành công, TransactionId={response.TransactionId}";
                         _ctx.SaveChanges();
 
                         hoaDon = pendingOrder;
-
-                        // Xóa giỏ hàng sau khi thanh toán thành công
                         HttpContext.Session.Set(CART_KEY, new List<CartItem>());
-
                         ViewBag.Message = "Thanh toán thành công!";
                     }
-
                     else
                     {
-                        // Nếu không tìm thấy hóa đơn đang chờ, tạo mới
                         hoaDon = new HoaDon
                         {
                             MaKh = User.FindFirstValue("UserId"),
@@ -467,16 +480,15 @@ namespace MyEStore.Controllers
                             DiaChi = "N/A",
                             CachThanhToan = response.PaymentMethod,
                             CachVanChuyen = "N/A",
-                            MaTrangThai = 1, // Hoàn tất
+                            MaTrangThai = 1,
                             GhiChu = $"TransactionId={response.TransactionId}, OrderId={response.OrderId}"
                         };
                         _ctx.Add(hoaDon);
                         _ctx.SaveChanges();
 
-                        ViewBag.Message = "Thanh toán thành công!";
+                        
                     }
 
-                    // Gửi email
                     try
                     {
                         var userId = User.FindFirstValue("UserId");
@@ -497,10 +509,15 @@ namespace MyEStore.Controllers
 
                     return View("Success");
                 }
+                else if (response.ResponseCode == "24")
+                {
+                    ViewBag.Message = "Bạn đã hủy giao dịch. Thanh toán chưa được thực hiện.";
+                    return View("VnpayCancel"); // Trang bạn cần tạo để hiển thị thông báo hủy
+                }
                 else
                 {
-                    ViewBag.Message = $"Thanh toán thất bại: {response.Message}";
-                    return View("VnpayFail");
+                    ViewBag.Message = $"Giao dịch không thành công: {response.Message}";
+                    return View("VnpayCancel");
                 }
             }
             catch (Exception ex)
@@ -509,6 +526,7 @@ namespace MyEStore.Controllers
                 return View("MomoFail");
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> CodPayment(DateTime ngayGiao)
         {
