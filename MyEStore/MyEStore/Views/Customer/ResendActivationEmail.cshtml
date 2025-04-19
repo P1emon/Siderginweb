@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Gửi lại email kích hoạt";
+}
+
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; background-color: #f8f9fa; border-radius: 10px; text-align: center;">
+    <h2 style="color: #0066cc;">Gửi lại email kích hoạt</h2>
+    <p>Vui lòng nhập email bạn đã sử dụng để đăng ký tài khoản.</p>
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            @ViewBag.SuccessMessage
+        </div>
+        <a href="@Url.Action("Login", "Customer")" style="display: inline-block; padding: 10px 20px; background-color: #0066cc; color: #fff; text-decoration: none; border-radius: 5px;">Quay lại đăng nhập</a>
+    }
+    else
+    {
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
+        <form asp-action="ResendActivationEmail" method="post">
+            <div style="margin-bottom: 20px;">
+                <input type="email" name="email" placeholder="Nhập email của bạn" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;" required />
+            </div>
+            <button type="submit" style="padding: 10px 20px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Gửi email kích hoạt</button>
+        </form>
+    }
+</div>

@@ -17,6 +17,8 @@ public partial class KhachHang
 
     public string? DiaChi { get; set; }
 
+    public string? DiaChiPhu { get; set; }
+
     public string? DienThoai { get; set; }
 
     public string Email { get; set; } = null!;
@@ -28,6 +30,22 @@ public partial class KhachHang
     public int VaiTro { get; set; }
 
     public string? RandomKey { get; set; }
+
+    public string? ActivationCode { get; set; }
+
+    public DateTime? ActivationCodeExpiry { get; set; }
+
+    public DateTime NgayTaoTaiKhoan { get; set; }
+
+    public DateTime? DangNhapLanCuoi { get; set; }
+
+    public int Diem { get; set; }
+
+    public int FailedLoginAttempts { get; set; } = 0;
+
+    public bool IsLocked { get; set; } = false;
+
+    public DateTime? LockoutEnd { get; set; }
 
     public virtual ICollection<BanBe> BanBes { get; set; } = new List<BanBe>();
 

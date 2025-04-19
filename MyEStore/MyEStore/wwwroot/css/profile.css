@@ -1,7 +1,7 @@
 ﻿:root {
-    --primary-color: #2c3e50; /* Dark blue-gray */
-    --secondary-color: #f8f9fa; /* Light gray */
-    --accent-color: #007bff; /* Bootstrap primary blue */
+    --primary-color: #2c3e50;  Dark blue-gray 
+    --secondary-color: #f8f9fa;  Light gray 
+    --accent-color: #007bff;  Bootstrap primary blue 
     --border-color: #dee2e6;
     --text-muted: #6c757d;
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);

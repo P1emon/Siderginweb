@@ -1,5 +1,4 @@
-﻿
-:root {
+﻿:root {
     --primary-color: #3a86ff;
     --secondary-color: #ff006e;
     --accent-color: #8338ec;
@@ -213,6 +212,15 @@ body {
         color: var(--accent-color);
         text-decoration: underline;
     }
+
+.text-danger {
+    background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
 .feature-item {
     display: flex;

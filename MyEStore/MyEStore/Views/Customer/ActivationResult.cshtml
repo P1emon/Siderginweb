@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Kích hoạt tài khoản";
+}
+
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 10px;">
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <h2 style="color: #28a745;">Kích hoạt thành công!</h2>
+        <p>@ViewBag.SuccessMessage</p>
+        <a href="@Url.Action("Login", "Customer")" style="display: inline-block; padding: 10px 20px; background-color: #0066cc; color: #fff; text-decoration: none; border-radius: 5px;">Đăng nhập ngay</a>
+    }
+    else
+    {
+        <h2 style="color: #dc3545;">Lỗi kích hoạt</h2>
+        <p>@ViewBag.ErrorMessage</p>
+        <a href="@Url.Action("Register", "Customer")" style="display: inline-block; padding: 10px 20px; background-color: #0066cc; color: #fff; text-decoration: none; border-radius: 5px;">Thử lại</a>
+    }
+</div>

@@ -32,11 +32,11 @@
             <div class="tab-content">
                 <!-- Profile Tab -->
                 <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                    <div class="avatar-container">
+                    @* <div class="avatar-container">
                         <div class="avatar">
                             @Model.FullName?.FirstOrDefault()
                         </div>
-                    </div>
+                    </div> *@
                     <form asp-action="Profile" method="post" id="profileForm">
                         <div class="form-group">
                             <label asp-for="FullName" class="form-label">Họ và Tên</label>

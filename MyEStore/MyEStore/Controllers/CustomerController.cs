@@ -8,7 +8,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
 using System.Net;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Security.Cryptography;
 
 namespace MyEStore.Controllers
 {
@@ -32,11 +32,85 @@ namespace MyEStore.Controllers
             ViewBag.ReturnUrl = ReturnUrl;
 
             var kh = _ctx.KhachHangs.SingleOrDefault(p => p.MaKh == model.UserName);
-            if (kh == null || !BCrypt.Net.BCrypt.Verify(model.Password, kh.MatKhau))
+            if (kh == null)
             {
-                ViewBag.ThongBao = "Sai thông tin đăng nhập";
+                ViewBag.ThongBao = "Tên tài khoản không tồn tại.";
                 return View();
             }
+
+            if (kh.IsLocked && kh.LockoutEnd > DateTime.Now)
+            {
+                ViewBag.ThongBao = $"Tài khoản của bạn đã bị tạm khóa đến {kh.LockoutEnd?.ToString("HH:mm dd/MM/yyyy")}. Vui lòng kiểm tra email để mở khóa tài khoản.";
+                return View();
+            }
+
+            if (!kh.HieuLuc)
+            {
+                ViewBag.ThongBao = "Tài khoản của bạn chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt hoặc yêu cầu gửi lại email kích hoạt.";
+                return View();
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(model.Password + kh.RandomKey, kh.MatKhau))
+            {
+                kh.FailedLoginAttempts++;
+                if (kh.FailedLoginAttempts >= 5)
+                {
+                    kh.IsLocked = true;
+                    kh.LockoutEnd = DateTime.Now.AddMinutes(30); // Khóa 30 phút
+                    var unlockCode = Guid.NewGuid().ToString();
+                    kh.ActivationCode = unlockCode; // Tái sử dụng ActivationCode cho mã mở khóa
+                    kh.ActivationCodeExpiry = DateTime.Now.AddMinutes(5); // Mã mở khóa hết hạn sau 5 phút
+
+                    var unlockLink = Url.Action("UnlockAccount", "Customer", new { code = unlockCode }, Request.Scheme);
+                    var message = $@"
+                    <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                        <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                            <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                                <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                                <p style='color: #666; margin: 5px 0 0;'>Yêu cầu mở khóa tài khoản</p>
+                            </div>
+                            <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {kh.HoTen},</h2>
+                            <p style='line-height: 1.6; margin-bottom: 20px;'>Tài khoản của bạn tại <strong>SiderGin</strong> đã bị tạm khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng nhấp vào liên kết bên dưới trong vòng <strong>5 phút</strong> để mở khóa tài khoản:</p>
+                            <div style='text-align: center; margin: 25px 0;'>
+                                <a href='{unlockLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Mở khóa tài khoản</a>
+                            </div>
+                            <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu mở khóa lại tại trang đăng nhập.</p>
+                            <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này, vui lòng liên hệ với chúng tôi qua:</p>
+                            <div style='display: flex; margin: 15px 0 25px;'>
+                                <div style='margin-right: 20px;'>
+                                    <p style='margin: 0; color: #666;'>
+                                        <span style='font-size: 16px;'>📞</span> Hotline
+                                    </p>
+                                    <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+                                </div>
+                                <div>
+                                    <p style='margin: 0; color: #666;'>
+                                        <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                                    </p>
+                                    <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                                </div>
+                            </div>
+                            <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                                <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                            </div>
+                        </div>
+                    </div>";
+
+                    await SendEmail(kh.Email, "Mở khóa tài khoản SiderGin", message);
+                    _ctx.SaveChanges();
+
+                    ViewBag.ThongBao = "Tài khoản của bạn đã bị tạm khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng kiểm tra email để mở khóa tài khoản.";
+                    return View();
+                }
+                _ctx.SaveChanges();
+                ViewBag.ThongBao = $"Mật khẩu không đúng. Bạn còn {5 - kh.FailedLoginAttempts} lần thử.";
+                return View();
+            }
+
+            // Đăng nhập thành công, reset số lần thử
+            kh.FailedLoginAttempts = 0;
+            kh.DangNhapLanCuoi = DateTime.Now;
+            _ctx.SaveChanges();
 
             var claims = new List<Claim>
             {
@@ -56,6 +130,230 @@ namespace MyEStore.Controllers
             }
 
             return RedirectToAction("Index", "Cart");
+        }
+
+        [HttpGet]
+        public IActionResult UnlockAccount(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                ViewBag.ErrorMessage = "Mã mở khóa không hợp lệ.";
+                return View("UnlockAccount");
+            }
+
+            var customer = _ctx.KhachHangs.SingleOrDefault(kh => kh.ActivationCode == code && kh.IsLocked);
+            if (customer == null)
+            {
+                ViewBag.ErrorMessage = "Mã mở khóa không tồn tại hoặc đã được sử dụng.";
+                return View("UnlockAccount");
+            }
+
+            if (customer.ActivationCodeExpiry < DateTime.Now)
+            {
+                ViewBag.ErrorMessage = "Liên kết mở khóa đã hết hạn. Vui lòng yêu cầu mở khóa lại tại trang đăng nhập.";
+                return View("UnlockAccount");
+            }
+
+            customer.IsLocked = false;
+            customer.LockoutEnd = null;
+            customer.FailedLoginAttempts = 0;
+            customer.ActivationCode = null;
+            customer.ActivationCodeExpiry = null;
+            _ctx.SaveChanges();
+
+            ViewBag.SuccessMessage = "Tài khoản của bạn đã được mở khóa thành công! Vui lòng đăng nhập lại.";
+            return View("UnlockAccount");
+        }
+
+        [HttpGet]
+        public IActionResult ResendActivationEmail()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResendActivationEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.ErrorMessage = "Vui lòng nhập email.";
+                return View();
+            }
+
+            var customer = await _ctx.KhachHangs.SingleOrDefaultAsync(kh => kh.Email == email && !kh.HieuLuc);
+            if (customer == null)
+            {
+                ViewBag.ErrorMessage = "Email không tồn tại hoặc tài khoản đã được kích hoạt.";
+                return View();
+            }
+
+            var newActivationCode = Guid.NewGuid().ToString();
+            customer.ActivationCode = newActivationCode;
+            customer.ActivationCodeExpiry = DateTime.Now.AddMinutes(5);
+            await _ctx.SaveChangesAsync();
+
+            var activationLink = Url.Action("ActivateAccount", "Customer", new { code = newActivationCode }, Request.Scheme);
+            var message = $@"
+            <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                    <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                        <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                        <p style='color: #666; margin: 5px 0 0;'>Yêu cầu gửi lại email kích hoạt</p>
+                    </div>
+                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {customer.HoTen},</h2>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Bạn đã yêu cầu gửi lại email kích hoạt cho tài khoản tại <strong>SiderGin</strong>. Vui lòng kích hoạt tài khoản của bạn trong vòng <strong>5 phút</strong> bằng cách nhấp vào liên kết bên dưới:</p>
+                    <div style='text-align: center; margin: 25px 0;'>
+                        <a href='{activationLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Kích hoạt tài khoản</a>
+                    </div>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu gửi lại email kích hoạt tại trang đăng nhập.</p>
+                    <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi qua:</p>
+                    <div style='display: flex; margin: 15px 0 25px;'>
+                        <div style='margin-right: 20px;'>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>📞</span> Hotline
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+                        </div>
+                        <div>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                        </div>
+                    </div>
+                    <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                        <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                    </div>
+                </div>
+            </div>";
+
+            await SendEmail(customer.Email, "Gửi lại email kích hoạt SiderGin", message);
+
+            ViewBag.SuccessMessage = "Email kích hoạt đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ActivateAccount(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                ViewBag.ErrorMessage = "Mã kích hoạt không hợp lệ.";
+                return View("ActivationResult");
+            }
+
+            var customer = _ctx.KhachHangs.SingleOrDefault(kh => kh.ActivationCode == code);
+            if (customer == null)
+            {
+                ViewBag.ErrorMessage = "Mã kích hoạt không tồn tại hoặc đã được sử dụng.";
+                return View("ActivationResult");
+            }
+
+            if (customer.HieuLuc)
+            {
+                ViewBag.SuccessMessage = "Tài khoản của bạn đã được kích hoạt trước đó.";
+                return View("ActivationResult");
+            }
+
+            if (customer.ActivationCodeExpiry < DateTime.Now)
+            {
+                ViewBag.ErrorMessage = "Liên kết kích hoạt đã hết hạn. Vui lòng yêu cầu gửi lại email kích hoạt.";
+                return View("ActivationResult");
+            }
+
+            customer.HieuLuc = true;
+            customer.ActivationCode = null;
+            customer.ActivationCodeExpiry = null;
+            _ctx.SaveChanges();
+
+            ViewBag.SuccessMessage = "Tài khoản của bạn đã được kích hoạt thành công! Vui lòng đăng nhập.";
+            return View("ActivationResult");
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (_ctx.KhachHangs.Any(kh => kh.MaKh == model.UserName || kh.Email == model.Email))
+            {
+                ViewBag.ThongBao = "Username or Email already exists.";
+                return View(model);
+            }
+
+            var randomKey = GenerateRandomKey();
+            var activationCode = Guid.NewGuid().ToString();
+            var activationExpiry = DateTime.Now.AddMinutes(5);
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password + randomKey);
+
+            var newCustomer = new KhachHang
+            {
+                MaKh = model.UserName,
+                MatKhau = hashedPassword,
+                HoTen = model.FullName,
+                Email = model.Email,
+                DienThoai = model.PhoneNumber,
+                DiaChi = model.Address,
+                RandomKey = randomKey,
+                NgayTaoTaiKhoan = DateTime.Now,
+                HieuLuc = false,
+                ActivationCode = activationCode,
+                ActivationCodeExpiry = activationExpiry
+            };
+
+            _ctx.KhachHangs.Add(newCustomer);
+            _ctx.SaveChanges();
+
+            var activationLink = Url.Action("ActivateAccount", "Customer", new { code = activationCode }, Request.Scheme);
+            var message = $@"
+            <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                    <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                        <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                        <p style='color: #666; margin: 5px 0 0;'>Chào mừng bạn đến với SiderGin!</p>
+                    </div>
+                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {newCustomer.HoTen},</h2>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Cảm ơn bạn đã đăng ký tài khoản tại <strong>SiderGin</strong>. Vui lòng kích hoạt tài khoản của bạn trong vòng <strong>5 phút</strong> bằng cách nhấp vào liên kết bên dưới:</p>
+                    <div style='text-align: center; margin: 25px 0;'>
+                        <a href='{activationLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Kích hoạt tài khoản</a>
+                    </div>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu gửi lại email kích hoạt tại trang đăng nhập.</p>
+                    <p style='line-height: 1.6;'>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi qua:</p>
+                    <div style='display: flex; margin: 15px 0 25px;'>
+                        <div style='margin-right: 20px;'>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>📞</span> Hotline
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+                        </div>
+                        <div>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                        </div>
+                    </div>
+                    <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                        <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                    </div>
+                </div>
+            </div>";
+
+            await SendEmail(newCustomer.Email, "Kích hoạt tài khoản SiderGin", message);
+
+            TempData["ThongBao"] = "Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản trong vòng 5 phút.";
+            return RedirectToAction("Login");
         }
 
         [Authorize]
@@ -83,46 +381,6 @@ namespace MyEStore.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Register(RegisterVM model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            if (_ctx.KhachHangs.Any(kh => kh.MaKh == model.UserName || kh.Email == model.Email))
-            {
-                ViewBag.ThongBao = "Username or Email already exists.";
-                return View(model);
-            }
-
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
-
-            var newCustomer = new KhachHang
-            {
-                MaKh = model.UserName,
-                MatKhau = hashedPassword,
-                HoTen = model.FullName,
-                Email = model.Email,
-                DienThoai = model.PhoneNumber,
-                DiaChi = model.Address,
-            };
-
-            _ctx.KhachHangs.Add(newCustomer);
-            _ctx.SaveChanges();
-
-            TempData["ThongBao"] = "Account successfully created! Please log in.";
-            return RedirectToAction("Login");
-        }
-
-        [HttpGet]
         public IActionResult Profile()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
@@ -144,7 +402,7 @@ namespace MyEStore.Controllers
                 FullName = customer.HoTen,
                 Email = customer.Email,
                 PhoneNumber = customer.DienThoai,
-                DiaChi = customer.DiaChi // Thêm DiaChi vào ProfileVM
+                DiaChi = customer.DiaChi
             };
 
             return View(model);
@@ -215,7 +473,7 @@ namespace MyEStore.Controllers
                 return NotFound("Customer not found.");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(model.Password, customer.MatKhau))
+            if (!BCrypt.Net.BCrypt.Verify(model.Password + customer.RandomKey, customer.MatKhau))
             {
                 TempData["Error"] = "Mật khẩu hiện tại không chính xác.";
                 return RedirectToAction("Profile");
@@ -227,7 +485,9 @@ namespace MyEStore.Controllers
                 return RedirectToAction("Profile");
             }
 
-            customer.MatKhau = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            var newRandomKey = GenerateRandomKey();
+            customer.MatKhau = BCrypt.Net.BCrypt.HashPassword(model.NewPassword + newRandomKey);
+            customer.RandomKey = newRandomKey;
             _ctx.SaveChanges();
 
             TempData["Success"] = "Mật khẩu của bạn đã được thay đổi thành công.";
@@ -253,7 +513,6 @@ namespace MyEStore.Controllers
                 return RedirectToAction("Profile");
             }
 
-            // Validate input
             if (string.IsNullOrWhiteSpace(province) || string.IsNullOrWhiteSpace(district) ||
                 string.IsNullOrWhiteSpace(ward) || string.IsNullOrWhiteSpace(streetAddress) ||
                 string.IsNullOrWhiteSpace(diaChi))
@@ -264,7 +523,7 @@ namespace MyEStore.Controllers
 
             try
             {
-                customer.DiaChi = diaChi; // Lưu địa chỉ đầy đủ
+                customer.DiaChi = diaChi;
                 _ctx.SaveChanges();
                 TempData["Success"] = "Cập nhật địa chỉ nhận hàng thành công.";
             }
@@ -325,7 +584,6 @@ namespace MyEStore.Controllers
             return View(order);
         }
 
-        #region ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -343,77 +601,63 @@ namespace MyEStore.Controllers
             }
 
             var newPassword = GenerateRandomPassword();
-            khachHang.MatKhau = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            var newRandomKey = GenerateRandomKey();
+            khachHang.MatKhau = BCrypt.Net.BCrypt.HashPassword(newPassword + newRandomKey);
+            khachHang.RandomKey = newRandomKey;
             await _ctx.SaveChangesAsync();
 
             string message = $@"
-    <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
-        <!-- Container chính -->
-        <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
-            <!-- Header với logo -->
-            <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
-                <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SIderGin Support</h1>
-                <p style='color: #666; margin: 5px 0 0;'>Thông báo đặt lại mật khẩu</p>
-            </div>
-            
-            <!-- Nội dung chính -->
-            <h2 style='color: #0066cc; margin-top: 0;'>Xin chào <span style='color: #333;'>{khachHang.HoTen}</span>,</h2>
-            
-            <p style='line-height: 1.6; margin-bottom: 20px;'>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình tại <strong>SideGin</strong>. Chúng tôi đã tạo một mật khẩu mới cho bạn.</p>
-            
-            <!-- Khung mật khẩu -->
-            <div style='background-color: #f8f9fa; border-left: 4px solid #0066cc; padding: 15px 20px; margin: 25px 0; border-radius: 4px;'>
-                <p style='margin: 0 0 5px; font-size: 14px; color: #666;'>Mật khẩu mới của bạn:</p>
-                <p style='font-size: 22px; font-weight: bold; color: #d9534f; margin: 0; letter-spacing: 1px; font-family: Consolas, monospace;'>{newPassword}</p>
-            </div>
-            
-            <!-- Cảnh báo -->
-            <div style='background-color: #fff8e1; padding: 15px; border-radius: 6px; margin-bottom: 25px;'>
-                <p style='margin: 0; display: flex; align-items: center;'>
-                    <span style='font-size: 20px; margin-right: 10px;'>⚠️</span>
-                    <span><strong>Lưu ý:</strong> Vui lòng đăng nhập và thay đổi mật khẩu này ngay lập tức để đảm bảo an toàn cho tài khoản của bạn.</span>
-                </p>
-            </div>
-            
-            <!-- Hướng dẫn -->
-            <div style='background-color: #f0f7ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;'>
-                <h3 style='color: #0066cc; margin-top: 0; display: flex; align-items: center;'>
-                    <span style='margin-right: 10px;'>📌</span>
-                    <span>Hướng dẫn đổi mật khẩu:</span>
-                </h3>
-                <ol style='margin: 15px 0 0; padding-left: 25px;'>
-                    <li style='margin-bottom: 12px; line-height: 1.5;'>Đăng nhập vào hệ thống với mật khẩu mới được cung cấp ở trên.</li>
-                    <li style='margin-bottom: 12px; line-height: 1.5;'>Nhấp vào biểu tượng người dùng ở góc trên bên phải và chọn <strong>Thông tin cá nhân</strong>.</li>
-                    <li style='margin-bottom: 12px; line-height: 1.5;'>Chọn tab <strong>Bảo mật</strong> hoặc <strong>Đổi mật khẩu</strong>.</li>
-                    <li style='margin-bottom: 12px; line-height: 1.5;'>Nhập mật khẩu hiện tại (mật khẩu mới được cấp) và mật khẩu mới mong muốn.</li>
-                    <li style='margin-bottom: 0; line-height: 1.5;'>Nhấn <strong>Lưu thay đổi</strong> để hoàn tất.</li>
-                </ol>
-            </div>
-            
-            <!-- Hỗ trợ -->
-            <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này hoặc cần hỗ trợ thêm, vui lòng liên hệ ngay với chúng tôi qua:</p>
-            <div style='display: flex; margin: 15px 0 25px;'>
-                <div style='margin-right: 20px;'>
-                    <p style='margin: 0; color: #666;'>
-                        <span style='font-size: 16px;'>📞</span> Hotline
-                    </p>
-                    <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+            <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                    <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                        <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                        <p style='color: #666; margin: 5px 0 0;'>Thông báo đặt lại mật khẩu</p>
+                    </div>
+                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào <span style='color: #333;'>{khachHang.HoTen}</span>,</h2>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình tại <strong>SideGin</strong>. Chúng tôi đã tạo một mật khẩu mới cho bạn.</p>
+                    <div style='background-color: #f8f9fa; border-left: 4px solid #0066cc; padding: 15px 20px; margin: 25px 0; border-radius: 4px;'>
+                        <p style='margin: 0 0 5px; font-size: 14px; color: #666;'>Mật khẩu mới của bạn:</p>
+                        <p style='font-size: 22px; font-weight: bold; color: #d9534f; margin: 0; letter-spacing: 1px; font-family: Consolas, monospace;'>{newPassword}</p>
+                    </div>
+                    <div style='background-color: #fff8e1; padding: 15px; border-radius: 6px; margin-bottom: 25px;'>
+                        <p style='margin: 0; display: flex; align-items: center;'>
+                            <span style='font-size: 20px; margin-right: 10px;'>⚠️</span>
+                            <span><strong>Lưu ý:</strong> Vui lòng đăng nhập và thay đổi mật khẩu này ngay lập tức để đảm bảo an toàn cho tài khoản của bạn.</span>
+                        </p>
+                    </div>
+                    <div style='background-color: #f0f7ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;'>
+                        <h3 style='color: #0066cc; margin-top: 0; display: flex; align-items: center;'>
+                            <span style='margin-right: 10px;'>📌</span>
+                            <span>Hướng dẫn đổi mật khẩu:</span>
+                        </h3>
+                        <ol style='margin: 15px 0 0; padding-left: 25px;'>
+                            <li style='margin-bottom: 12px; line-height: 1.5;'>Đăng nhập vào hệ thống với mật khẩu mới được cung cấp ở trên.</li>
+                            <li style='margin-bottom: 12px; line-height: 1.5;'>Nhấp vào biểu tượng người dùng ở góc trên bên phải và chọn <strong>Thông tin cá nhân</strong>.</li>
+                            <li style='margin-bottom: 12px; line-height: 1.5;'>Chọn tab <strong>Bảo mật</strong> hoặc <strong>Đổi mật khẩu</strong>.</li>
+                            <li style='margin-bottom: 12px; line-height: 1.5;'>Nhập mật khẩu hiện tại (mật khẩu mới được cấp) và mật khẩu mới mong muốn.</li>
+                            <li style='margin-bottom: 0; line-height: 1.5;'>Nhấn <strong>Lưu thay đổi</strong> để hoàn tất.</li>
+                        </ol>
+                    </div>
+                    <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này hoặc cần hỗ trợ thêm, vui lòng liên hệ ngay với chúng tôi qua:</p>
+                    <div style='display: flex; margin: 15px 0 25px;'>
+                        <div style='margin-right: 20px;'>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>📞</span> Hotline
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+                        </div>
+                        <div>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                        </div>
+                    </div>
+                    <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                        <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                    </div>
                 </div>
-                <div>
-                    <p style='margin: 0; color: #666;'>
-                        <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
-                    </p>
-                    <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
-                </div>
-            </div>
-            
-            <!-- Chân -->
-            <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
-                <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
-            </div>
-            
-        </div>
-    </div>";
+            </div>";
 
             await SendEmail(khachHang.Email, "Mật khẩu mới của bạn", message);
 
@@ -427,6 +671,16 @@ namespace MyEStore.Controllers
             var random = new Random();
             return new string(Enumerable.Repeat(validChars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        private string GenerateRandomKey(int length = 16)
+        {
+            var randomBytes = new byte[length];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+            }
+            return Convert.ToBase64String(randomBytes);
         }
 
         private async Task SendEmail(string toEmail, string subject, string message)
@@ -457,7 +711,6 @@ namespace MyEStore.Controllers
                 throw;
             }
         }
-        #endregion
 
         public IActionResult Thongbao()
         {

@@ -2,7 +2,7 @@
 @Html.Partial("livechat")
 @{
     ViewData["Title"] = "Login";
-    Layout=null;
+    Layout = null;
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -13,7 +13,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/login.css" />
-
 </head>
 <body>
     <div class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
@@ -61,11 +60,28 @@
             <div class="col-md-6 bg-white">
                 <div class="login-form">
                     <h2 class="text-center fw-bold mb-2">Chào mừng <span class="text-highlight">trở lại</span></h2>
-                    <p class="text-center text-muted mb-4">Vui lòng đăng nhập để tiếp tục </p>
+                    <p class="text-center text-muted mb-4">Vui lòng đăng nhập để tiếp tục</p>
 
                     <form asp-action="Login">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                        <div class="text-danger mb-3">@ViewBag.ThongBao</div>
+                        @if (ViewBag.ThongBao != null)
+                        {
+                            <div class="text-danger mb-3">
+                                @ViewBag.ThongBao
+                                @if (ViewBag.ThongBao.Contains("chưa được kích hoạt"))
+                                {
+                                    <p>
+                                        <a href="@Url.Action("ResendActivationEmail", "Customer")" class="register-link">Gửi lại email kích hoạt</a>
+                                    </p>
+                                }
+                                @if (ViewBag.ThongBao.Contains("bị tạm khóa"))
+                                {
+                                    <p>
+                                        <a href="@Url.Action("ForgotPassword", "Customer")" class="forgot-password">Quên mật khẩu?</a>
+                                    </p>
+                                }
+                            </div>
+                        }
                         <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
 
                         <div class="mb-4">
@@ -94,12 +110,6 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rememberMe">
-                                <label class="form-check-label remember-me" for="rememberMe">
-                                    Ghi nhớ đăng nhập
-                                </label>
-                            </div>
                             <a href="/Customer/ForgotPassword" class="forgot-password">Quên mật khẩu?</a>
                         </div>
 
@@ -109,7 +119,6 @@
                             </button>
                         </div>
                     </form>
-
 
                     <div class="text-center mt-4">
                         <p class="mb-0">
@@ -142,9 +151,7 @@
             }
         }
 
-        // Optional: Add some subtle animations
         document.addEventListener('DOMContentLoaded', function () {
-            // Animate form fields when focused
             const formControls = document.querySelectorAll('.form-control');
             formControls.forEach(control => {
                 control.addEventListener('focus', function () {
@@ -159,7 +166,3 @@
     </script>
 </body>
 </html>
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.13/jquery.validate.unobtrusive.min.js"></script>
-}
