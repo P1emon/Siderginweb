@@ -137,65 +137,68 @@
         }
     });
 
-    // Kiểm tra ngày giao hàng trước khi gửi đơn hàng qua PayPal
-    paypal.Buttons({
-        style: {
-            layout: 'horizontal',
-            color: 'blue',
-            shape: 'rect',
-            label: 'pay'
-        },
-        createOrder: (data, actions) => {
-            const ngayGiao = document.getElementById('ngayGiao').value;
-            if (!ngayGiao || !isFutureDate(ngayGiao)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Vui lòng chọn một ngày giao hàng trong tương lai.',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-            return fetch("/Payment/PaypalOrder", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ngayGiao })
-            })
-                .then(response => response.json())
-                .then(order => order.id);
-        },
-        onApprove: (data, actions) => {
-            const ngayGiao = document.getElementById('ngayGiao').value;
-            return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}`, {
-                method: "POST"
-            })
-                .then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: 'Đơn hàng của bạn đã được thanh toán thành công.',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#3085d6'
-                    }).then(() => {
-                        window.location.href = "/Payment/Success";
-                    });
-                })
-                .catch(err => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Thất bại!',
-                        text: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
-                    });
-                });
-        }
-    }).render('#paypal-button-container');
+
 </script>
 
 @section Scripts {
         <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
+        <script>
+            paypal.Buttons({
+                style: {
+                    layout: 'horizontal',
+                    color: 'blue',
+                    shape: 'rect',
+                    label: 'pay'
+                },
+                createOrder: (data, actions) => {
+                    const ngayGiao = document.getElementById('ngayGiao').value;
+                    if (!ngayGiao || !isFutureDate(ngayGiao)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Vui lòng chọn một ngày giao hàng trong tương lai.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#d33'
+                        });
+                        return;
+                    }
+                    return fetch("/Payment/PaypalOrder", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ngayGiao })
+                    })
+                        .then(response => response.json())
+                        .then(order => order.id);
+                },
+                onApprove: (data, actions) => {
+                    const ngayGiao = document.getElementById('ngayGiao').value;
+                    return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}`, {
+                        method: "POST"
+                    })
+                        .then(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: 'Đơn hàng của bạn đã được thanh toán thành công.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            }).then(() => {
+                                window.location.href = "/Payment/Success";
+                            });
+                        })
+                        .catch(err => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Thất bại!',
+                                text: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#d33'
+                            });
+                        });
+                }
+            }).render('#paypal-button-container');
+        </script>
 }
+
