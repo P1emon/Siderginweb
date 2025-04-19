@@ -347,9 +347,73 @@ namespace MyEStore.Controllers
             await _ctx.SaveChangesAsync();
 
             string message = $@"
-        <p>Xin chào: {khachHang.HoTen},</p>
-        <p>Mật khẩu mới của bạn là: <strong>{newPassword}</strong></p>
-        <p>Vui lòng đăng nhập lại và đổi mật khẩu mới để đảm bảo an toàn.</p>";
+    <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+        <!-- Container chính -->
+        <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+            <!-- Header với logo -->
+            <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SIderGin Support</h1>
+                <p style='color: #666; margin: 5px 0 0;'>Thông báo đặt lại mật khẩu</p>
+            </div>
+            
+            <!-- Nội dung chính -->
+            <h2 style='color: #0066cc; margin-top: 0;'>Xin chào <span style='color: #333;'>{khachHang.HoTen}</span>,</h2>
+            
+            <p style='line-height: 1.6; margin-bottom: 20px;'>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình tại <strong>SideGin</strong>. Chúng tôi đã tạo một mật khẩu mới cho bạn.</p>
+            
+            <!-- Khung mật khẩu -->
+            <div style='background-color: #f8f9fa; border-left: 4px solid #0066cc; padding: 15px 20px; margin: 25px 0; border-radius: 4px;'>
+                <p style='margin: 0 0 5px; font-size: 14px; color: #666;'>Mật khẩu mới của bạn:</p>
+                <p style='font-size: 22px; font-weight: bold; color: #d9534f; margin: 0; letter-spacing: 1px; font-family: Consolas, monospace;'>{newPassword}</p>
+            </div>
+            
+            <!-- Cảnh báo -->
+            <div style='background-color: #fff8e1; padding: 15px; border-radius: 6px; margin-bottom: 25px;'>
+                <p style='margin: 0; display: flex; align-items: center;'>
+                    <span style='font-size: 20px; margin-right: 10px;'>⚠️</span>
+                    <span><strong>Lưu ý:</strong> Vui lòng đăng nhập và thay đổi mật khẩu này ngay lập tức để đảm bảo an toàn cho tài khoản của bạn.</span>
+                </p>
+            </div>
+            
+            <!-- Hướng dẫn -->
+            <div style='background-color: #f0f7ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;'>
+                <h3 style='color: #0066cc; margin-top: 0; display: flex; align-items: center;'>
+                    <span style='margin-right: 10px;'>📌</span>
+                    <span>Hướng dẫn đổi mật khẩu:</span>
+                </h3>
+                <ol style='margin: 15px 0 0; padding-left: 25px;'>
+                    <li style='margin-bottom: 12px; line-height: 1.5;'>Đăng nhập vào hệ thống với mật khẩu mới được cung cấp ở trên.</li>
+                    <li style='margin-bottom: 12px; line-height: 1.5;'>Nhấp vào biểu tượng người dùng ở góc trên bên phải và chọn <strong>Thông tin cá nhân</strong>.</li>
+                    <li style='margin-bottom: 12px; line-height: 1.5;'>Chọn tab <strong>Bảo mật</strong> hoặc <strong>Đổi mật khẩu</strong>.</li>
+                    <li style='margin-bottom: 12px; line-height: 1.5;'>Nhập mật khẩu hiện tại (mật khẩu mới được cấp) và mật khẩu mới mong muốn.</li>
+                    <li style='margin-bottom: 0; line-height: 1.5;'>Nhấn <strong>Lưu thay đổi</strong> để hoàn tất.</li>
+                </ol>
+            </div>
+            
+            <!-- Hỗ trợ -->
+            <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này hoặc cần hỗ trợ thêm, vui lòng liên hệ ngay với chúng tôi qua:</p>
+            <div style='display: flex; margin: 15px 0 25px;'>
+                <div style='margin-right: 20px;'>
+                    <p style='margin: 0; color: #666;'>
+                        <span style='font-size: 16px;'>📞</span> Hotline
+                    </p>
+                    <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+                </div>
+                <div>
+                    <p style='margin: 0; color: #666;'>
+                        <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                    </p>
+                    <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                </div>
+            </div>
+            
+            <!-- Chân -->
+            <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+            </div>
+            
+        </div>
+    </div>";
 
             await SendEmail(khachHang.Email, "Mật khẩu mới của bạn", message);
 
@@ -376,7 +440,7 @@ namespace MyEStore.Controllers
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress("truongminhduc4002@gmail.com"),
+                From = new MailAddress("truongminhduc4002@gmail.com", "Sidergin Support"),
                 Subject = subject,
                 Body = message,
                 IsBodyHtml = true
