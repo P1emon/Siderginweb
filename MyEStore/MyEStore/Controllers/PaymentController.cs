@@ -461,6 +461,10 @@ namespace MyEStore.Controllers
                     hoaDon.GhiChu = $"Thanh toán thành công, TransactionId={response.TransactionId}";
                     _ctx.SaveChanges();
 
+                    // Gọi hàm cộng điểm
+                    await CongDiemChoKhachHangAsync(maHd);
+                    _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", maHd);
+
                     // Xóa giỏ hàng sau thanh toán
                     HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
@@ -505,6 +509,40 @@ namespace MyEStore.Controllers
                 _logger.LogError(ex, "Lỗi xử lý callback từ VNPay");
                 ViewBag.Message = "Có lỗi xảy ra khi xử lý thanh toán: " + ex.Message;
                 return View("MomoFail");
+            }
+        }
+        private async Task CongDiemChoKhachHangAsync(int maHd)
+        {
+            try
+            {
+                var chiTietHoaDons = _ctx.ChiTietHds
+                 .Where(ct => ct.MaHd == maHd)
+                 .ToList();
+
+
+                double tongTien = chiTietHoaDons.Sum(ct => ct.DonGia * ct.SoLuong);
+                int diemCong = (int)(tongTien / 60000);
+
+                var hoaDon = _ctx.HoaDons.FirstOrDefault(h => h.MaHd == maHd);
+                if (hoaDon == null)
+                {
+                    _logger.LogWarning("Không tìm thấy hóa đơn với mã {maHd} để cộng điểm", maHd);
+                    return;
+                }
+
+                var khachHang = _ctx.KhachHangs.FirstOrDefault(kh => kh.MaKh == hoaDon.MaKh);
+                if (khachHang != null)
+                {
+                    khachHang.Diem += diemCong;
+                    khachHang.MuaHangLanCuoi = DateTime.Now;
+
+                    await _ctx.SaveChangesAsync();
+                    _logger.LogInformation("Đã cộng {Diem} điểm cho khách hàng {MaKh}", diemCong, khachHang.MaKh);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cộng điểm cho khách hàng với MaHd={maHd}", maHd);
             }
         }
 
