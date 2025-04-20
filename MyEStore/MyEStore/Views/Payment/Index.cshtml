@@ -10,7 +10,7 @@
     <h1 class="text-center fw-bold mb-5" style="color: #4A5568;">Xác Nhận Thanh Toán</h1>
 
     <div class="row">
-        <!-- Order Summary Form -->
+        <!-- Order Summary -->
         <div class="col-lg-8 mb-4">
             <div class="card shadow border-0 rounded-4">
                 <div class="card-body">
@@ -49,35 +49,72 @@
                             <span class="text-danger fw-bold">@Model.Sum(p => p.ThanhTien).ToString("#,##0.00") đ</span>
                         </h3>
                     </div>
+
+                    <!-- Address & Date -->
+                    <div class="mb-3 text-center">
+                        <label for="selectedAddress" class="form-label fw-bold">Chọn Địa Chỉ Nhận Hàng:</label>
+                        <select id="selectedAddress" class="form-select d-inline-block" style="width: 250px; font-size: 1.1rem;">
+                            @if (ViewBag.KhachHangs is MyEStore.Entities.KhachHang kh)
+                            {
+                                if (!string.IsNullOrWhiteSpace(kh.DiaChi))
+                                {
+                                    <option value="@kh.DiaChi">@kh.DiaChi</option>
+                                }
+                                if (!string.IsNullOrWhiteSpace(kh.DiaChiPhu))
+                                {
+                                 <option value="@kh.DiaChiPhu">@kh.DiaChiPhu</option>
+                                }
+                             }
+                            else
+                            {
+                                    <option disabled selected>Không có địa chỉ</option>
+                            }
+                         </select>
+
+                    </div>
+                    <div class="mb-4 text-center">
+                        <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label>
+                        <input type="date" id="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem;" />
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Payment Form -->
+        <!-- Payment -->
         <div class="col-lg-4">
             <div class="card shadow border-0 rounded-4">
                 <div class="card-body">
                     <h4 class="text-center fw-bold mb-4" style="color: #2D3748;">Phương Thức Thanh Toán</h4>
-                    <div class="mb-4 text-center">
-                        <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label>
-                        <input type="date" id="ngayGiao" name="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem;" />
-                    </div>
-
                     <div class="d-flex flex-column gap-3">
-                        <form method="post" action="/Payment/MomoPayment">
+
+                        <!-- MoMo -->
+                        <form method="post" action="/Payment/MomoPayment" onsubmit="return attachCommonData(this)">
+                            <input type="hidden" name="ngayGiao" />
+                            <input type="hidden" name="selectedAddress" />
                             <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold">Thanh Toán Bằng MoMo</button>
                         </form>
-                        <form method="post" action="/Payment/VnpayOrder">
+
+                        <!-- VNPay -->
+                        <form method="post" action="/Payment/VnpayOrder" onsubmit="return attachCommonData(this)">
                             <input type="hidden" name="ngayGiao" />
+                            <input type="hidden" name="selectedAddress" />
                             <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button>
                         </form>
+
+                        <!-- Paypal -->
                         <form id="paymentForm" method="post" action="@Url.Action("PaypalCapture", "Payment")">
+                            <input type="hidden" name="selectedAddress" />
+                            <input type="hidden" name="selectedAddress" />
                             <div id="paypal-button-container"></div>
                         </form>
-                        <form method="post" action="/Payment/CodPayment" onsubmit="return handleCodSubmit(event)">
-                            <input type="hidden" name="ngayGiao" id="codNgayGiao" />
+
+                        <!-- COD -->
+                        <form method="post" action="/Payment/CodPayment" onsubmit="return attachCommonData(this)">
+                            <input type="hidden" name="ngayGiao" />
+                            <input type="hidden" name="selectedAddress" />
                             <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">Thanh Toán Khi Nhận Hàng (COD)</button>
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -85,61 +122,42 @@
     </div>
 </div>
 
+<!-- SweetAlert + Validation -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function handleCodSubmit(event) {
-        const ngayGiao = document.getElementById('ngayGiao').value;
-        if (!ngayGiao || !isFutureDate(ngayGiao)) {
-            event.preventDefault();
+    function getToday() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return today;
+    }
+
+    function isFutureDate(date) {
+        const selectedDate = new Date(date);
+        return selectedDate >= getToday();
+    }
+
+    function attachCommonData(form) {
+        const ngayGiao = document.getElementById("ngayGiao").value;
+        const address = document.getElementById("selectedAddress").value;
+
+        if (!address || !ngayGiao || !isFutureDate(ngayGiao)) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi!',
-                text: 'Vui lòng chọn một ngày giao hàng hợp lệ.',
+                text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
                 confirmButtonText: 'OK',
                 confirmButtonColor: '#d33'
             });
             return false;
         }
 
-        document.getElementById('codNgayGiao').value = ngayGiao;
+        form.querySelector('[name="ngayGiao"]').value = ngayGiao;
+        form.querySelector('[name="selectedAddress"]').value = address;
         return true;
     }
 </script>
 
-<script>
-    // Lấy ngày hiện tại
-    function getToday() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Đặt giờ phút giây về 0
-        return today;
-    }
-
-    // Kiểm tra ngày giao hàng phải lớn hơn hoặc bằng ngày hôm nay
-    function isFutureDate(date) {
-        const selectedDate = new Date(date);
-        return selectedDate >= getToday(); // Ngày phải lớn hơn hoặc bằng hôm nay
-    }
-
-    // Kiểm tra ngày giao hàng trước khi gửi đơn hàng VNPay
-    document.querySelector('form[action="/Payment/VnpayOrder"]').addEventListener('submit', function (e) {
-        const ngayGiao = document.getElementById('ngayGiao').value;
-        if (!ngayGiao || !isFutureDate(ngayGiao)) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Vui lòng chọn một ngày giao hàng trong tương lai.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#d33'
-            });
-        } else {
-            this.querySelector('[name="ngayGiao"]').value = ngayGiao;
-        }
-    });
-
-
-</script>
-
+<!-- Paypal Script -->
 @section Scripts {
         <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
         <script>
@@ -152,53 +170,57 @@
                 },
                 createOrder: (data, actions) => {
                     const ngayGiao = document.getElementById('ngayGiao').value;
-                    if (!ngayGiao || !isFutureDate(ngayGiao)) {
+                    const address = document.getElementById('selectedAddress').value;
+
+                    if (!ngayGiao || !isFutureDate(ngayGiao) || !address) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi!',
-                            text: 'Vui lòng chọn một ngày giao hàng trong tương lai.',
+                            text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
                             confirmButtonText: 'OK',
                             confirmButtonColor: '#d33'
                         });
                         return;
                     }
+
                     return fetch("/Payment/PaypalOrder", {
                         method: "POST",
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ ngayGiao })
+                        body: JSON.stringify({ ngayGiao, selectedAddress: address })
                     })
-                        .then(response => response.json())
-                        .then(order => order.id);
+                    .then(res => res.json())
+                    .then(order => order.id);
                 },
                 onApprove: (data, actions) => {
                     const ngayGiao = document.getElementById('ngayGiao').value;
-                    return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}`, {
+                    const address = document.getElementById('selectedAddress').value;
+
+                        return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}`, {
                         method: "POST"
                     })
-                        .then(() => {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Thành công!',
-                                text: 'Đơn hàng của bạn đã được thanh toán thành công.',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#3085d6'
-                            }).then(() => {
-                                window.location.href = "/Payment/Success";
-                            });
-                        })
-                        .catch(err => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Thất bại!',
-                                text: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#d33'
-                            });
+                    .then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: 'Đơn hàng đã được thanh toán.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3085d6'
+                        }).then(() => {
+                            window.location.href = "/Payment/Success";
                         });
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Thất bại!',
+                            text: 'Có lỗi xảy ra khi xử lý đơn hàng.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#d33'
+                        });
+                    });
                 }
             }).render('#paypal-button-container');
         </script>
 }
-

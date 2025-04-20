@@ -14,6 +14,7 @@ using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net;
 using System.Net.Mail;
+using Microsoft.EntityFrameworkCore;
 namespace MyEStore.Controllers
 {
     [Authorize]
@@ -196,6 +197,14 @@ namespace MyEStore.Controllers
 
         public IActionResult Index()
         {
+            //var maKhachHang = HttpContext.Session.GetString("MaKH");
+            var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (maKhachHang != null)
+            {
+                var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
+                ViewBag.KhachHangs = khachHang;
+            }
+
             ViewBag.PaypalClientId = _paypalClient.ClientId;
             return View(CartItems);
         }
@@ -250,7 +259,8 @@ namespace MyEStore.Controllers
         }
 
 
-        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, CancellationToken cancellationToken)
+        [HttpPost]
+        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, CancellationToken cancellationToken)
         {
             try
             {
@@ -263,11 +273,9 @@ namespace MyEStore.Controllers
 
                     var userId = User.FindFirstValue("UserId");
                     var userProfile = _ctx.KhachHangs.FirstOrDefault(u => u.MaKh == userId);
-                    string customerAddress = userProfile?.DiaChi ?? "N/A";
 
                     DateTime? ngayGiaoDate = null;
-
-                    if (DateTime.TryParse(ngayGiao, out DateTime parsedDate)) // Kiểm tra ngày giao hợp lệ
+                    if (DateTime.TryParse(ngayGiao, out DateTime parsedDate))
                     {
                         ngayGiaoDate = parsedDate;
                     }
@@ -277,7 +285,7 @@ namespace MyEStore.Controllers
                         MaKh = userId,
                         NgayDat = DateTime.Now,
                         HoTen = User.Identity.Name,
-                        DiaChi = customerAddress,
+                        DiaChi = selectedAddress,
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
                         MaTrangThai = 1,
@@ -300,6 +308,7 @@ namespace MyEStore.Controllers
                         _ctx.Add(cthd);
                     }
                     _ctx.SaveChanges();
+
                     try
                     {
                         string customerEmail = userProfile?.Email ?? "Không rõ";
@@ -319,9 +328,6 @@ namespace MyEStore.Controllers
 
                     TempData["TransactionId"] = transactionId;
                     TempData["ReferenceId"] = reference;
-                    // Gửi email cho khách hàng và admin
-
-
 
                     return RedirectToAction("Success");
                 }
@@ -340,87 +346,66 @@ namespace MyEStore.Controllers
                 return BadRequest(error);
             }
         }
-
-
-
-
         [HttpPost]
-        public IActionResult VnpayOrder(string ngayGiao)
+        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress)
         {
-            // Tính tổng tiền (VND)
             var tongTien = CartItems.Sum(p => p.ThanhTien);
-
-            // Lấy userId và thông tin khách hàng từ cơ sở dữ liệu
             var userId = User.FindFirstValue("UserId");
+
             var userProfile = _ctx.KhachHangs.FirstOrDefault(u => u.MaKh == userId);
+            DateTime? ngayGiaoDate = DateTime.TryParse(ngayGiao, out DateTime parsedDate) ? parsedDate : (DateTime?)null;
 
-            // Lấy địa chỉ của khách hàng, nếu không có thì dùng "N/A"
-            string customerAddress = userProfile?.DiaChi ?? "N/A";
-
-            // Kiểm tra ngày giao hợp lệ
-            DateTime? ngayGiaoDate = null;
-            if (DateTime.TryParse(ngayGiao, out DateTime parsedDate))
-            {
-                ngayGiaoDate = parsedDate;
-            }
-
-            // Tạo model yêu cầu thanh toán
             var paymentRequest = new VnPaymentRequestModel
             {
                 Amount = tongTien,
-                OrderId = Guid.NewGuid().ToString().GetHashCode(), // Convert string to int
+                OrderId = Guid.NewGuid().ToString().GetHashCode(),
                 CreatedDate = DateTime.Now
             };
 
             try
             {
-                // Gọi dịch vụ để tạo URL thanh toán
                 var paymentUrl = _vnpayService.CreatePaymentUrl(HttpContext, paymentRequest);
 
-                // Lưu thông tin hóa đơn vào database
                 var hoaDon = new HoaDon
                 {
-                    MaKh = userId ?? string.Empty, // Handle possible null reference
+                    MaKh = userId ?? string.Empty,
                     NgayDat = DateTime.Now,
-                    HoTen = User.Identity?.Name ?? string.Empty, // Handle possible null reference
-                    DiaChi = customerAddress, // Địa chỉ của khách hàng
+                    HoTen = User.Identity?.Name ?? string.Empty,
+                    DiaChi = selectedAddress,
                     CachThanhToan = "VNPay",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 0,
-                    NgayGiao = ngayGiaoDate, // Thêm ngày giao
+                    NgayGiao = ngayGiaoDate,
                     GhiChu = "Đang chờ thanh toán VNPay"
                 };
+
                 _ctx.Add(hoaDon);
                 _ctx.SaveChanges();
 
-                // Lưu chi tiết hóa đơn (CartItems)
                 foreach (var item in CartItems)
                 {
-                    var cthd = new ChiTietHd
+                    _ctx.Add(new ChiTietHd
                     {
                         MaHd = hoaDon.MaHd,
                         MaHh = item.MaHh,
                         DonGia = item.DonGia,
                         SoLuong = item.SoLuong,
-                        GiamGia = 1 // Tùy chỉnh giảm giá nếu cần
-                    };
-                    _ctx.Add(cthd);
+                        GiamGia = 1
+                    });
                 }
-                _ctx.SaveChanges(); // Lưu toàn bộ chi tiết hóa đơn vào database
 
-                // Xóa giỏ hàng sau khi tạo đơn hàng
+                _ctx.SaveChanges();
                 HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
-                return Redirect(paymentUrl); // Chuyển hướng đến VNPay
+                return Redirect(paymentUrl);
             }
             catch (Exception ex)
             {
-                // Ghi log lỗi và trả về lỗi
+                _logger.LogError(ex, "Error creating VNPay payment request.");
                 ViewBag.Message = "Lỗi tạo yêu cầu thanh toán: " + ex.Message;
                 return View("MomoFail");
             }
         }
-
 
 
         public async Task<IActionResult> Success()
@@ -445,12 +430,17 @@ namespace MyEStore.Controllers
             {
                 var response = _vnpayService.PaymentExcute(Request.Query);
 
-                if (response.ResponseCode == "00" && response.Success)
+                _logger.LogInformation("VNPay Response: ResponseCode={ResponseCode}, Success={Success}, Message={Message}",
+                    response.VnPayResponseCode, response.Success, response.Message);
+
+                if (response.VnPayResponseCode == "00" && response.Success)
                 {
+                    // Kiểm tra hóa đơn đã xử lý chưa
                     var existingOrder = _ctx.HoaDons.FirstOrDefault(h => h.GhiChu.Contains($"TransactionId={response.TransactionId}"));
 
                     if (existingOrder != null)
                     {
+                        _logger.LogInformation("Order already processed with TransactionId: {TransactionId}", response.TransactionId);
                         ViewBag.Message = "Hóa đơn đã được xử lý thành công!";
                         return View("Success");
                     }
@@ -462,16 +452,21 @@ namespace MyEStore.Controllers
 
                     if (pendingOrder != null)
                     {
-                        pendingOrder.MaTrangThai = 1;
+                        pendingOrder.MaTrangThai = 1; // Hoàn tất
                         pendingOrder.GhiChu = $"Thanh toán thành công, TransactionId={response.TransactionId}";
                         _ctx.SaveChanges();
 
                         hoaDon = pendingOrder;
+
+                        // Xóa giỏ hàng sau khi thanh toán thành công
                         HttpContext.Session.Set(CART_KEY, new List<CartItem>());
+
                         ViewBag.Message = "Thanh toán thành công!";
                     }
+
                     else
                     {
+                        // Nếu không tìm thấy hóa đơn đang chờ, tạo mới
                         hoaDon = new HoaDon
                         {
                             MaKh = User.FindFirstValue("UserId"),
@@ -480,15 +475,16 @@ namespace MyEStore.Controllers
                             DiaChi = "N/A",
                             CachThanhToan = response.PaymentMethod,
                             CachVanChuyen = "N/A",
-                            MaTrangThai = 1,
+                            MaTrangThai = 1, // Hoàn tất
                             GhiChu = $"TransactionId={response.TransactionId}, OrderId={response.OrderId}"
                         };
                         _ctx.Add(hoaDon);
                         _ctx.SaveChanges();
 
-                        
+                        ViewBag.Message = "Thanh toán thành công!";
                     }
 
+                    // Gửi email xác nhận
                     try
                     {
                         var userId = User.FindFirstValue("UserId");
@@ -509,54 +505,65 @@ namespace MyEStore.Controllers
 
                     return View("Success");
                 }
-                else if (response.ResponseCode == "24")
+                else if (response.VnPayResponseCode == "24")
                 {
+                    _logger.LogWarning("Transaction canceled by the user. ResponseCode={ResponseCode}", response.VnPayResponseCode);
                     ViewBag.Message = "Bạn đã hủy giao dịch. Thanh toán chưa được thực hiện.";
-                    return View("VnpayCancel"); // Trang bạn cần tạo để hiển thị thông báo hủy
+                    return View("VnpayCancel");
                 }
                 else
                 {
+                    _logger.LogError("Transaction failed. ResponseCode={ResponseCode}, Message={Message}",
+                        response.VnPayResponseCode, response.Message);
                     ViewBag.Message = $"Giao dịch không thành công: {response.Message}";
                     return View("VnpayCancel");
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Có lỗi xảy ra khi xử lý thanh toán VNPay");
                 ViewBag.Message = "Có lỗi xảy ra khi xử lý thanh toán: " + ex.Message;
                 return View("MomoFail");
             }
         }
 
+
+
         [HttpPost]
-        public async Task<IActionResult> CodPayment(DateTime ngayGiao)
+        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao)
         {
             try
             {
-                if (CartItems == null || !CartItems.Any())
-                {
-                    ViewBag.Message = "Giỏ hàng của bạn đang trống.";
-                    return View("MomoFail");
-                }
-
                 var userId = User.FindFirstValue("UserId");
                 var userProfile = _ctx.KhachHangs.FirstOrDefault(u => u.MaKh == userId);
-                string customerAddress = userProfile?.DiaChi ?? "N/A";
+
+                if (userProfile == null)
+                {
+                    _logger.LogWarning("Không tìm thấy khách hàng với MaKh: " + userId);
+                    return BadRequest("Không tìm thấy thông tin khách hàng.");
+                }
+
+
+                DateTime? giaoDate = null;
+                if (DateTime.TryParse(ngayGiao, out DateTime parsed))
+                {
+                    giaoDate = parsed;
+                }
 
                 var hoaDon = new HoaDon
                 {
                     MaKh = userId,
                     NgayDat = DateTime.Now,
-                    HoTen = User.Identity?.Name ?? "Khách hàng",
-                    DiaChi = customerAddress,
+                    HoTen = User.Identity?.Name ?? userProfile.HoTen,
+                    DiaChi = selectedAddress,
                     CachThanhToan = "COD",
-                    CachVanChuyen = "Giao tận nơi",
-                    MaTrangThai = 0,
-                    NgayGiao = ngayGiao,
-                    GhiChu = "Thanh toán khi nhận hàng (COD)"
+                    CachVanChuyen = "N/A",
+                    MaTrangThai = 1, // Chờ xác nhận
+                    NgayGiao = giaoDate,
+                    GhiChu = "Thanh toán khi nhận hàng"
                 };
-
-                _ctx.HoaDons.Add(hoaDon);
-                await _ctx.SaveChangesAsync();
+                _ctx.Add(hoaDon);
+                _ctx.SaveChanges();
 
                 foreach (var item in CartItems)
                 {
@@ -568,18 +575,15 @@ namespace MyEStore.Controllers
                         SoLuong = item.SoLuong,
                         GiamGia = 1
                     };
-                    _ctx.ChiTietHds.Add(cthd);
+                    _ctx.Add(cthd);
                 }
-                await _ctx.SaveChangesAsync();
+                _ctx.SaveChanges();
 
-                HttpContext.Session.Set(CART_KEY, new List<CartItem>());
-
-                // Gửi email
                 try
                 {
-                    string customerEmail = userProfile?.Email ?? "Không rõ";
-                    string userName = userProfile?.HoTen ?? hoaDon.HoTen;
-                    string phone = userProfile?.DienThoai ?? "Không rõ";
+                    string customerEmail = userProfile.Email ?? "Không rõ";
+                    string userName = userProfile.HoTen ?? hoaDon.HoTen;
+                    string phone = userProfile.DienThoai ?? "Không rõ";
                     string adminEmail = _configuration["EmailSettings:AdminEmail"] ?? "phannguyendangkhoa0915@gmail.com";
 
                     await SendCustomerEmail(customerEmail, hoaDon, phone, userName);
@@ -590,15 +594,20 @@ namespace MyEStore.Controllers
                     _logger.LogError(ex, "Lỗi khi gửi email COD");
                 }
 
-                ViewBag.Message = "Đặt hàng COD thành công!";
-                return View("Success");
+                HttpContext.Session.Set(CART_KEY, new List<CartItem>());
+                return RedirectToAction("Success");
             }
             catch (Exception ex)
             {
-                ViewBag.Message = "Lỗi xử lý: " + ex.Message;
+                _logger.LogError(ex, "Lỗi khi xử lý thanh toán COD");
+                ViewBag.Message = "Lỗi khi tạo hóa đơn COD: " + ex.GetBaseException().Message;
                 return View("MomoFail");
             }
+
         }
+
+
+
 
         private async Task SendCustomerEmail(string email, HoaDon order, string phone, string userName)
         {
