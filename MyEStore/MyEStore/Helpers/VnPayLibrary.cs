@@ -154,8 +154,9 @@ namespace MyEStore.Helpers
             if (x == null) return -1;
             if (y == null) return 1;
             var vnpCompare = CompareInfo.GetCompareInfo("en-US");
-            return vnpCompare.Compare(x, y, CompareOptions.Ordinal);
+            return vnpCompare.Compare(x, y, CompareOptions.IgnoreCase); // ✅ Bỏ phân biệt hoa thường
         }
     }
+
 
 }
