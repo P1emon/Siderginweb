@@ -29,7 +29,7 @@
 
 /* Base container styles */
 .profile-container {
-    max-width: 850px;
+    max-width: 700px;
     margin: 1.75rem auto;
     padding: 0 1rem;
 }
@@ -654,14 +654,78 @@
     }
 }
 
-/* Ripple Effect */
-.nav-link {
-    color: #000000 !important;
+/* Tab Navigation - Thêm specificity cao hơn */
+.profile-container .profile-nav-tabs {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.25rem;
+    border-bottom: 1px solid var(--profile-gray-200);
+    position: relative;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-.profile-nav-tabs .nav-link i {
-    color: #000000 !important;
-}
-.profile-ripple {
+
+    .profile-container .profile-nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .profile-container .profile-nav-tabs .nav-item {
+        margin-right: 0.5rem;
+    }
+
+    /* Đặt !important cho các thuộc tính quan trọng để ngăn ghi đè */
+    .profile-container .profile-nav-tabs .nav-link.profile-tab-button {
+        padding: 0.75rem 1.25rem !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        color: var(--profile-gray-600) !important;
+        font-weight: 500 !important;
+        border: none !important;
+        border-radius: var(--profile-border-radius-sm) var(--profile-border-radius-sm) 0 0 !important;
+        background: transparent !important;
+        transition: var(--profile-transition) !important;
+        position: relative !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+        font-size: 0.9rem !important;
+    }
+
+        .profile-container .profile-nav-tabs .nav-link.profile-tab-button i {
+            font-size: 1rem !important;
+            color: var(--profile-gray-600) !important; /* Ghi đè màu icon */
+        }
+
+        .profile-container .profile-nav-tabs .nav-link.profile-tab-button:hover {
+            color: var(--profile-primary) !important;
+            background-color: var(--profile-primary-light) !important;
+        }
+
+            .profile-container .profile-nav-tabs .nav-link.profile-tab-button:hover i {
+                color: var(--profile-primary) !important;
+            }
+
+        .profile-container .profile-nav-tabs .nav-link.profile-tab-button.active {
+            color: var(--profile-primary) !important;
+            background-color: var(--profile-primary-light) !important;
+            font-weight: 600 !important;
+        }
+
+            .profile-container .profile-nav-tabs .nav-link.profile-tab-button.active i {
+                color: var(--profile-primary) !important;
+            }
+
+/* Đảm bảo indicator hoạt động đúng */
+.profile-container .profile-nav-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 3px;
+    background-color: var(--profile-primary);
+    border-radius: 3px 3px 0 0;
+    transition: var(--profile-transition);
+}.profile-ripple {
     position: absolute;
     background: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
@@ -810,3 +874,4 @@
         background-color: var(--profile-primary);
         border-radius: 20px;
     }
+

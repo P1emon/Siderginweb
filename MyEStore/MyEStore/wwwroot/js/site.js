@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 280);
     }
 
-    // Xử lý dropdown menu trên mobile - cải tiến
+    // Tìm đoạn code xử lý dropdown trong file site.js và thay thế bằng đoạn code sau
+    // Xử lý dropdown menu trên mobile - đã được cải thiện
     const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
     dropdownToggles.forEach(function (toggle) {
@@ -128,8 +129,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 const dropdown = this.closest('.dropdown');
                 const dropdownMenu = this.nextElementSibling;
 
-                // Toggle dropdown menu với hiệu ứng slide
-                if (dropdownMenu.classList.contains('show')) {
+                // Đảm bảo rằng menu dropdown được thiết lập đúng cách 
+                if (!dropdownMenu.style.maxHeight || dropdownMenu.style.maxHeight === '0px') {
+                    // Đóng tất cả các dropdown khác trước
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function (menu) {
+                        if (menu !== dropdownMenu) {
+                            const parentToggle = menu.previousElementSibling;
+                            const parentDropdown = menu.closest('.dropdown');
+
+                            parentToggle.setAttribute('aria-expanded', 'false');
+                            menu.style.maxHeight = '0px';
+                            menu.classList.remove('show');
+                            parentDropdown.classList.remove('active');
+                        }
+                    });
+
+                    // Mở dropdown này
+                    this.setAttribute('aria-expanded', 'true');
+                    dropdownMenu.classList.add('show');
+                    dropdownMenu.style.maxHeight = dropdownMenu.scrollHeight + 'px';
+                    dropdown.classList.add('active');
+                } else {
                     // Đóng dropdown này
                     this.setAttribute('aria-expanded', 'false');
                     dropdownMenu.style.maxHeight = '0px';
@@ -139,30 +159,40 @@ document.addEventListener('DOMContentLoaded', function () {
                     }, 300);
 
                     dropdown.classList.remove('active');
-                } else {
-                    // Đóng tất cả các dropdown khác trước
-                    document.querySelectorAll('.dropdown-menu.show').forEach(function (menu) {
-                        const parentToggle = menu.previousElementSibling;
-                        const parentDropdown = menu.closest('.dropdown');
-
-                        parentToggle.setAttribute('aria-expanded', 'false');
-                        menu.style.maxHeight = '0px';
-
-                        setTimeout(() => {
-                            menu.classList.remove('show');
-                        }, 300);
-
-                        parentDropdown.classList.remove('active');
-                    });
-
-                    // Mở dropdown này
-                    this.setAttribute('aria-expanded', 'true');
-                    dropdownMenu.classList.add('show');
-                    dropdownMenu.style.maxHeight = dropdownMenu.scrollHeight + 'px';
-                    dropdown.classList.add('active');
                 }
             }
         });
+    });
+
+    // Đảm bảo tất cả dropdown-menu đều có maxHeight ban đầu là 0
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                menu.style.maxHeight = '0px';
+            });
+        }
+    });
+
+    // Thêm vào phần xử lý khi resize để đảm bảo dropdown được reset đúng
+    window.addEventListener('resize', function () {
+        const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+
+        if (window.innerWidth <= 768) {
+            // Trong chế độ mobile
+            dropdownMenus.forEach(function (menu) {
+                if (!menu.classList.contains('show')) {
+                    menu.style.maxHeight = '0px';
+                } else {
+                    menu.style.maxHeight = menu.scrollHeight + 'px';
+                }
+            });
+        } else {
+            // Trong chế độ desktop
+            dropdownMenus.forEach(function (menu) {
+                menu.style.maxHeight = '';
+                // Không xóa class 'show' vì Bootstrap sẽ xử lý nó ở desktop
+            });
+        }
     });
 
     // Xử lý đóng dropdown khi click bên ngoài

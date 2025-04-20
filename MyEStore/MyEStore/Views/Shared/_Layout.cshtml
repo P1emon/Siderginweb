@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="~/css/LayoutStyles.css" asp-append-version="true" />
+
 </head>
 <body>
     <!-- Header -->
@@ -20,7 +21,6 @@
                 </a>
             </div>
 
-            <!---->
             <!-- Thêm form tìm kiếm vào đây -->
             <form method="get" asp-action="Search" asp-controller="Products" class="search-container">
                 <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." />
@@ -28,7 +28,6 @@
                     <i class="fas fa-search"></i>
                 </button>
             </form>
-
             <nav>
                 <ul>
                     <li class="nav-item">
@@ -51,7 +50,7 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li> 
+                         @*      <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li> // *@
                                 <li>
                                     <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
                                         <i class="bi bi-bell"></i> Thông báo
@@ -155,3 +154,5 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+
