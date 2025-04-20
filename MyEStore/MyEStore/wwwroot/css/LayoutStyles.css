@@ -54,66 +54,97 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1.5rem; /* Tăng khoảng cách giữa các phần tử */
 }
 
+/* Điều chỉnh kích thước logo */
 .logo {
     transition: transform 0.3s ease;
+    flex: 0 0 auto;
+    margin-right: 4rem;
 }
-
-    .logo:hover {
-        transform: scale(1.05);
-    }
-
-    .logo a {
-        text-decoration: none;
-    }
 
     .logo h1 {
         color: white;
-        font-size: 2rem;
+        font-size: 2.5rem; /* Tăng từ 2rem lên 2.5rem */
         font-weight: 700;
         letter-spacing: 1px;
         position: relative;
     }
 
+    /* Điều chỉnh highlight của logo */
     .logo .highlight {
         color: var(--accent-color);
         display: inline-block;
         position: relative;
-        text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        text-shadow: 0 0 12px rgba(245, 158, 11, 0.6); /* Tăng độ đổ bóng */
+        font-size: 2.7rem; /* Làm chữ S lớn hơn một chút */
     }
 
-        .logo .highlight::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--secondary-color);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-    .logo:hover .highlight::after {
-        transform: scaleX(1);
+    /* Tăng hiệu ứng hover */
+    .logo:hover {
+        transform: scale(1.08); /* Tăng từ 1.05 lên 1.08 */
     }
 
-/* Navigation Styles - Modern Glass Morphism */
-nav ul {
-    display: flex;
-    list-style: none;
-    align-items: center;
-    gap: 1.5rem;
+/* Điều chỉnh logo trong footer để cân đối */
+.footer-logo h2 {
+    font-size: 2.8rem; /* Tăng từ 2.2rem */
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
+/* Responsive cho logo */
+@media screen and (max-width: 992px) {
+    .logo h1 {
+        font-size: 2.3rem;
+    }
+
+    .logo .highlight {
+        font-size: 2.5rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .logo h1 {
+        font-size: 2.2rem;
+    }
+
+    .logo .highlight {
+        font-size: 2.4rem;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .logo h1 {
+        font-size: 2rem;
+    }
+
+    .logo .highlight {
+        font-size: 2.2rem;
+    }
+}
+
+/* Navigation Styles - Modern Glass Morphism */
+nav {
+    flex: 0 0 auto;
+    margin-left: auto; /* Thêm margin-left: auto để đẩy nav sang phải */
+}
+
+    nav ul {
+        display: flex;
+        list-style: none;
+        align-items: center;
+        gap: 1rem;
+    }
 .nav-item {
     position: relative;
 }
 
 /* Nav Links màu trắng với hiệu ứng đổ bóng nhẹ */
+/* Đảm bảo nav-link luôn giữ viền ngay cả khi dropdown được kích hoạt */
 .nav-link, .dropdown-toggle {
-    color: #FFFFFF !important; /* Đảm bảo màu trắng */
+    color: #FFFFFF !important;
     text-decoration: none;
     font-weight: 500;
     padding: 0.75rem 1.5rem;
@@ -123,10 +154,21 @@ nav ul {
     gap: 0.5rem;
     position: relative;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: rgba(255, 255, 255, 0.1); /* Giữ background trong suốt */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Border nhạt */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(5px);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Thêm đổ bóng chữ nhẹ */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Thêm rule cụ thể để giữ viền khi có active state */
+.nav-item .nav-link.active,
+.nav-item .nav-link:focus,
+.nav-item .dropdown-toggle.active,
+.nav-item .dropdown-toggle:focus,
+.dropdown.show .nav-link,
+.dropdown.show .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
     .nav-link:hover, .dropdown-toggle:hover {
@@ -1002,176 +1044,177 @@ nav ul {
         }
     }
 
-/* Mobile Portrait (576px và xuống) */
-@media screen and (max-width: 576px) {
-    html {
-        font-size: 13px;
-    }
-
-    .header-container {
-        padding: 0.8rem;
-    }
-
-    .logo h1 {
-        font-size: 1.5rem;
-    }
-
-    .container {
-        padding: 1.5rem 1rem;
-    }
-
-    .dropdown-menu {
-        min-width: 100%;
-        left: 0;
-        right: auto;
-    }
-
-    .footer-wrapper {
-        padding: 3rem 1rem 1rem;
-    }
-
-    .footer-content h3 {
-        font-size: 1.2rem;
-    }
-
-    .contact-column p,
-    .footer-links a,
-    .brand-description,
-    .social-link {
-        font-size: 0.85rem;
-    }
-}
-
-/* Mobile nhỏ (380px và xuống) */
-@media screen and (max-width: 380px) {
-    html {
-        font-size: 12px;
-    }
-
-    .nav-link, .dropdown-toggle {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.85rem;
-    }
-
-    .logo h1 {
-        font-size: 1.4rem;
-    }
-
-    .badge {
-        width: 18px;
-        height: 18px;
-        font-size: 0.7rem;
-    }
-
-    .footer-bottom {
-        padding: 1rem;
-        font-size: 0.8rem;
-    }
-}
-
-/* Thiết bị có màn hình lớn (1400px và lên) */
-@media screen and (min-width: 1400px) {
-    .header-container, .container, .footer-wrapper {
-        max-width: 1320px;
-    }
-}
-
-/* Thiết bị với tỷ lệ pixel cao (Retina display) */
-@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
-    /* Tối ưu hóa cho màn hình retina */
-    .logo h1 {
-        text-rendering: optimizeLegibility;
-    }
-}
-
-/* Chế độ Dark Mode */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-light: #121212;
-        --bg-white: #1E1E1E;
-        --text-dark: #E0E0E0;
-        --text-muted: #A0A0A0;
-        --border-color: #333333;
-    }
-
-    .site-footer {
-        background: linear-gradient(180deg, #121212 0%, #1A1A1A 100%);
-    }
-
-    .dropdown-menu {
-        background: rgba(30, 30, 30, 0.95);
-    }
-
-    .dropdown-item {
-        color: var(--text-dark);
-    }
-
-    .dropdown-divider {
-        border-top-color: #333333;
-    }
-}
-
-/* Chế độ in ấn */
-@media print {
-    body {
-        background: white;
-        color: black;
-        font-size: 12pt;
-    }
-
-    header, footer, .mobile-menu-toggle {
-        display: none !important;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    a {
-        text-decoration: underline;
-        color: #000000;
-    }
-
-        a[href]:after {
-            content: " (" attr(href) ")";
-            font-size: 90%;
+    /* Mobile Portrait (576px và xuống) */
+    @media screen and (max-width: 576px) {
+        html {
+            font-size: 13px;
         }
-}
 
-/* Tối ưu cho các thiết bị có chiều cao màn hình thấp */
-@media screen and (max-height: 700px) {
-    header {
-        padding: 0.5rem 0;
+        .header-container {
+            padding: 0.8rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+        }
+
+        .container {
+            padding: 1.5rem 1rem;
+        }
+
+        .dropdown-menu {
+            min-width: 100%;
+            left: 0;
+            right: auto;
+        }
+
+        .footer-wrapper {
+            padding: 3rem 1rem 1rem;
+        }
+
+        .footer-content h3 {
+            font-size: 1.2rem;
+        }
+
+        .contact-column p,
+        .footer-links a,
+        .brand-description,
+        .social-link {
+            font-size: 0.85rem;
+        }
     }
 
-    .logo h1 {
-        font-size: 1.5rem;
+    /* Mobile nhỏ (380px và xuống) */
+    @media screen and (max-width: 380px) {
+        html {
+            font-size: 12px;
+        }
+
+        .nav-link, .dropdown-toggle {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+        }
+
+        .badge {
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+        }
+
+        .footer-bottom {
+            padding: 1rem;
+            font-size: 0.8rem;
+        }
     }
 
-    .container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
-}
-
-/* Tối ưu cho các thiết bị có chế độ landscape */
-@media screen and (max-height: 500px) and (orientation: landscape) {
-    .header-container {
-        padding: 0.5rem 1rem;
+    /* Thiết bị có màn hình lớn (1400px và lên) */
+    @media screen and (min-width: 1400px) {
+        .header-container, .container, .footer-wrapper {
+            max-width: 1320px;
+        }
     }
 
-    nav ul {
-        gap: 0.5rem;
+    /* Thiết bị với tỷ lệ pixel cao (Retina display) */
+    @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {
+        /* Tối ưu hóa cho màn hình retina */
+        .logo h1 {
+            text-rendering: optimizeLegibility;
+        }
     }
 
-    .nav-link, .dropdown-toggle {
-        padding: 0.4rem 0.8rem;
+    /* Chế độ Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-light: #121212;
+            --bg-white: #1E1E1E;
+            --text-dark: #E0E0E0;
+            --text-muted: #A0A0A0;
+            --border-color: #333333;
+        }
+
+        .site-footer {
+            background: linear-gradient(180deg, #121212 0%, #1A1A1A 100%);
+        }
+
+        .dropdown-menu {
+            background: rgba(30, 30, 30, 0.95);
+        }
+
+        .dropdown-item {
+            color: var(--text-dark);
+        }
+
+        .dropdown-divider {
+            border-top-color: #333333;
+        }
     }
 
-    .mobile-nav-visible {
-        padding-top: 3rem;
+    /* Chế độ in ấn */
+    @media print {
+        body {
+            background: white;
+            color: black;
+            font-size: 12pt;
+        }
+
+        header, footer, .mobile-menu-toggle {
+            display: none !important;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: underline;
+            color: #000000;
+        }
+
+            a[href]:after {
+                content: " (" attr(href) ")";
+                font-size: 90%;
+            }
+    }
+
+    /* Tối ưu cho các thiết bị có chiều cao màn hình thấp */
+    @media screen and (max-height: 700px) {
+        header {
+            padding: 0.5rem 0;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+        }
+
+        .container {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+    }
+
+    /* Tối ưu cho các thiết bị có chế độ landscape */
+    @media screen and (max-height: 500px) and (orientation: landscape) {
+        .header-container {
+            padding: 0.5rem 1rem;
+        }
+
+        nav ul {
+            gap: 0.5rem;
+        }
+
+        .nav-link, .dropdown-toggle {
+            padding: 0.4rem 0.8rem;
+        }
+
+        .mobile-nav-visible {
+            padding-top: 3rem;
+        }
     }
 }

@@ -19,6 +19,15 @@
                     <h1><span class="highlight">S</span>idergin</h1>
                 </a>
             </div>
+
+            <!-- Thêm form tìm kiếm vào đây -->
+            <form method="get" asp-action="Search" asp-controller="Products" class="search-container">
+                <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." />
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+
             <nav>
                 <ul>
                     <li class="nav-item">
@@ -65,6 +74,7 @@
             </nav>
         </div>
     </header>
+
 
     <div class="container">
         <main role="main" class="pb-3">

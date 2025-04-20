@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
 // Gọi hàm này khi trang được tải
 $(document).ready(function () {
     updateCartCount();
