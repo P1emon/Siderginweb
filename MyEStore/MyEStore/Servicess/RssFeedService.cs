@@ -29,13 +29,6 @@ namespace MyEStore.Servicess
                     LogoUrl = "/images/logos/vnexpress.png"
                 },
                 new NewsSource {
-                    Name = "Thanh Niên - Sức Khỏe",
-                    RssUrl = "https://thanhnien.vn/rss/suc-khoe.rss",
-                    BaseUrl = "https://thanhnien.vn",
-                    Category = "Sức khỏe",
-                    LogoUrl = "/images/logos/thanhnien.png"
-                },
-                new NewsSource {
                     Name = "Tuổi Trẻ - Y Tế",
                     RssUrl = "https://tuoitre.vn/rss/suc-khoe.rss",
                     BaseUrl = "https://tuoitre.vn",

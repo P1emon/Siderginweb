@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyEStore.Entities;
 
@@ -11,9 +12,11 @@ using MyEStore.Entities;
 namespace MyEStore.Migrations
 {
     [DbContext(typeof(MyeStoreContext))]
-    partial class MyeStoreContextModelSnapshot : ModelSnapshot
+    [Migration("20250420095910_AddSliderTable")]
+    partial class AddSliderTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,7 +302,7 @@ namespace MyEStore.Migrations
                     b.HasIndex("MaHh")
                         .IsUnique();
 
-                    b.ToTable("HangHoaChiTiets", (string)null);
+                    b.ToTable("HangHoaChiTiets");
                 });
 
             modelBuilder.Entity("MyEStore.Entities.HoaDon", b =>
@@ -327,7 +330,8 @@ namespace MyEStore.Migrations
 
                     b.Property<string>("DiaChi")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
 
                     b.Property<string>("GhiChu")
                         .HasMaxLength(255)
@@ -866,7 +870,7 @@ namespace MyEStore.Migrations
 
                     b.HasIndex("MaNV");
 
-                    b.ToTable("Sliders", (string)null);
+                    b.ToTable("Sliders");
                 });
 
             modelBuilder.Entity("MyEStore.Entities.BanBe", b =>

@@ -19,9 +19,8 @@ namespace MyEStore.Controllers
         [HttpGet("san-pham/{categorySlug}/{productSlug}")]
         public IActionResult Detail(string categorySlug, string productSlug)
         {
-            // Lấy sản phẩm từ slug, bao gồm thông tin chi tiết và danh mục
             var hangHoa = _ctx.HangHoas
-                .Include(h => h.HangHoaChiTiet) // Sửa từ HangHoaChiTiets thành HangHoaChiTiet
+                .Include(h => h.HangHoaChiTiet)
                 .Include(h => h.MaLoaiNavigation)
                 .SingleOrDefault(p => p.TenAlias == productSlug);
 
@@ -30,24 +29,21 @@ namespace MyEStore.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra slug của danh mục
             var expectedCategorySlug = SlugHelper.GenerateSlug(hangHoa.MaLoaiNavigation.TenLoaiAlias);
 
-            // Nếu categorySlug không khớp, chuyển hướng đến URL chính xác
             if (categorySlug != expectedCategorySlug)
             {
                 return RedirectToActionPermanent("Detail", new { categorySlug = expectedCategorySlug, productSlug });
             }
 
-            // Truyền slug hình ảnh
             ViewData["ImageUrl"] = "~/Hinh/HangHoa/" + hangHoa.Hinh;
 
             return View(hangHoa);
         }
 
-        // Các action khác (Index, Search) giữ nguyên
         public IActionResult Index(int? cateid, int page = 1, int pageSize = 10)
         {
+            // Fetch products
             var data = _ctx.HangHoas.AsQueryable();
 
             if (cateid.HasValue)
@@ -78,9 +74,16 @@ namespace MyEStore.Controllers
                     Hinh = hh.Hinh
                 }).ToList();
 
+            // Fetch active sliders
+            var sliders = _ctx.Sliders
+                .Where(s => s.HieuLuc && s.NgayBatDau <= DateTime.Now && s.NgayKetThuc >= DateTime.Now)
+                .OrderBy(s => s.MaSlider)
+                .ToList();
+
             ViewData["CurrentPage"] = page;
             ViewData["TotalPages"] = (int)Math.Ceiling((double)totalItems / pageSize);
             ViewData["CateId"] = cateid;
+            ViewData["Sliders"] = sliders; // Pass sliders to view
 
             return View(result);
         }

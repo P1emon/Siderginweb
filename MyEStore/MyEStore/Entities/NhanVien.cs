@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyEStore.Models;
+using System;
 using System.Collections.Generic;
 
 namespace MyEStore.Entities;
@@ -20,4 +21,5 @@ public partial class NhanVien
     public virtual ICollection<HoiDap> HoiDaps { get; set; } = new List<HoiDap>();
 
     public virtual ICollection<PhanCong> PhanCongs { get; set; } = new List<PhanCong>();
+    public virtual ICollection<Slider> Sliders { get; set; } = new List<Slider>();
 }

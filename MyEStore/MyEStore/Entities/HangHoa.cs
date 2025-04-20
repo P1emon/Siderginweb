@@ -40,4 +40,5 @@ public partial class HangHoa
     public virtual ICollection<YeuThich> YeuThiches { get; set; } = new List<YeuThich>();
     // Thêm thuộc tính navigation cho HangHoaChiTiet
     public virtual HangHoaChiTiet HangHoaChiTiet { get; set; } // Một-một
+
 }
