@@ -20,6 +20,7 @@
                 </a>
             </div>
 
+            <!---->
             <!-- Thêm form tìm kiếm vào đây -->
             <form method="get" asp-action="Search" asp-controller="Products" class="search-container">
                 <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." />
@@ -50,7 +51,7 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
-                                @* <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li> *@
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Address"><i class="bi bi-geo-alt-fill"></i> Địa chỉ nhận hàng</a></li> 
                                 <li>
                                     <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
                                         <i class="bi bi-bell"></i> Thông báo

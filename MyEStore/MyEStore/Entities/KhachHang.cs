@@ -46,6 +46,7 @@ public partial class KhachHang
     public bool IsLocked { get; set; } = false;
 
     public DateTime? LockoutEnd { get; set; }
+    public DateTime? MuaHangLanCuoi { get; set; }
 
     public virtual ICollection<BanBe> BanBes { get; set; } = new List<BanBe>();
 

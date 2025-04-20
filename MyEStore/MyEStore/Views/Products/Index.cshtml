@@ -14,9 +14,47 @@
 <meta property="og:type" content="website" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
+<link rel="stylesheet" href="~/css/banner.css">
 <link rel="stylesheet" href="~/css/PHome.css" />
 
+<!-- phần banner -->
+<div class="lazada-banner-section">
+    <div class="top-banner">
+        <div class="banner-left">
+            <img src="~/Hinh/HangHoa/ca-chua-bi.jpg" alt="Banner lớn" />
+        </div>
+        <div class="banner-right">
+            <img src="~/Hinh/HangHoa/ca-hoi.jpg" alt="Banner nhỏ" />
+        </div>
+    </div>
+
+    <div class="bottom-banner-boxes">
+        <a href="#" class="box-item-banner">
+            <img src="~/Hinh/HangHoa/ca-rot.jpg" alt="Box 1" />
+            <p>100% Chính Hãng</p>
+        </a>
+        <a href="#" class="box-item-banner">
+            <img src="~/Hinh/HangHoa/cha-lua.jpg" alt="Box 2" />
+            <p>Voucher giảm giá</p>
+        </a>
+        <a href="#" class="box-item-banner">
+            <img src="~/Hinh/HangHoa/dua-hau.jpg" alt="Box 3" />
+            <p>Nạp Thẻ Giá Rẻ</p>
+        </a>
+    </div>
+</div>
+
+
 <h1 class="page-title">@ViewData["Title"]</h1>
+
+<!--
+<form method="get" asp-action="Search" asp-controller="Products" class="search-container">
+    <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." />
+    <button type="submit" class="search-button">
+        <i class="fas fa-search"></i>
+    </button>
+</form>
+-->
 
 <!-- Danh sách sản phẩm -->
 <div class="product-container">
