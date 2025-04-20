@@ -47,16 +47,15 @@ header {
     border-bottom: 1px solid rgba(255,255,255,0.15); /* Tăng độ sáng của border */
 }
 
+/* Điều chỉnh header container */
 .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 1.5rem; /* Tăng khoảng cách giữa các phần tử */
+    justify-content: space-between;
+    padding: 15px 20px;
+    max-width: 1300px;
+    margin: 0 auto;
 }
-
 /* Điều chỉnh kích thước logo */
 .logo {
     transition: transform 0.3s ease;
@@ -93,6 +92,66 @@ header {
     color: var(--primary-color);
     font-weight: 600;
 }
+/* Form tìm kiếm */
+.search-container {
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+    width: 100%;
+    margin: 0 20px;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 45px;
+    border: 2px solid #e0e0e0;
+    border-radius: 30px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    color: #333;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+    .search-input:focus {
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        outline: none;
+        background-color: #fff;
+    }
+
+    .search-input::placeholder {
+        color: #9ca3af;
+    }
+
+.search-button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .search-button:hover {
+        background-color: #2563eb;
+        transform: translateY(-50%) scale(1.05);
+    }
+
+    .search-button i {
+        font-size: 14px;
+    }
 
 /* Responsive cho logo */
 @media screen and (max-width: 992px) {
@@ -921,6 +980,7 @@ nav {
             display: flex;
             align-items: center;
             transition: all 0.3s ease;
+            color: black;
         }
 
             .mobile-nav-visible .dropdown-item i {
@@ -939,6 +999,7 @@ nav {
             .mobile-nav-visible .dropdown-item:hover {
                 background: rgba(59, 130, 246, 0.08);
                 padding-left: 2rem;
+
             }
 
                 .mobile-nav-visible .dropdown-item:hover i {

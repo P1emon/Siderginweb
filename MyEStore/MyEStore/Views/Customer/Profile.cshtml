@@ -19,21 +19,22 @@
         </div>
 
         <div class="profile-body">
+            <!-- HTML cho phần tabs navigation -->
             <ul class="nav profile-nav-tabs" id="profileTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link profile-tab-button active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
+                    <button class="nav-link profile-tab-button active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
                         <i class="bi bi-person-fill"></i>
                         <span>Thông tin cá nhân</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link profile-tab-button active" id="profile-tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                    <button class="nav-link profile-tab-button" id="security-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
                         <i class="bi bi-shield-lock-fill"></i>
                         <span>Bảo mật</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link profile-tab-button active" id="profile-tab" data-bs-target="#address" type="button" role="tab" aria-controls="address" aria-selected="false">
+                    <button class="nav-link profile-tab-button" id="address-tab" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab" aria-controls="address" aria-selected="false">
                         <i class="bi bi-geo-alt-fill"></i>
                         <span>Địa chỉ</span>
                     </button>
@@ -290,6 +291,7 @@
 </div>
 
 @section Scripts {
+
     <script>
         // Toggle edit mode for profile fields
         function toggleEdit(button, fieldName) {
