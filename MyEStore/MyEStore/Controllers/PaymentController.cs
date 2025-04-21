@@ -296,7 +296,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, CancellationToken cancellationToken)
+        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, CancellationToken cancellationToken)
         {
             try
             {
@@ -325,6 +325,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
                         MaTrangThai = 1,
+                        PhiVanChuyen = PhiVanChuyen,
                         NgayGiao = ngayGiaoDate,
                         GhiChu = $"Thanh toán thành công, reference_id={reference}, transactionId={transactionId}"
                     };
@@ -388,7 +389,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
         }
 
         [HttpPost]
-        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress)
+        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen)
         {
             var tongTien = CartItems.Sum(p => p.ThanhTien);
             var userId = User.FindFirstValue("UserId");
@@ -406,6 +407,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     CachThanhToan = "VNPay",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 0,
+                    PhiVanChuyen = PhiVanChuyen,
                     NgayGiao = ngayGiaoDate,
                     GhiChu = "Đang chờ thanh toán VNPay"
                 };
@@ -591,7 +593,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao)
+        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao, double PhiVanChuyen)
         {
             try
             {
@@ -619,6 +621,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     CachThanhToan = "COD",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 1, // Chờ xác nhận
+                    PhiVanChuyen = PhiVanChuyen,
                     NgayGiao = giaoDate,
                     GhiChu = "Thanh toán khi nhận hàng"
                 };
