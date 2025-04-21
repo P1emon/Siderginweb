@@ -345,6 +345,10 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     }
                     _ctx.SaveChanges();
 
+                    // Thêm đoạn xử lý cộng điểm
+                    await CongDiemChoKhachHangAsync(hoaDon.MaHd);
+                    _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
+
                     try
                     {
                         string customerEmail = userProfile?.Email ?? "Không rõ";
@@ -382,6 +386,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 return BadRequest(error);
             }
         }
+
         [HttpPost]
         public IActionResult VnpayOrder(string ngayGiao, string selectedAddress)
         {
@@ -599,7 +604,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     return BadRequest("Không tìm thấy thông tin khách hàng.");
                 }
 
-
                 DateTime? giaoDate = null;
                 if (DateTime.TryParse(ngayGiao, out DateTime parsed))
                 {
@@ -635,6 +639,10 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 }
                 _ctx.SaveChanges();
 
+                // Cộng điểm cho khách hàng
+                await CongDiemChoKhachHangAsync(hoaDon.MaHd);
+                _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
+
                 try
                 {
                     string customerEmail = userProfile.Email ?? "Không rõ";
@@ -659,8 +667,8 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 ViewBag.Message = "Lỗi khi tạo hóa đơn COD: " + ex.GetBaseException().Message;
                 return View("MomoFail");
             }
-
         }
+
 
 
 
@@ -684,7 +692,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 EnableSsl = true,
             };
 
-            string subject = $"Xác nhận đơn hàng COD #{order.MaHd} - SIDERGIN";
+            string subject = $"Xác nhận đơn hàng  #{order.MaHd} - SIDERGIN";
             string body = $@"
             <!DOCTYPE html>
             <html lang='vi'>
@@ -818,10 +826,10 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 EnableSsl = true,
             };
 
-            string subject = $"📦 [SIDERGIN] Thông báo đơn hàng COD mới #{order.MaHd}";
+            string subject = $"📦 [SIDERGIN] Thông báo đơn hàng mới #{order.MaHd}";
 
             string body = $@"
-                <h2>📢 Thông báo đơn hàng COD mới</h2>
+                <h2>📢 Thông báo đơn hàng mới</h2>
                 <p>Xin chào Admin,</p>
                 <p>Một đơn hàng mới đã được khách hàng đặt thành công.</p>
                 <hr>
