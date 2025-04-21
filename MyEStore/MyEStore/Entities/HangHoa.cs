@@ -29,6 +29,8 @@ public partial class HangHoa
 
     public string MaNcc { get; set; } = null!;
 
+    public DateTime NgayTao { get; set; } = DateTime.Now; // New property for creation date
+
     public virtual ICollection<BanBe> BanBes { get; set; } = new List<BanBe>();
 
     public virtual ICollection<ChiTietHd> ChiTietHds { get; set; } = new List<ChiTietHd>();
@@ -38,7 +40,6 @@ public partial class HangHoa
     public virtual NhaCungCap MaNccNavigation { get; set; } = null!;
 
     public virtual ICollection<YeuThich> YeuThiches { get; set; } = new List<YeuThich>();
-    // Thêm thuộc tính navigation cho HangHoaChiTiet
-    public virtual HangHoaChiTiet HangHoaChiTiet { get; set; } // Một-một
 
+    public virtual HangHoaChiTiet HangHoaChiTiet { get; set; } // One-to-one
 }

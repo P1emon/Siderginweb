@@ -6,6 +6,8 @@
     ViewData["Title"] = ViewData["Title"] ?? "Danh sách hàng hóa";
     var siteUrl = ViewContext.HttpContext.Request.Scheme + "://" + ViewContext.HttpContext.Request.Host;
     var sliders = ViewData["Sliders"] as List<MyEStore.Models.Slider> ?? new List<MyEStore.Models.Slider>();
+    var newProducts = ViewData["NewProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
+    var saleProducts = ViewData["SaleProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
 }
 
 <meta property="og:title" content="@ViewData["Title"]" />
@@ -17,83 +19,174 @@
 <link rel="stylesheet" href="@Url.Content("~/css/PHome.css")" />
 
 
-<!-- Slider Section -->
-<div class="lazada-banner-section">
-    <div class="top-banner">
-        <div class="banner-left">
-            <div class="slider-container">
-                @if (sliders.Any())
-                {
-                    foreach (var slider in sliders)
-                    {
-                        <a href="@slider.LinkQuangCao" class="slider-item" style="display: none;">
-                            <img src="~/Hinh/HangHoa/@slider.HinhAnh" alt="@slider.TieuDe" />
-                            <div class="slider-caption">
-                                <h3>@slider.TieuDe</h3>
-                                <p>@slider.MoTa</p>
-                            </div>
-                        </a>
-                    }
-                }
-                else
-                {
-                    <a href="#" class="slider-item">
-                        <img src="~/Hinh/HangHoa/default-banner.jpg" alt="Default Banner" />
-                        <div class="slider-caption">
-                            <h3>Banner mặc định</h3>
-                            <p>Chào mừng bạn đến với MyStore!</p>
-                        </div>
-                    </a>
-                }
-
-                <!-- Slider Navigation -->
-                <button class="slider-nav prev-slide"><i class="fas fa-chevron-left"></i></button>
-                <button class="slider-nav next-slide"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        <div class="banner-right">
-            <img src="~/Hinh/HangHoa/ca-hoi.jpg" alt="Banner nhỏ" />
-        </div>
+<!-- Hero Slider Section -->
+<section class="hero-section">
+    <div class="slider-container">
+        @if (sliders.Any())
+        {
+            foreach (var slider in sliders)
+            {
+                <a href="@slider.LinkQuangCao" class="slider-item" style="display: none;">
+                    <img src="~/Hinh/HangHoa/@slider.HinhAnh" alt="@slider.TieuDe" />
+                    <div class="slider-caption">
+                        <h3>@slider.TieuDe</h3>
+                        <p>@slider.MoTa</p>
+                    </div>
+                </a>
+            }
+        }
+        else
+        {
+            <a href="#" class="slider-item">
+                <img src="~/Hinh/HangHoa/default-banner.jpg" alt="Default Banner" />
+                <div class="slider-caption">
+                    <h3>Banner mặc định</h3>
+                    <p>Chào mừng bạn đến với MyStore!</p>
+                </div>
+            </a>
+        }
+        <button class="slider-nav prev-slide"><i class="fas fa-chevron-left"></i></button>
+        <button class="slider-nav next-slide"><i class="fas fa-chevron-right"></i></button>
     </div>
+</section>
 
-    <div class="bottom-banner-boxes">
-        <a href="#" class="box-item-banner">
-            <img src="~/Hinh/HangHoa/ca-rot.jpg" alt="Box 1" />
-            <p>100% Chính Hãng</p>
-        </a>
-        <a href="#" class="box-item-banner">
-            <img src="~/Hinh/HangHoa/cha-lua.jpg" alt="Box 2" />
-            <p>Voucher giảm giá</p>
-        </a>
-        <a href="#" class="box-item-banner">
-            <img src="~/Hinh/HangHoa/dua-hau.jpg" alt="Box 3" />
-            <p>Nạp Thẻ Giá Rẻ</p>
-        </a>
+<!-- Feature Boxes Section -->
+<section class="features-section">
+    <div class="feature-box">
+        <img src="~/Hinh/HangHoa/ca-rot.jpg" alt="Authentic" />
+        <h4>100% Chính Hãng</h4>
+        <p>Cam kết sản phẩm chất lượng, nguồn gốc rõ ràng.</p>
     </div>
-</div>
+    <div class="feature-box">
+        <img src="~/Hinh/HangHoa/cha-lua.jpg" alt="Discount" />
+        <h4>Voucher Giảm Giá</h4>
+        <p>Nhận ưu đãi hấp dẫn khi mua sắm hôm nay.</p>
+    </div>
+    <div class="feature-box">
+        <img src="~/Hinh/HangHoa/dua-hau.jpg" alt="Top Up" />
+        <h4>Nạp Thẻ Giá Rẻ</h4>
+        <p>Dịch vụ nạp thẻ nhanh chóng, tiết kiệm.</p>
+    </div>
+</section>
 
-<h1 class="page-title">@ViewData["Title"]</h1>
-
-<!-- Product List -->
-<div class="product-container">
-    @foreach (var hh in Model)
+<!-- New Products Section -->
+<section class="products-section">
+    <h1 class="section-title">Sản Phẩm Mới</h1>
+    @if (newProducts.Any())
     {
-        <div class="product-card">
-            <div class="product-image">
-                <a asp-action="Detail" asp-route-categorySlug="@SlugHelper.GenerateSlug(hh.TenAlias)" asp-route-productSlug="@SlugHelper.GenerateSlug(hh.TenAlias)">
-                    <img src="~/Hinh/Hanghoa/@hh.Hinh" alt="@hh.TenHh" />
-                </a>
-            </div>
-            <div class="product-info">
-                <h2 class="product-name">@hh.TenHh</h2>
-                <p class="product-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</p>
-                <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
-                    Mua ngay
-                </a>
-            </div>
+        <div class="product-grid">
+            @foreach (var hh in newProducts)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <span class="new-label">Mới</span>
+                        @if (hh.GiamGia > 0)
+                        {
+                            <span class="sale-label">Sale @(hh.GiamGia * 100)%</span>
+                        }
+                        <a asp-action="Detail" asp-route-categorySlug="@SlugHelper.GenerateSlug(hh.TenAlias)" asp-route-productSlug="@SlugHelper.GenerateSlug(hh.TenAlias)">
+                            <img src="~/Hinh/Hanghoa/@hh.Hinh" alt="@hh.TenHh" />
+                        </a>
+                    </div>
+                    <div class="product-info">
+                        <h2 class="product-name">@hh.TenHh</h2>
+                        <p class="product-price">
+                            @if (hh.GiamGia > 0)
+                            {
+                                <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
+                                <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") VND</span>
+                            }
+                            else
+                            {
+                                <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0")VND</span>
+                            }
+                        </p>
+                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                            Mua ngay
+                        </a>
+                    </div>
+                </div>
+            }
         </div>
     }
-</div>
+    else
+    {
+        <p class="no-products">Hiện chưa có sản phẩm mới.</p>
+    }
+</section>
+
+<!-- Sale Products Section -->
+<section class="products-section">
+    <h1 class="section-title">Sản Phẩm Giảm Giá</h1>
+    @if (saleProducts.Any())
+    {
+        <div class="product-grid">
+            @foreach (var hh in saleProducts)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <span class="sale-label">Sale @(hh.GiamGia * 100)%</span>
+                        <a asp-action="Detail" asp-route-categorySlug="@SlugHelper.GenerateSlug(hh.TenAlias)" asp-route-productSlug="@SlugHelper.GenerateSlug(hh.TenAlias)">
+                            <img src="~/Hinh/Hanghoa/@hh.Hinh" alt="@hh.TenHh" />
+                        </a>
+                    </div>
+                    <div class="product-info">
+                        <h2 class="product-name">@hh.TenHh</h2>
+                        <p class="product-price">
+                            <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
+                            <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") VND</span>
+                        </p>
+                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                            Mua ngay
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="no-products">Hiện chưa có sản phẩm giảm giá.</p>
+    }
+</section>
+
+<!-- All Products Section -->
+<section class="products-section">
+    <h1 class="section-title">@ViewData["Title"]</h1>
+    <div class="product-grid">
+        @foreach (var hh in Model)
+        {
+            <div class="product-card">
+                <div class="product-image">
+                    @if (hh.GiamGia > 0)
+                    {
+                        <span class="sale-label">Sale @(hh.GiamGia * 100)%</span>
+                    }
+                    <a asp-action="Detail" asp-route-categorySlug="@SlugHelper.GenerateSlug(hh.TenAlias)" asp-route-productSlug="@SlugHelper.GenerateSlug(hh.TenAlias)">
+                        <img src="~/Hinh/Hanghoa/@hh.Hinh" alt="@hh.TenHh" />
+                    </a>
+                </div>
+                <div class="product-info">
+                    <h2 class="product-name">@hh.TenHh</h2>
+                    <p class="product-price">
+                        @if (hh.GiamGia > 0)
+                        {
+                            <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
+                            <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") VND</span>
+                        }
+                        else
+                        {
+                            <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0")VND</span>
+                            }
+                    </p>
+                    <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                        Mua ngay
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</section>
 
 <!-- Pagination -->
 <div class="pagination">
@@ -124,58 +217,15 @@
     </ul>
 </div>
 
-<!-- Promotion Slide -->
-<div id="overlay"></div>
-<div id="promo-slide-bar">
+<!-- Promotion Section -->
+<section class="promo-section">
     <h2>Ưu đãi đặc biệt!</h2>
+    <p>Đăng ký ngay để nhận các khuyến mãi độc quyền từ MyStore!</p>
     <form id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" method="post" action="https://gmail.us12.list-manage.com/subscribe/post?u=f5d09299c989c215c0ba0e855&id=f333cca46f&f_id=00d343e0f0" target="_blank">
-        <label for="mce-EMAIL">Email của bạn:</label>
-        <input type="email" name="EMAIL" id="mce-EMAIL" placeholder="Nhập email để nhận ưu đãi" required />
+        <input type="email" name="EMAIL" id="mce-EMAIL" placeholder="Nhập email của bạn" required />
         <button type="submit">Đăng ký ngay</button>
     </form>
-</div>
-<button id="open-promo-slide">Nhận ưu đãi!</button>
-
-<!-- Styles for slider arrows -->
-<style>
-    .slider-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-        background-color: rgba(0, 0, 0, 0.4);
-        border: none;
-        color: #fff;
-        font-size: 18px;
-        padding: 8px;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-        .slider-nav:hover {
-            background-color: rgba(0, 0, 0, 0.6);
-        }
-
-    .prev-slide {
-        left: 10px;
-    }
-
-    .next-slide {
-        right: 10px;
-    }
-
-    .slider-container {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .slider-item img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-</style>
+</section>
 
 <!-- Scripts -->
 <script>
@@ -222,28 +272,12 @@
             });
         }
 
-        // Promo Slide
-        const promoSlideBar = document.getElementById('promo-slide-bar');
-        const overlay = document.getElementById('overlay');
-        const openPromoSlide = document.getElementById('open-promo-slide');
+        // Promo Form
         const subscribeForm = document.getElementById('mc-embedded-subscribe-form');
-
-        openPromoSlide.addEventListener('click', () => {
-            promoSlideBar.classList.add('active');
-            overlay.classList.add('active');
-        });
-
-        overlay.addEventListener('click', () => {
-            promoSlideBar.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-
         subscribeForm.addEventListener('submit', (event) => {
             event.preventDefault();
             const emailInput = document.getElementById('mce-EMAIL').value;
             alert(`Cảm ơn bạn đã đăng ký! Chúng tôi sẽ liên hệ qua email: ${emailInput}`);
-            promoSlideBar.classList.remove('active');
-            overlay.classList.remove('active');
         });
     });
 </script>
