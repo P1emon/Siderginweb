@@ -24,29 +24,44 @@
                                     <th>Đơn Giá</th>
                                     <th>Số Lượng</th>
                                     <th>Thành Tiền</th>
+                                    <th>Giảm Giá</th> <!-- Cột mới -->
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
-                                        <tr>
-                                            <td>
-                                                <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="img-thumbnail rounded" style="width: 80px; height: 80px;">
-                                            </td>
-                                            <td>@item.TenHh</td>
-                                            <td>@item.DonGia.ToString("#,##0.00") đ</td>
-                                            <td>@item.SoLuong</td>
-                                            <td class="text-danger fw-bold">@item.ThanhTien.ToString("#,##0.00") đ</td>
-                                        </tr>
-                                }
-                            </tbody>
+                             <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            var giaGoc = item.DonGia * item.SoLuong;
+                                            var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc * 100 : 0;
+
+                                            <tr>
+                                                <td>
+                                                    <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="img-thumbnail rounded" style="width: 80px; height: 80px;">
+                                                </td>
+                                                <td>@item.TenHh</td>
+                                                <td>@item.DonGia.ToString("#,##0") Vnđ</td>
+                                                <td>@item.SoLuong</td>
+                                                <td class="text-danger fw-bold">@item.ThanhTien.ToString("#,##0") Vnđ</td>
+                                                <td>
+                                                        @if (giamGia > 0)
+                                                        {
+                                                    <span class="text-success fw-semibold">-@giamGia% </span>
+                                                        }
+                                                        else
+                                                        {
+                                                    <span class="text-muted">0%</span>
+                                                        }
+                                                </td>
+                                            </tr>
+                                            }
+                                </tbody>
+
                         </table>
                     </div>
 
                     <div class="text-end mt-4">
                         <h3>
                             Tổng cộng:
-                            <span class="text-danger fw-bold">@Model.Sum(p => p.ThanhTien).ToString("#,##0.00") đ</span>
+                            <span class="text-danger fw-bold">@Model.Sum(p => p.ThanhTien).ToString("#,##0") đ</span>
                         </h3>
                     </div>
 
@@ -118,6 +133,16 @@
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
+                             @for (int i = 0; i < Model.Count(); i++)
+                                {
+                                    var item = Model.ElementAt(i);
+                                    var giaGoc = item.DonGia * item.SoLuong;
+                                    var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
+                                    <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
+                                    <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
+                                    <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
+                                    <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
+                                 }
                             <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button>
                         </form>
 
@@ -126,17 +151,42 @@
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
+                            @for (int i = 0; i < Model.Count(); i++)
+                            {
+                                var item = Model.ElementAt(i);
+                                var giaGoc = item.DonGia * item.SoLuong;
+                                var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
+                                        <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
+                                        <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
+                                        <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
+                                        <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
+                            }
                             <div id="paypal-button-container"></div>
                         </form>
 
                         <!-- COD -->
-                        <form method="post" action="/Payment/CodPayment" onsubmit="return attachCommonData(this)">
+                       <form method="post" action="/Payment/CodPayment" onsubmit="return attachCommonData(this)">
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
 
-                            <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">Thanh Toán Khi Nhận Hàng (COD)</button>
+                                @for (int i = 0; i < Model.Count(); i++)
+                                {
+                                    var item = Model.ElementAt(i);
+                                    var giaGoc = item.DonGia * item.SoLuong;
+                                    var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
+                                    <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
+                                    <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
+                                    <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
+                                    <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
+                                 }
+
+                            <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
+                                Thanh Toán Khi Nhận Hàng (COD)
+                            </button>
                         </form>
+
+
 
                     </div>
                 </div>

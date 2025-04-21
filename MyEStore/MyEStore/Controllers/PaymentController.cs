@@ -296,10 +296,11 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, CancellationToken cancellationToken)
+        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, List<CartItem> CartItems, CancellationToken cancellationToken)
         {
             try
             {
+                // Capture the PayPal order
                 var response = await _paypalClient.CaptureOrder(orderId);
 
                 if (response.status == "COMPLETED")
@@ -316,6 +317,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         ngayGiaoDate = parsedDate;
                     }
 
+                    // Create the HoaDon (Invoice) record
                     var hoaDon = new HoaDon
                     {
                         MaKh = userId,
@@ -324,14 +326,16 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         DiaChi = selectedAddress,
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
-                        MaTrangThai = 1,
+                        MaTrangThai = 1,  // Assuming 1 is 'completed' status, adjust as necessary
                         PhiVanChuyen = PhiVanChuyen,
                         NgayGiao = ngayGiaoDate,
                         GhiChu = $"Thanh toán thành công, reference_id={reference}, transactionId={transactionId}"
                     };
-                    _ctx.Add(hoaDon);
-                    _ctx.SaveChanges();
 
+                    _ctx.Add(hoaDon);
+                    await _ctx.SaveChangesAsync();
+
+                    // Add CartItems to ChiTietHd (Invoice Detail)
                     foreach (var item in CartItems)
                     {
                         var cthd = new ChiTietHd
@@ -340,16 +344,17 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                             MaHh = item.MaHh,
                             DonGia = item.DonGia,
                             SoLuong = item.SoLuong,
-                            GiamGia = 1
+                            GiamGia = item.GiamGia
                         };
                         _ctx.Add(cthd);
                     }
-                    _ctx.SaveChanges();
+                    await _ctx.SaveChangesAsync();
 
-                    // Thêm đoạn xử lý cộng điểm
+                    // Handle loyalty points for the customer
                     await CongDiemChoKhachHangAsync(hoaDon.MaHd);
                     _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
 
+                    // Send emails to customer and admin
                     try
                     {
                         string customerEmail = userProfile?.Email ?? "Không rõ";
@@ -365,20 +370,24 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         _logger.LogError(ex, "Lỗi khi gửi email Paypal");
                     }
 
+                    // Clear the cart in the session
                     HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
                     TempData["TransactionId"] = transactionId;
                     TempData["ReferenceId"] = reference;
 
+                    // Redirect to the success page
                     return RedirectToAction("Success");
                 }
                 else
                 {
+                    // Handle payment failure
                     return BadRequest(new { Message = "Có lỗi thanh toán" });
                 }
             }
             catch (Exception e)
             {
+                // Log the exception and return error
                 var error = new
                 {
                     e.GetBaseException().Message
@@ -388,8 +397,9 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             }
         }
 
+
         [HttpPost]
-        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen)
+        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen, List<CartItem> CartItems)
         {
             var tongTien = CartItems.Sum(p => p.ThanhTien);
             var userId = User.FindFirstValue("UserId");
@@ -432,7 +442,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         MaHh = item.MaHh,
                         DonGia = item.DonGia,
                         SoLuong = item.SoLuong,
-                        GiamGia = 1
+                        GiamGia = item.GiamGia
                     });
                 }
 
@@ -593,7 +603,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao, double PhiVanChuyen)
+        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao, double PhiVanChuyen, List<CartItem> CartItems)
         {
             try
             {
@@ -636,7 +646,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         MaHh = item.MaHh,
                         DonGia = item.DonGia,
                         SoLuong = item.SoLuong,
-                        GiamGia = 1
+                        GiamGia = item.GiamGia
                     };
                     _ctx.Add(cthd);
                 }
@@ -686,7 +696,11 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             string senderPassword = _configuration["EmailSettings:SenderPassword"];
 
             string orderDateFormatted = order.NgayDat.ToString("dd/MM/yyyy HH:mm");
-            string formattedAmount = _ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong * ct.DonGia).ToString("N0") + " VNĐ";
+            string formattedAmount = _ctx.ChiTietHds
+                 .Where(ct => ct.MaHd == order.MaHd)
+                 .Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia))
+                 .ToString("N0") + " VNĐ";
+
 
             using var smtpClient = new SmtpClient(smtpServer)
             {
@@ -838,7 +852,11 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             string senderEmail = _configuration["EmailSettings:SenderEmail"];
             string senderPassword = _configuration["EmailSettings:SenderPassword"];
 
-            string formattedAmount = _ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong * ct.DonGia).ToString("N0") + " VNĐ";
+            string formattedAmount = _ctx.ChiTietHds
+                .Where(ct => ct.MaHd == order.MaHd)
+                .Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia))
+                .ToString("N0") + " VNĐ";
+
 
             using var smtpClient = new SmtpClient(smtpServer)
             {
