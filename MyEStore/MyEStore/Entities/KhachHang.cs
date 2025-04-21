@@ -47,6 +47,8 @@ public partial class KhachHang
 
     public DateTime? LockoutEnd { get; set; }
     public DateTime? MuaHangLanCuoi { get; set; }
+    public string? OtpCode { get; set; } // Mã OTP
+    public DateTime? OtpExpiry { get; set; } // Thời gian hết hạn của OTP
 
     public virtual ICollection<BanBe> BanBes { get; set; } = new List<BanBe>();
 
