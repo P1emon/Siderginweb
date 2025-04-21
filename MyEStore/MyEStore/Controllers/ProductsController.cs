@@ -43,7 +43,37 @@ namespace MyEStore.Controllers
 
         public IActionResult Index(int? cateid, int page = 1, int pageSize = 10)
         {
-            // Fetch products
+            // Fetch new products (created within the last 7 days)
+            var newProducts = _ctx.HangHoas
+                .Where(hh => hh.NgayTao >= DateTime.Now.AddDays(-7))
+                .Select(hh => new HangHoaVM
+                {
+                    MaHh = hh.MaHh,
+                    TenHh = hh.TenHh,
+                    TenAlias = hh.TenAlias,
+                    DonGia = hh.DonGia ?? 0,
+                    Hinh = hh.Hinh,
+                    GiamGia = hh.GiamGia
+                })
+                .Take(8) // Limit to 8 new products
+                .ToList();
+
+            // Fetch sale products (all products with discount)
+            var saleProducts = _ctx.HangHoas
+                .Where(hh => hh.GiamGia > 0)
+                .Select(hh => new HangHoaVM
+                {
+                    MaHh = hh.MaHh,
+                    TenHh = hh.TenHh,
+                    TenAlias = hh.TenAlias,
+                    DonGia = hh.DonGia ?? 0,
+                    Hinh = hh.Hinh,
+                    GiamGia = hh.GiamGia
+                })
+                .Take(8) // Limit to 8 sale products
+                .ToList();
+
+            // Fetch all products with pagination
             var data = _ctx.HangHoas.AsQueryable();
 
             if (cateid.HasValue)
@@ -61,7 +91,7 @@ namespace MyEStore.Controllers
             }
 
             int totalItems = data.Count();
-            var result = data
+            var allProducts = data
                 .OrderBy(hh => hh.MaHh)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -71,7 +101,8 @@ namespace MyEStore.Controllers
                     TenHh = hh.TenHh,
                     TenAlias = hh.TenAlias,
                     DonGia = hh.DonGia ?? 0,
-                    Hinh = hh.Hinh
+                    Hinh = hh.Hinh,
+                    GiamGia = hh.GiamGia
                 }).ToList();
 
             // Fetch active sliders
@@ -83,9 +114,11 @@ namespace MyEStore.Controllers
             ViewData["CurrentPage"] = page;
             ViewData["TotalPages"] = (int)Math.Ceiling((double)totalItems / pageSize);
             ViewData["CateId"] = cateid;
-            ViewData["Sliders"] = sliders; // Pass sliders to view
+            ViewData["Sliders"] = sliders;
+            ViewData["NewProducts"] = newProducts;
+            ViewData["SaleProducts"] = saleProducts;
 
-            return View(result);
+            return View(allProducts);
         }
 
         public IActionResult Search(string query)
@@ -103,7 +136,8 @@ namespace MyEStore.Controllers
                     TenHh = hh.TenHh,
                     TenAlias = hh.TenAlias,
                     DonGia = hh.DonGia ?? 0,
-                    Hinh = hh.Hinh
+                    Hinh = hh.Hinh,
+                    GiamGia = hh.GiamGia
                 }).ToList();
 
             ViewData["Title"] = $"Kết quả tìm kiếm cho '{query}'";

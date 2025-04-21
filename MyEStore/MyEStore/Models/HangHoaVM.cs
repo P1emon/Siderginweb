@@ -7,5 +7,6 @@
 		public string Hinh { get; set; }
 		public double DonGia { get; set; }
         public string TenAlias { get; set; }
+        public double GiamGia { get; internal set; }
     }
 }
