@@ -691,6 +691,22 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 Credentials = new NetworkCredential(senderEmail, senderPassword),
                 EnableSsl = true,
             };
+            string filteredNote = "Không có";
+            if (!string.IsNullOrEmpty(order.GhiChu))
+            {
+                if (order.GhiChu == "Đang chờ thanh toán")
+                {
+                    filteredNote = order.GhiChu;
+                }
+                else if (order.GhiChu.StartsWith("Thanh toán thành công"))
+                {
+                    filteredNote = "Thanh toán thành công";
+                }
+                else
+                {
+                    filteredNote = order.GhiChu;
+                }
+            }
 
             string subject = $"Xác nhận đơn hàng  #{order.MaHd} - SIDERGIN";
             string body = $@"
@@ -779,7 +795,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                             <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                             <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
                             <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
-                            <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
+                            <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                         </div>
 
                         <p>Chúng tôi sẽ sớm liên hệ để xác nhận và tiến hành giao hàng.</p>
@@ -792,6 +808,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 </div>
             </body>
             </html>";
+           
 
 
             var mailMessage = new MailMessage(senderEmail, email, subject, body) { IsBodyHtml = true };
@@ -825,6 +842,22 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 Credentials = new NetworkCredential(senderEmail, senderPassword),
                 EnableSsl = true,
             };
+            string filteredNote = "Không có";
+            if (!string.IsNullOrEmpty(order.GhiChu))
+            {
+                if (order.GhiChu == "Đang chờ thanh toán")
+                {
+                    filteredNote = order.GhiChu;
+                }
+                else if (order.GhiChu.StartsWith("Thanh toán thành công"))
+                {
+                    filteredNote = "Thanh toán thành công";
+                }
+                else
+                {
+                    filteredNote = order.GhiChu;
+                }
+            }
 
             string subject = $"📦 [SIDERGIN] Thông báo đơn hàng mới #{order.MaHd}";
 
@@ -841,7 +874,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                 <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
                 <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
-                <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
+                <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                 <hr>
                 <p>📞 Vui lòng liên hệ với khách hàng để xác nhận đơn hàng sớm nhất có thể.</p>
                 <p>Trân trọng,</p>
