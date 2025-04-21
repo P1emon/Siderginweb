@@ -638,6 +638,12 @@ namespace MyEStore.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.ErrorMessage = "Vui lòng nhập email.";
+                return View();
+            }
+
             var khachHang = await _ctx.KhachHangs.SingleOrDefaultAsync(kh => kh.Email == email);
             if (khachHang == null)
             {
@@ -645,12 +651,97 @@ namespace MyEStore.Controllers
                 return View();
             }
 
+            // Tạo và lưu mã OTP
+            var otpCode = GenerateOtpCode();
+            khachHang.OtpCode = otpCode;
+            khachHang.OtpExpiry = DateTime.Now.AddMinutes(5); // OTP hết hạn sau 5 phút
+            await _ctx.SaveChangesAsync();
+
+            // Gửi email chứa OTP
+            string message = $@"
+            <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                    <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                        <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                        <p style='color: #666; margin: 5px 0 0;'>Xác minh tài khoản</p>
+                    </div>
+                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {khachHang.HoTen},</h2>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản tại <strong>SiderGin</strong>. Vui lòng sử dụng mã OTP dưới đây để xác minh danh tính của bạn:</p>
+                    <div style='background-color: #f8f9fa; border-left: 4px solid #0066cc; padding: 15px 20px; margin: 25px 0; border-radius: 4px;'>
+                        <p style='margin: 0 0 5px; font-size: 14px; color: #666;'>Mã OTP của bạn:</p>
+                        <p style='font-size: 22px; font-weight: bold; color: #d9534f; margin: 0; letter-spacing: 1px; font-family: Consolas, monospace;'>{otpCode}</p>
+                    </div>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Mã OTP này sẽ hết hạn sau <strong>5 phút</strong>. Vui lòng nhập mã vào trang xác minh để tiếp tục quá trình đặt lại mật khẩu.</p>
+                    <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi qua:</p>
+                    <div style='display: flex; margin: 15px 0 25px;'>
+                        <div style='margin-right: 20px;'>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>📞</span> Hotline
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
+                        </div>
+                        <div>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                        </div>
+                    </div>
+                    <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                        <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                    </div>
+                </div>
+            </div>";
+
+            await SendEmail(khachHang.Email, "Mã OTP xác minh tài khoản SiderGin", message);
+
+            ViewBag.SuccessMessage = "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (và thư mục spam) để lấy mã.";
+            ViewBag.Email = email; // Lưu email để sử dụng trong bước xác minh OTP
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyOtp(string email, string otpCode)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(otpCode))
+            {
+                ViewBag.ErrorMessage = "Vui lòng nhập email và mã OTP.";
+                ViewBag.Email = email;
+                return View("ForgotPassword");
+            }
+
+            var khachHang = await _ctx.KhachHangs.SingleOrDefaultAsync(kh => kh.Email == email);
+            if (khachHang == null)
+            {
+                ViewBag.ErrorMessage = "Email không tồn tại.";
+                ViewBag.Email = email;
+                return View("ForgotPassword");
+            }
+
+            if (khachHang.OtpCode != otpCode)
+            {
+                ViewBag.ErrorMessage = "Mã OTP không chính xác.";
+                ViewBag.Email = email;
+                return View("ForgotPassword");
+            }
+
+            if (khachHang.OtpExpiry < DateTime.Now)
+            {
+                ViewBag.ErrorMessage = "Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại mã.";
+                ViewBag.Email = email;
+                return View("ForgotPassword");
+            }
+
+            // OTP hợp lệ, tạo mật khẩu mới
             var newPassword = GenerateRandomPassword();
             var newRandomKey = GenerateRandomKey();
             khachHang.MatKhau = BCrypt.Net.BCrypt.HashPassword(newPassword + newRandomKey);
             khachHang.RandomKey = newRandomKey;
+            khachHang.OtpCode = null; // Xóa OTP sau khi sử dụng
+            khachHang.OtpExpiry = null;
             await _ctx.SaveChangesAsync();
 
+            // Gửi email chứa mật khẩu mới
             string message = $@"
             <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
                 <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
@@ -658,8 +749,8 @@ namespace MyEStore.Controllers
                         <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
                         <p style='color: #666; margin: 5px 0 0;'>Thông báo đặt lại mật khẩu</p>
                     </div>
-                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào <span style='color: #333;'>{khachHang.HoTen}</span>,</h2>
-                    <p style='line-height: 1.6; margin-bottom: 20px;'>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình tại <strong>SideGin</strong>. Chúng tôi đã tạo một mật khẩu mới cho bạn.</p>
+                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {khachHang.HoTen},</h2>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Tài khoản của bạn tại <strong>SiderGin</strong> đã được xác minh thành công. Dưới đây là mật khẩu mới của bạn:</p>
                     <div style='background-color: #f8f9fa; border-left: 4px solid #0066cc; padding: 15px 20px; margin: 25px 0; border-radius: 4px;'>
                         <p style='margin: 0 0 5px; font-size: 14px; color: #666;'>Mật khẩu mới của bạn:</p>
                         <p style='font-size: 22px; font-weight: bold; color: #d9534f; margin: 0; letter-spacing: 1px; font-family: Consolas, monospace;'>{newPassword}</p>
@@ -706,8 +797,14 @@ namespace MyEStore.Controllers
 
             await SendEmail(khachHang.Email, "Mật khẩu mới của bạn", message);
 
-            ViewBag.SuccessMessage = "Mật khẩu mới đã được gửi đến email của bạn.";
-            return View();
+            ViewBag.SuccessMessage = "Mật khẩu mới đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư và đăng nhập.";
+            return View("ForgotPassword");
+        }
+
+        private string GenerateOtpCode()
+        {
+            var random = new Random();
+            return random.Next(100000, 999999).ToString(); // Tạo mã OTP 6 chữ số
         }
 
         private string GenerateRandomPassword(int length = 8)
