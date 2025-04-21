@@ -1,121 +1,255 @@
-﻿@model dynamic
+﻿
+@model dynamic
 @Html.Partial("livechat")
-<link rel="stylesheet" href="~/css/Orderdetail.css" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" />
-<div class="order-wrapper">
-    <nav class="tab-nav">
-        <button class="tab-btn active" onclick="showTab('order-details')">Thông tin đơn hàng</button>
-        <button class="tab-btn" onclick="showTab('products')">Sản phẩm</button>
-        <button class="tab-btn" onclick="showTab('summary')">Tổng kết</button>
-    </nav>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
+
+<link rel="stylesheet" href="~/css/Orderdetail.css" asp-append-version="true" />
+
+
+<div class="order-container">
+    <div class="order-header">
+        <h1>Đơn hàng #@Model.MaHd</h1>
+        <div class="order-meta">
+            <div class="order-meta-item">
+                <i class="far fa-calendar"></i>
+                <span>@Model.NgayDat.ToString("dd/MM/yyyy")</span>
+            </div>
+            <div class="order-meta-item">
+                <i class="far fa-user"></i>
+                <span>@Model.HoTen</span>
+            </div>
+        </div>
+        <div class="header-pattern"></div>
+    </div>
+
+    <div class="tab-navigation">
+        <button class="tab-button active" data-tab="order-details">
+            <i class="fas fa-info-circle"></i>
+            <span>Thông tin đơn hàng</span>
+        </button>
+        <button class="tab-button" data-tab="products">
+            <i class="fas fa-box"></i>
+            <span>Sản phẩm</span>
+        </button>
+        <button class="tab-button" data-tab="summary">
+            <i class="fas fa-file-invoice"></i>
+            <span>Tổng kết</span>
+        </button>
+        <div class="tab-indicator"></div>
+    </div>
 
     <div class="tab-content">
         <div id="order-details" class="tab-pane active">
-            <h2>Đơn hàng #@Model.MaHd</h2>
-            <div class="details-grid">
-                <div class="detail-item">
-                    <span class="label">Ngày đặt</span>
-                    <span>@Model.NgayDat.ToString("dd/MM/yyyy")</span>
+            <div class="detail-section">
+                <h2>Thông tin đơn hàng</h2>
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <span class="label">Mã đơn hàng</span>
+                        <span class="value">#@Model.MaHd</span>
+                    </div>
+                    <div class="detail-card">
+                        <span class="label">Ngày đặt hàng</span>
+                        <span class="value">@Model.NgayDat.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="detail-card">
+                        <span class="label">Khách hàng</span>
+                        <span class="value">@Model.HoTen</span>
+                    </div>
+                    <div class="detail-card">
+                        <span class="label">Phương thức thanh toán</span>
+                        <span class="value">@Model.CachThanhToan</span>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <span class="label">Khách hàng</span>
-                    <span>@Model.HoTen</span>
-                </div>
-                <div class="detail-item">
-                    <span class="label">Địa chỉ</span>
-                    <span>@Model.DiaChi</span>
-                </div>
-                <div class="detail-item">
-                    <span class="label">Thanh toán</span>
-                    <span>@Model.CachThanhToan</span>
+            </div>
+
+            <div class="detail-section">
+                <h2>Thông tin giao hàng</h2>
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <span class="label">Địa chỉ giao hàng</span>
+                        <span class="value">@Model.DiaChi</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="products" class="tab-pane">
-            <h2>Sản phẩm</h2>
-            <div class="product-list">
-                @foreach (var product in Model.Products)
-                {
-                    <div class="product-item">
-                        <img src="~/Hinh/HangHoa/@product.Hinh" alt="@product.ProductName" class="product-img" />
-                        <div class="product-info">
-                            <h3>@product.ProductName</h3>
-                            <div class="product-meta">
-                                <span>Số lượng: @product.SoLuong</span>
-                                <span>Đơn giá: <span class="currency" data-value="@product.DonGia">@product.DonGia</span></span>
-                                <span>Tổng: <span class="currency" data-value="@(product.DonGia * product.SoLuong)">@(product.DonGia * product.SoLuong)</span></span>
+            <div class="detail-section">
+                <h2>Danh sách sản phẩm</h2>
+                <div class="product-list">
+                    @foreach (var product in Model.Products)
+                    {
+                        <div class="product-item">
+                            <img src="~/Hinh/HangHoa/@product.Hinh" alt="@product.ProductName" class="product-img" />
+                            <div class="product-info">
+                                <h3>@product.ProductName</h3>
+                                <div class="product-meta">
+                                    <div class="product-meta-item">
+                                        <span class="label">Số lượng</span>
+                                        <span class="value">@product.SoLuong</span>
+                                    </div>
+                                    <div class="product-meta-item">
+                                        <span class="label">Đơn giá</span>
+                                        <span class="value currency" data-value="@product.DonGia">@product.DonGia</span>
+                                    </div>
+                                    <div class="product-meta-item">
+                                        <span class="label">Thành tiền</span>
+                                        <span class="value currency" data-value="@(product.DonGia * product.SoLuong)">@(product.DonGia * product.SoLuong)</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
         </div>
 
         <div id="summary" class="tab-pane">
-            <h2>Tổng kết</h2>
-            <div class="summary-content">
-                <div class="summary-item">
-                    <span class="label">Mã đơn hàng</span>
-                    <span>#@Model.MaHd</span>
-                </div>
-                <div class="summary-item">
-                    <span class="label">Tổng cộng</span>
-                    <span id="totalPrice">0.00</span>
-                    <span id="currencySymbol">VND</span>
-                </div>
-                <div class="currency-select">
-                    <label for="currency">Tiền tệ:</label>
-                    <select id="currency" onchange="updateCurrency()">
-                        <option value="VND" selected>VND</option>
-                        <option value="USD">USD</option>
-                    </select>
+            <div class="detail-section">
+                <h2>Tổng kết đơn hàng</h2>
+                <div class="summary-section">
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span class="label">Mã đơn hàng</span>
+                            <span class="value">#@Model.MaHd</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Ngày đặt</span>
+                            <span class="value">@Model.NgayDat.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Khách hàng</span>
+                            <span class="value">@Model.HoTen</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span class="label">Tổng cộng</span>
+                            <div>
+                                <span id="totalPrice" class="value">0</span>
+                                <span id="currencySymbol"> VND</span>
+                            </div>
+                        </div>
+                        <div class="currency-select">
+                            <label for="currency">Tiền tệ:</label>
+                            <select id="currency">
+                                <option value="VND" selected>VND</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <button class="btn btn-print" onclick="window.print()">In đơn hàng</button>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
-    }
-
-    function updateCurrency() {
-        const currency = document.getElementById("currency").value;
-        let total = 0;
-        const products = document.querySelectorAll(".product-item");
-
-        products.forEach(product => {
-            const unitPrice = parseFloat(product.querySelectorAll(".currency")[0].dataset.value);
-            const quantity = parseInt(product.querySelector(".product-meta span:nth-child(1)").textContent.split(": ")[1]);
-            const productTotal = unitPrice * quantity;
-            total += productTotal;
-
-            // Update displayed prices
-            const priceCells = product.querySelectorAll(".currency");
-            priceCells.forEach(cell => {
-                const value = parseFloat(cell.dataset.value);
-                cell.textContent = currency === "USD" ? (value / 25400).toFixed(2) : value.toFixed(2);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        const tabIndicator = document.querySelector('.tab-indicator');
+        
+        function setIndicatorPosition(element) {
+            const tabNav = document.querySelector('.tab-navigation');
+            const buttonRect = element.getBoundingClientRect();
+            const navRect = tabNav.getBoundingClientRect();
+            
+            tabIndicator.style.width = `${buttonRect.width}px`;
+            tabIndicator.style.left = `${buttonRect.left - navRect.left}px`;
+        }
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active states
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Move indicator
+                setIndicatorPosition(this);
             });
         });
-
-        // Update total and currency symbol
-        const finalTotal = currency === "USD" ? total / 25400 : total;
-        document.getElementById("totalPrice").textContent = finalTotal.toFixed(2);
-        document.getElementById("currencySymbol").textContent = currency;
-    }
-
-    // Store original values for currency conversion
-    document.querySelectorAll(".currency").forEach(cell => {
-        cell.dataset.value = cell.textContent;
+        
+        // Set initial indicator position
+        if (tabButtons.length > 0) {
+            setTimeout(() => {
+                setIndicatorPosition(document.querySelector('.tab-button.active'));
+            }, 100);
+        }
+        
+        // Window resize handler
+        window.addEventListener('resize', function() {
+            setIndicatorPosition(document.querySelector('.tab-button.active'));
+        });
+        
+        // Currency conversion
+        const currencySelect = document.getElementById('currency');
+        
+        function updateCurrency() {
+            const currency = currencySelect.value;
+            const currencySymbol = document.getElementById('currencySymbol');
+            let total = 0;
+            
+            // Store original values if not already stored
+            document.querySelectorAll('.currency').forEach(element => {
+                if (!element.hasAttribute('data-value')) {
+                    element.setAttribute('data-value', element.textContent.trim());
+                }
+            });
+            
+            // Update currency display and calculate total
+            document.querySelectorAll('.currency').forEach(element => {
+                const value = parseFloat(element.getAttribute('data-value'));
+                
+                if (element.closest('.product-meta-item')) {
+                    const isTotal = element.closest('.product-meta-item').querySelector('.label').textContent.includes('Thành tiền');
+                    if (isTotal) {
+                        total += value;
+                    }
+                }
+                
+                if (currency === 'USD') {
+                    element.textContent = (value / 25400).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else {
+                    element.textContent = value.toLocaleString('vi-VN');
+                }
+            });
+            
+            // Update total and currency symbol
+            const totalPrice = document.getElementById('totalPrice');
+            if (currency === 'USD') {
+                totalPrice.textContent = (total / 25400).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                currencySymbol.textContent = ' USD';
+            } else {
+                totalPrice.textContent = total.toLocaleString('vi-VN');
+                currencySymbol.textContent = ' VND';
+            }
+        }
+        
+        currencySelect.addEventListener('change', updateCurrency);
+        
+        // Initial currency update
+        updateCurrency();
+        
+        // Add hover effects for cards
+        const cards = document.querySelectorAll('.detail-card, .product-item');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
     });
-
-    // Initialize currency on page load
-    updateCurrency();
 </script>
+<script src="~/js/dropdown.js" asp-append-version="true"></script>
