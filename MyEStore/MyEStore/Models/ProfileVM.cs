@@ -31,6 +31,7 @@ namespace MyEStore.Models
         public string? ConfirmPassword { get; set; }
 
         public string DiaChi { get; set; } // Thêm để lưu địa chỉ
+        public string DiaChiPhu { get; set; } // Thêm để lưu địa chỉ phụ
     }
     public class ProfileUpdateVM
     {

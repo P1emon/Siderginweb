@@ -447,7 +447,8 @@ namespace MyEStore.Controllers
                 FullName = customer.HoTen,
                 Email = customer.Email,
                 PhoneNumber = customer.DienThoai,
-                DiaChi = customer.DiaChi
+                DiaChi = customer.DiaChi,
+                DiaChiPhu = customer.DiaChiPhu,
             };
 
             return View(model);
@@ -541,7 +542,7 @@ namespace MyEStore.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateAddress(string province, string district, string ward, string streetAddress, string diaChi)
+        public IActionResult UpdateAddress(string province, string district, string ward, string streetAddress, string diaChi,string diaChiPhu)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
@@ -569,6 +570,7 @@ namespace MyEStore.Controllers
             try
             {
                 customer.DiaChi = diaChi;
+                customer.DiaChiPhu =diaChiPhu;
                 _ctx.SaveChanges();
                 TempData["Success"] = "Cập nhật địa chỉ nhận hàng thành công.";
             }
@@ -738,7 +740,7 @@ namespace MyEStore.Controllers
             khachHang.MatKhau = BCrypt.Net.BCrypt.HashPassword(newPassword + newRandomKey);
             khachHang.RandomKey = newRandomKey;
             khachHang.OtpCode = null; // Xóa OTP sau khi sử dụng
-            khachHang.OtpExpiry = null;
+            khachHang.OtpExpiry = null; // Xóa thời gian hết hạn
             await _ctx.SaveChangesAsync();
 
             // Gửi email chứa mật khẩu mới

@@ -203,14 +203,27 @@
                         }
 
                         <form id="addressForm" asp-action="UpdateAddress" method="post" class="profile-form">
-                            <!-- Địa chỉ đầy đủ hiển thị/chỉnh sửa -->
+                            <!-- Địa chỉ chính -->
                             <div class="profile-form-group">
-                                <label class="profile-form-label">Địa chỉ hiện tại</label>
+                                <label class="profile-form-label">Địa chỉ chính</label>
                                 <div class="profile-input-container" id="fullAddressContainer">
                                     <i class="bi bi-house-door-fill"></i>
                                     <input type="text" id="displayAddress" class="profile-form-control"
                                            value="@(string.IsNullOrEmpty(Model.DiaChi) ? "Chưa có địa chỉ" : Model.DiaChi)" readonly />
                                     <button type="button" class="profile-edit-button" onclick="toggleAddressEdit()">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Địa chỉ phụ -->
+                            <div class="profile-form-group">
+                                <label class="profile-form-label">Địa chỉ phụ</label>
+                                <div class="profile-input-container" id="secondaryAddressContainer">
+                                    <i class="bi bi-house-fill"></i>
+                                    <input type="text" id="displaySecondaryAddress" class="profile-form-control"
+                                           value="@(string.IsNullOrEmpty(Model.DiaChiPhu) ? "Chưa có địa chỉ phụ" : Model.DiaChiPhu)" readonly />
+                                    <button type="button" class="profile-edit-button" onclick="toggleSecondaryAddressEdit()">
                                         <i class="bi bi-pencil-fill"></i>
                                     </button>
                                 </div>
@@ -264,6 +277,8 @@
                                     <h5><i class="bi bi-check-circle"></i> Địa chỉ đầy đủ</h5>
                                     <p id="fullAddress" class="profile-full-address">Vui lòng nhập thông tin địa chỉ</p>
                                     <input type="hidden" id="DiaChi" name="diaChi" value="@Model.DiaChi">
+                                    <!-- Thêm trường để lưu trạng thái chỉnh sửa -->
+                                    <input type="hidden" id="addressEditMode" name="addressEditMode" value="primary">
                                 </div>
 
                                 <div class="profile-form-actions">
@@ -430,6 +445,7 @@
             const streetAddressInput = document.getElementById('streetAddress');
             const fullAddressDisplay = document.getElementById('fullAddress');
             const diaChiInput = document.getElementById('DiaChi');
+            const addressEditModeInput = document.getElementById('addressEditMode');
 
             if (!provinceSelect) return;
 
@@ -616,7 +632,21 @@
                 const fullAddress = addressParts.join(', ');
 
                 fullAddressDisplay.textContent = fullAddress || 'Vui lòng nhập thông tin địa chỉ';
-                diaChiInput.value = fullAddress;
+
+                // Lưu vào input thích hợp dựa trên trạng thái chỉnh sửa
+                if (addressEditModeInput.value === 'primary') {
+                    diaChiInput.value = fullAddress;
+                } else {
+                    // Sử dụng hidden input để lưu địa chỉ phụ
+                    if (!document.getElementById('DiaChiPhu')) {
+                        const diaChiPhuInput = document.createElement('input');
+                        diaChiPhuInput.type = 'hidden';
+                        diaChiPhuInput.id = 'DiaChiPhu';
+                        diaChiPhuInput.name = 'diaChiPhu';
+                        document.getElementById('addressForm').appendChild(diaChiPhuInput);
+                    }
+                    document.getElementById('DiaChiPhu').value = fullAddress;
+                }
 
                 // Visualize address completeness
                 const addressPreview = document.querySelector('.profile-address-preview');
@@ -654,7 +684,7 @@
                 });
             }
 
-            // Hàm xử lý hiển thị/ẩn form chi tiết địa chỉ
+            // Hàm xử lý hiển thị/ẩn form chi tiết địa chỉ chính
             window.toggleAddressEdit = function () {
                 const detailsSection = document.getElementById('addressDetails');
                 const fullAddressContainer = document.getElementById('fullAddressContainer');
@@ -667,6 +697,9 @@
                     detailsSection.classList.add('address-details-visible');
                     fullAddressContainer.classList.add('is-editing');
                     icon.classList.replace('bi-pencil-fill', 'bi-check-fill');
+
+                    // Đặt chế độ chỉnh sửa là địa chỉ chính
+                    document.getElementById('addressEditMode').value = 'primary';
 
                     // Nếu đã có địa chỉ, phân tích và đặt giá trị ban đầu cho form
                     const currentAddress = document.getElementById('displayAddress').value;
@@ -683,24 +716,77 @@
                 }
             };
 
+            // Hàm xử lý hiển thị/ẩn form chi tiết địa chỉ phụ
+            window.toggleSecondaryAddressEdit = function () {
+                const detailsSection = document.getElementById('addressDetails');
+                const secondaryAddressContainer = document.getElementById('secondaryAddressContainer');
+                const editButton = secondaryAddressContainer.querySelector('.profile-edit-button');
+                const icon = editButton.querySelector('i');
+
+                if (detailsSection.classList.contains('address-details-hidden')) {
+                    // Hiện form chi tiết
+                    detailsSection.classList.remove('address-details-hidden');
+                    detailsSection.classList.add('address-details-visible');
+                    secondaryAddressContainer.classList.add('is-editing');
+                    icon.classList.replace('bi-pencil-fill', 'bi-check-fill');
+
+                    // Đặt chế độ chỉnh sửa là địa chỉ phụ
+                    document.getElementById('addressEditMode').value = 'secondary';
+
+                    // Nếu đã có địa chỉ phụ, phân tích và đặt giá trị ban đầu cho form
+                    const currentAddress = document.getElementById('displaySecondaryAddress').value;
+                    if (currentAddress && currentAddress !== "Chưa có địa chỉ phụ") {
+                        parseAddressToFormFields(currentAddress);
+                    } else {
+                        // Reset form fields
+                        streetAddressInput.value = '';
+                        provinceSelect.selectedIndex = 0;
+                        districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+                        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                        updateFullAddress();
+                    }
+
+                    // Tải dữ liệu tỉnh/thành phố nếu chưa được tải
+                    if (provinceSelect.options.length <= 1) {
+                        loadProvinces();
+                    }
+                } else {
+                    saveEditedAddress();
+                }
+            };
+
             // Hủy chỉnh sửa
             window.cancelAddressEdit = function () {
                 const detailsSection = document.getElementById('addressDetails');
                 const fullAddressContainer = document.getElementById('fullAddressContainer');
-                const editButton = fullAddressContainer.querySelector('.profile-edit-button');
-                const icon = editButton.querySelector('i');
+                const secondaryAddressContainer = document.getElementById('secondaryAddressContainer');
 
+                // Xóa trạng thái is-editing khỏi cả hai container
+                fullAddressContainer.classList.remove('is-editing');
+                secondaryAddressContainer.classList.remove('is-editing');
+
+                // Đổi icon về trạng thái ban đầu
+                const primaryEditButton = fullAddressContainer.querySelector('.profile-edit-button i');
+                const secondaryEditButton = secondaryAddressContainer.querySelector('.profile-edit-button i');
+                primaryEditButton.classList.replace('bi-check-fill', 'bi-pencil-fill');
+                secondaryEditButton.classList.replace('bi-check-fill', 'bi-pencil-fill');
+
+                // Ẩn form chi tiết
                 detailsSection.classList.add('address-details-hidden');
                 detailsSection.classList.remove('address-details-visible');
-                fullAddressContainer.classList.remove('is-editing');
-                icon.classList.replace('bi-check-fill', 'bi-pencil-fill');
             };
 
             // Lưu địa chỉ đã chỉnh sửa (chỉ cập nhật hiển thị, không submit form)
             function saveEditedAddress() {
                 const fullAddress = document.getElementById('fullAddress').textContent;
+                const editMode = document.getElementById('addressEditMode').value;
+
                 if (fullAddress && fullAddress !== "Vui lòng nhập thông tin địa chỉ") {
-                    document.getElementById('displayAddress').value = fullAddress;
+                    if (editMode === 'primary') {
+                        document.getElementById('displayAddress').value = fullAddress;
+                    } else {
+                        document.getElementById('displaySecondaryAddress').value = fullAddress;
+                    }
                 }
                 cancelAddressEdit();
             }
