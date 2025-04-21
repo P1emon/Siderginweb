@@ -50,32 +50,43 @@
                         </h3>
                     </div>
 
-                    <!-- Address & Date -->
+                    <!-- Địa chỉ nhận hàng -->
                     <div class="mb-3 text-center">
-                        <label for="selectedAddress" class="form-label fw-bold">Chọn Địa Chỉ Nhận Hàng:</label>
-                        <select id="selectedAddress" class="form-select d-inline-block" style="width: 250px; font-size: 1.1rem;">
-                            @if (ViewBag.KhachHangs is MyEStore.Entities.KhachHang kh)
-                            {
-                                if (!string.IsNullOrWhiteSpace(kh.DiaChi))
-                                {
-                                    <option value="@kh.DiaChi">@kh.DiaChi</option>
+                         <label for="selectedAddress" class="form-label fw-bold fs-5">Chọn Địa Chỉ Nhận Hàng:</label>
+                        <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mb-3">
+                            <select id="selectedAddress" class="form-select" style="width: 280px; font-size: 1.05rem;">
+                                @if (ViewBag.KhachHangs is MyEStore.Entities.KhachHang kh)
+                                     {
+                                    if (!string.IsNullOrWhiteSpace(kh.DiaChi))
+                                    {
+                                     <option value="@kh.DiaChi">@kh.DiaChi (Mặc định)</option>
+                                    }
+                                    if (!string.IsNullOrWhiteSpace(kh.DiaChiPhu))
+                                    {
+                                       <option value="@kh.DiaChiPhu">@kh.DiaChiPhu (Phụ)</option>
+                                    }
                                 }
-                                if (!string.IsNullOrWhiteSpace(kh.DiaChiPhu))
+                                else
                                 {
-                                 <option value="@kh.DiaChiPhu">@kh.DiaChiPhu</option>
+                                 <option disabled selected>Không có địa chỉ</option>
                                 }
-                             }
-                            else
-                            {
-                                    <option disabled selected>Không có địa chỉ</option>
-                            }
-                         </select>
+                            </select>
 
+                            <button class="btn btn-outline-warning rounded-circle" onclick="openEditAddress()" title="Sửa Địa Chỉ Chính">
+                                <i class="bi bi-pencil-square fs-5"></i>
+                            </button>
+
+                            <button class="btn btn-outline-info rounded-circle" onclick="openAddSecondary()" title="Thêm Địa Chỉ Phụ">
+                                <i class="bi bi-plus-circle fs-5"></i>
+                            </button>
+                        </div>
                     </div>
+
                     <div class="mb-4 text-center">
-                        <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label>
-                        <input type="date" id="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem;" />
+                        @* <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label> *@
+                        <input type="date" id="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem; position: absolute; left: -9999px;" />
                     </div>
+
                 </div>
             </div>
         </div>
@@ -88,11 +99,13 @@
                     <div class="d-flex flex-column gap-3">
 
                         <!-- MoMo -->
-                        <form method="post" action="/Payment/MomoPayment" onsubmit="return attachCommonData(this)">
+                       
+                        <form method="post" action="/Payment/MomoPayment" onsubmit="return attachCommonData(this)" style="display: none;">
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
                             <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold">Thanh Toán Bằng MoMo</button>
                         </form>
+
 
                         <!-- VNPay -->
                         <form method="post" action="/Payment/VnpayOrder" onsubmit="return attachCommonData(this)">
@@ -123,8 +136,208 @@
 </div>
 
 <!-- SweetAlert + Validation -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    function openEditAddress() {
+        Swal.fire({
+            title: 'Sửa Địa Chỉ Chính',
+            html: `
+                <input id="mainAddress" class="swal2-input" placeholder="Số nhà, tên đường...">
+                <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
+                <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
+                <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Cập nhật',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#3085d6',
+            preConfirm: () => {
+                const address = document.getElementById('mainAddress').value.trim();
+                const province = document.getElementById('provinceSelect');
+                const district = document.getElementById('districtSelect');
+                const ward = document.getElementById('wardSelect');
+
+                if (!address || !province.value || !district.value || !ward.value) {
+                    Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin.');
+                    return false;
+                }
+
+                const fullAddress = `${address}, ${ward.options[ward.selectedIndex].text}, ${district.options[district.selectedIndex].text}, ${province.options[province.selectedIndex].text}`;
+                return { fullAddress };
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                fetch('/Payment/UpdateAddress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ newAddress: result.value.fullAddress })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Thành công!', 'Địa chỉ đã được cập nhật.', 'success');
+                        updateAddressDropdown(data.diaChi, null);
+                    } else {
+                        Swal.fire('Lỗi!', 'Không thể cập nhật địa chỉ.', 'error');
+                    }
+                });
+            }
+        });
+
+        loadProvinces();
+    }
+
+    function openAddSecondary() {
+        Swal.fire({
+            title: 'Thêm Địa Chỉ Phụ',
+            html: `
+                <input id="secondaryAddress" class="swal2-input" placeholder="Số nhà, tên đường...">
+                <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
+                <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
+                <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#28a745',
+            preConfirm: () => {
+                const address = document.getElementById('secondaryAddress').value.trim();
+                const province = document.getElementById('provinceSelect');
+                const district = document.getElementById('districtSelect');
+                const ward = document.getElementById('wardSelect');
+
+                if (!address || !province.value || !district.value || !ward.value) {
+                    Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin.');
+                    return false;
+                }
+
+                const fullAddress = `${address}, ${ward.options[ward.selectedIndex].text}, ${district.options[district.selectedIndex].text}, ${province.options[province.selectedIndex].text}`;
+                return { fullAddress };
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                fetch('/Payment/AddSecondaryAddress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ secondaryAddress: result.value.fullAddress })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Thành công!', 'Địa chỉ phụ đã được lưu.', 'success');
+                        updateAddressDropdown(null, data.diaChiPhu);
+                        location.reload();
+
+                    } else {
+                        Swal.fire('Lỗi!', 'Không thể lưu địa chỉ phụ.', 'error');
+                    }
+                });
+            }
+        });
+
+        loadProvinces();
+    }
+
+    function updateAddressDropdown(mainAddress, secondaryAddress) {
+        const select = document.getElementById('selectedAddress');
+        select.innerHTML = ''; // Clear old options
+
+        if (mainAddress) {
+            const mainOpt = document.createElement('option');
+            mainOpt.value = mainAddress;
+            mainOpt.textContent = `${mainAddress} (Mặc định)`;
+            select.appendChild(mainOpt);
+        }
+
+        if (secondaryAddress) {
+            const subOpt = document.createElement('option');
+            subOpt.value = secondaryAddress;
+            subOpt.textContent = `${secondaryAddress} (Phụ)`;
+            select.appendChild(subOpt);
+        }
+
+        if (!mainAddress && !secondaryAddress) {
+            const empty = document.createElement('option');
+            empty.disabled = true;
+            empty.selected = true;
+            empty.textContent = 'Không có địa chỉ';
+            select.appendChild(empty);
+        }
+    }
+
+    async function loadProvinces() {
+        const provinceSelect = document.getElementById('provinceSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const wardSelect = document.getElementById('wardSelect');
+
+        try {
+            const res = await fetch('https://provinces.open-api.vn/api/p/');
+            const data = await res.json();
+            provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
+            data.forEach(p => {
+                provinceSelect.add(new Option(p.name, p.code));
+            });
+
+            provinceSelect.onchange = async function () {
+                districtSelect.disabled = true;
+                wardSelect.disabled = true;
+                districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+                wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+
+                if (this.value) {
+                    const res = await fetch(`https://provinces.open-api.vn/api/p/${this.value}?depth=2`);
+                    const data = await res.json();
+                    data.districts.forEach(d => {
+                        districtSelect.add(new Option(d.name, d.code));
+                    });
+                    districtSelect.disabled = false;
+
+                    districtSelect.onchange = async function () {
+                        wardSelect.disabled = true;
+                        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                        if (this.value) {
+                            const res = await fetch(`https://provinces.open-api.vn/api/d/${this.value}?depth=2`);
+                            const data = await res.json();
+                            data.wards.forEach(w => {
+                                wardSelect.add(new Option(w.name, w.code));
+                            });
+                            wardSelect.disabled = false;
+                        }
+                    };
+                }
+            };
+        } catch (err) {
+            console.error('Error loading provinces:', err);
+        }
+    }
+</script>
+
+
+<script>
+    // Hàm lấy ngày mai ở định dạng yyyy-mm-dd
+    function getTomorrowDateString() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const year = tomorrow.getFullYear();
+        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const day = String(tomorrow.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Đặt ngày mai vào input khi trang tải
+    document.addEventListener("DOMContentLoaded", function () {
+        const ngayGiaoInput = document.getElementById("ngayGiao");
+        ngayGiaoInput.value = getTomorrowDateString();
+    });
+
     function getToday() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -156,6 +369,7 @@
         return true;
     }
 </script>
+
 
 <!-- Paypal Script -->
 @section Scripts {

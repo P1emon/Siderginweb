@@ -196,18 +196,54 @@ namespace MyEStore.Controllers
         }
 
         public IActionResult Index()
-        {
-            //var maKhachHang = HttpContext.Session.GetString("MaKH");
-            var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-            if (maKhachHang != null)
-            {
-                var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
-                ViewBag.KhachHangs = khachHang;
-            }
+{
+    var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+    if (maKhachHang != null)
+    {
+        var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
+        ViewBag.KhachHangs = khachHang;
+    }
 
-            ViewBag.PaypalClientId = _paypalClient.ClientId;
-            return View(CartItems);
+    ViewBag.PaypalClientId = _paypalClient.ClientId;
+    return View(CartItems);
+}
+
+[HttpPost]
+public IActionResult UpdateAddress(string newAddress)
+{
+    var maKh = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+    if (maKh != null && !string.IsNullOrWhiteSpace(newAddress))
+    {
+        var kh = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKh);
+        if (kh != null)
+        {
+            kh.DiaChi = newAddress;
+            _ctx.SaveChanges();
+            return Json(new { success = true, diaChi = kh.DiaChi });
         }
+    }
+
+    return Json(new { success = false });
+}
+
+[HttpPost]
+public IActionResult AddSecondaryAddress(string secondaryAddress)
+{
+    var maKh = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+    if (maKh != null && !string.IsNullOrWhiteSpace(secondaryAddress))
+    {
+        var kh = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKh);
+        if (kh != null)
+        {
+            kh.DiaChiPhu = secondaryAddress;
+            _ctx.SaveChanges();
+            return Json(new { success = true, diaChiPhu = kh.DiaChiPhu });
+        }
+    }
+
+    return Json(new { success = false });
+}
+
 
         const string CART_KEY = "MY_CART";
         public List<CartItem> CartItems
@@ -735,7 +771,6 @@ namespace MyEStore.Controllers
                             <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                             <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
                             <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
-                            <p><strong>📅 Ngày giao dự kiến:</strong> {order.NgayGiao?.ToString("dd/MM/yyyy") ?? "Chưa xác định"}</p>
                             <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
                         </div>
 
@@ -797,7 +832,6 @@ namespace MyEStore.Controllers
                 <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                 <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
-                <p><strong>📅 Ngày nhận hàng (dự kiến):</strong> {order.NgayGiao?.ToString("dd/MM/yyyy") ?? "Không xác định"}</p>
                 <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
                 <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
                 <hr>
