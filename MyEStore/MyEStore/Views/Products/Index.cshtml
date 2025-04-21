@@ -226,58 +226,130 @@
         <button type="submit">Đăng ký ngay</button>
     </form>
 </section>
-
+    <script src="~/js/hanghoa.js" asp-append-version="true"></script>
 <!-- Scripts -->
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const sliderItems = document.querySelectorAll('.slider-item');
-        const prevButton = document.querySelector('.prev-slide');
-        const nextButton = document.querySelector('.next-slide');
-        let currentIndex = 0;
-        let autoSlide;
-
-        const showSlide = (index) => {
-            sliderItems.forEach((item, i) => {
-                item.style.display = i === index ? 'block' : 'none';
-            });
-        };
-
-        const nextSlide = () => {
-            currentIndex = (currentIndex + 1) % sliderItems.length;
-            showSlide(currentIndex);
-        };
-
-        const prevSlide = () => {
-            currentIndex = (currentIndex - 1 + sliderItems.length) % sliderItems.length;
-            showSlide(currentIndex);
-        };
-
-        const startAutoSlide = () => autoSlide = setInterval(nextSlide, 5000);
-        const stopAutoSlide = () => clearInterval(autoSlide);
-
-        if (sliderItems.length > 0) {
-            showSlide(currentIndex);
+  document.addEventListener('DOMContentLoaded', () => {
+    // Script cho slider
+    const sliderItems = document.querySelectorAll('.slider-item');
+    const prevButton = document.querySelector('.prev-slide');
+    const nextButton = document.querySelector('.next-slide');
+    let currentIndex = 0;
+    let autoSlide;
+    
+    const showSlide = (index) => {
+        sliderItems.forEach((item, i) => {
+            item.style.display = i === index ? 'block' : 'none';
+        });
+    };
+    
+    const nextSlide = () => {
+        currentIndex = (currentIndex + 1) % sliderItems.length;
+        showSlide(currentIndex);
+    };
+    
+    const prevSlide = () => {
+        currentIndex = (currentIndex - 1 + sliderItems.length) % sliderItems.length;
+        showSlide(currentIndex);
+    };
+    
+    const startAutoSlide = () => autoSlide = setInterval(nextSlide, 5000);
+    const stopAutoSlide = () => clearInterval(autoSlide);
+    
+    if (sliderItems.length > 0) {
+        showSlide(currentIndex);
+        startAutoSlide();
+        
+        nextButton.addEventListener('click', () => {
+            stopAutoSlide();
+            nextSlide();
             startAutoSlide();
-
-            nextButton.addEventListener('click', () => {
-                stopAutoSlide();
-                nextSlide();
-                startAutoSlide();
-            });
-
-            prevButton.addEventListener('click', () => {
-                stopAutoSlide();
-                prevSlide();
-                startAutoSlide();
-            });
-        }
-
-        // Promo Form
-        const subscribeForm = document.getElementById('mc-embedded-subscribe-form');
+        });
+        
+        prevButton.addEventListener('click', () => {
+            stopAutoSlide();
+            prevSlide();
+            startAutoSlide();
+        });
+    }
+    
+    // Promo Form
+    const subscribeForm = document.getElementById('mc-embedded-subscribe-form');
+    if (subscribeForm) {
         subscribeForm.addEventListener('submit', (event) => {
             event.preventDefault();
             const emailInput = document.getElementById('mce-EMAIL').value;
             alert(`Cảm ơn bạn đã đăng ký! Chúng tôi sẽ liên hệ qua email: ${emailInput}`);
         });
+    }
+    
+    // Script cho chức năng xem nhanh
+    // Thêm CSS cho icon xem nhanh
+    const style = document.createElement('style');
+    style.textContent = `
+        .product-image {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quick-view {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .quick-view i {
+            margin-right: 5px;
+        }
+        
+        .product-image:hover .quick-view {
+            opacity: 1;
+        }
+        
+        .quick-view:hover {
+            background-color: rgba(0, 0, 0, 0.85);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Thêm icon xem nhanh vào mỗi hình ảnh sản phẩm
+    const productImages = document.querySelectorAll('.product-image');
+    
+    productImages.forEach(imageContainer => {
+        const link = imageContainer.querySelector('a');
+        if (link) {
+            const quickViewElement = document.createElement('div');
+            quickViewElement.className = 'quick-view';
+            quickViewElement.innerHTML = '<i class="fas fa-eye"></i> Xem nhanh';
+            
+            // Bắt sự kiện click của icon xem nhanh
+            quickViewElement.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Lấy href của liên kết gốc
+                const productUrl = link.getAttribute('href');
+                
+                // Chuyển đến trang chi tiết sản phẩm
+                window.location.href = productUrl;
+            });
+            
+            imageContainer.appendChild(quickViewElement);
+        }
     });
+});
 </script>
