@@ -172,7 +172,6 @@
                         </form>
                     </div>
                 </div>
-
                 <!-- Address Tab -->
                 <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
                     <div class="profile-section">
@@ -180,87 +179,6 @@
                             <i class="bi bi-pin-map-fill"></i>
                             Địa chỉ giao hàng
                         </h4>
-
-                        <div class="profile-address-card">
-                            <div class="profile-address-content">
-                                <div class="profile-address-icon">
-                                    <i class="bi bi-house-door-fill"></i>
-                                </div>
-                                <div class="profile-address-text">
-                                    <h5>Địa chỉ hiện tại</h5>
-                                    <p>@(string.IsNullOrEmpty(Model.DiaChi) ? "Bạn chưa cung cấp địa chỉ" : Model.DiaChi)</p>
-                                </div>
-                            </div>
-                            <button type="button" class="profile-address-edit" data-bs-toggle="collapse" data-bs-target="#addressFormCollapse" aria-expanded="false" aria-controls="addressFormCollapse">
-                                <i class="bi bi-pencil-fill"></i>
-                                <span>Chỉnh sửa</span>
-                            </button>
-                        </div>
-
-                        <div class="collapse" id="addressFormCollapse">
-                            <div class="profile-address-form-wrapper">
-                                <form id="addressForm" asp-action="UpdateAddress" method="post" class="profile-form">
-                                    <div class="profile-form-row">
-                                        <div class="profile-form-group">
-                                            <label for="province" class="profile-form-label">Tỉnh/Thành phố</label>
-                                            <div class="profile-input-container">
-                                                <i class="bi bi-geo-alt-fill"></i>
-                                                <select id="province" name="province" class="profile-form-select" required>
-                                                    <option value="">Chọn Tỉnh/Thành phố</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="profile-form-group">
-                                            <label for="district" class="profile-form-label">Quận/Huyện</label>
-                                            <div class="profile-input-container">
-                                                <i class="bi bi-geo-alt-fill"></i>
-                                                <select id="district" name="district" class="profile-form-select" required>
-                                                    <option value="">Chọn Quận/Huyện</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="profile-form-row">
-                                        <div class="profile-form-group">
-                                            <label for="ward" class="profile-form-label">Phường/Xã</label>
-                                            <div class="profile-input-container">
-                                                <i class="bi bi-geo-alt-fill"></i>
-                                                <select id="ward" name="ward" class="profile-form-select" required>
-                                                    <option value="">Chọn Phường/Xã</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="profile-form-group">
-                                            <label for="streetAddress" class="profile-form-label">Địa chỉ cụ thể</label>
-                                            <div class="profile-input-container">
-                                                <i class="bi bi-signpost-fill"></i>
-                                                <input type="text" id="streetAddress" name="streetAddress" class="profile-form-control" placeholder="Số nhà, tên đường" required>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="profile-address-preview">
-                                        <h5><i class="bi bi-check-circle"></i> Địa chỉ đầy đủ</h5>
-                                        <p id="fullAddress" class="profile-full-address">Vui lòng nhập thông tin địa chỉ</p>
-                                        <input type="hidden" id="DiaChi" name="diaChi" value="@Model.DiaChi">
-                                    </div>
-
-                                    <div class="profile-form-actions">
-                                        <button type="button" class="profile-secondary-button" data-bs-toggle="collapse" data-bs-target="#addressFormCollapse">
-                                            <i class="bi bi-x-circle"></i>
-                                            <span>Hủy</span>
-                                        </button>
-                                        <button type="submit" class="profile-primary-button">
-                                            <i class="bi bi-check2-circle"></i>
-                                            <span>Lưu địa chỉ</span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
 
                         @if (TempData["AddressSuccess"] != null)
                         {
@@ -283,6 +201,83 @@
                                 </button>
                             </div>
                         }
+
+                        <form id="addressForm" asp-action="UpdateAddress" method="post" class="profile-form">
+                            <!-- Địa chỉ đầy đủ hiển thị/chỉnh sửa -->
+                            <div class="profile-form-group">
+                                <label class="profile-form-label">Địa chỉ hiện tại</label>
+                                <div class="profile-input-container" id="fullAddressContainer">
+                                    <i class="bi bi-house-door-fill"></i>
+                                    <input type="text" id="displayAddress" class="profile-form-control"
+                                           value="@(string.IsNullOrEmpty(Model.DiaChi) ? "Chưa có địa chỉ" : Model.DiaChi)" readonly />
+                                    <button type="button" class="profile-edit-button" onclick="toggleAddressEdit()">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Form chỉnh sửa địa chỉ chi tiết -->
+                            <div id="addressDetails" class="address-details-hidden">
+                                <div class="profile-form-row">
+                                    <div class="profile-form-group">
+                                        <label for="province" class="profile-form-label">Tỉnh/Thành phố</label>
+                                        <div class="profile-input-container">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            <select id="province" name="province" class="profile-form-select" required>
+                                                <option value="">Chọn Tỉnh/Thành phố</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-form-group">
+                                        <label for="district" class="profile-form-label">Quận/Huyện</label>
+                                        <div class="profile-input-container">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            <select id="district" name="district" class="profile-form-select" required>
+                                                <option value="">Chọn Quận/Huyện</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form-row">
+                                    <div class="profile-form-group">
+                                        <label for="ward" class="profile-form-label">Phường/Xã</label>
+                                        <div class="profile-input-container">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            <select id="ward" name="ward" class="profile-form-select" required>
+                                                <option value="">Chọn Phường/Xã</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-form-group">
+                                        <label for="streetAddress" class="profile-form-label">Địa chỉ cụ thể</label>
+                                        <div class="profile-input-container">
+                                            <i class="bi bi-signpost-fill"></i>
+                                            <input type="text" id="streetAddress" name="streetAddress" class="profile-form-control" placeholder="Số nhà, tên đường" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="profile-address-preview">
+                                    <h5><i class="bi bi-check-circle"></i> Địa chỉ đầy đủ</h5>
+                                    <p id="fullAddress" class="profile-full-address">Vui lòng nhập thông tin địa chỉ</p>
+                                    <input type="hidden" id="DiaChi" name="diaChi" value="@Model.DiaChi">
+                                </div>
+
+                                <div class="profile-form-actions">
+                                    <button type="button" class="profile-secondary-button" onclick="cancelAddressEdit()">
+                                        <i class="bi bi-x-circle"></i>
+                                        <span>Hủy</span>
+                                    </button>
+                                    <button type="submit" class="profile-primary-button">
+                                        <i class="bi bi-check2-circle"></i>
+                                        <span>Lưu địa chỉ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -291,83 +286,82 @@
 </div>
 
 @section Scripts {
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Toggle edit mode for profile fields
-        function toggleEdit(button, fieldName) {
-            const inputContainer = button.closest('.profile-input-container');
-            const input = inputContainer.querySelector(`[name="${fieldName}"]`);
-            const icon = button.querySelector('i');
-
-            if (input.hasAttribute('readonly')) {
-                input.removeAttribute('readonly');
-                input.focus();
-                icon.classList.replace('bi-pencil-fill', 'bi-check-fill');
-                inputContainer.classList.add('is-editing');
-                document.getElementById('saveBtn').disabled = false;
-            } else {
-                input.setAttribute('readonly', '');
-                icon.classList.replace('bi-check-fill', 'bi-pencil-fill');
-                inputContainer.classList.remove('is-editing');
-            }
-        }
-
-        // Toggle password visibility
-        function togglePasswordVisibility(container) {
-            const input = container.querySelector('input');
-            const icon = container.querySelector('.profile-toggle-password i');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
-            }
-        }
-
-        // Evaluate password strength
-        function evaluatePasswordStrength(password) {
-            const strengthBar = document.getElementById('passwordStrength');
-            const strengthText = document.getElementById('strengthText');
-
-            if (!password) {
-                strengthBar.style.width = '0%';
-                strengthBar.className = 'strength-indicator';
-                strengthText.textContent = 'Độ mạnh mật khẩu';
-                return;
-            }
-
-            let strength = 0;
-
-            // Length check
-            if (password.length >= 8) strength += 25;
-
-            // Character variety checks
-            if (/[A-Z]/.test(password)) strength += 25;
-            if (/[0-9]/.test(password)) strength += 25;
-            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-
-            // Update UI
-            strengthBar.style.width = strength + '%';
-
-            if (strength <= 25) {
-                strengthBar.className = 'strength-indicator weak';
-                strengthText.textContent = 'Yếu';
-            } else if (strength <= 50) {
-                strengthBar.className = 'strength-indicator medium';
-                strengthText.textContent = 'Trung bình';
-            } else if (strength <= 75) {
-                strengthBar.className = 'strength-indicator good';
-                strengthText.textContent = 'Khá mạnh';
-            } else {
-                strengthBar.className = 'strength-indicator strong';
-                strengthText.textContent = 'Mạnh';
-            }
-        }
-
-        // Address Form Handling
         document.addEventListener('DOMContentLoaded', function () {
+            // Toggle edit mode for profile fields
+            window.toggleEdit = function (button, fieldName) {
+                const inputContainer = button.closest('.profile-input-container');
+                const input = inputContainer.querySelector(`[name="${fieldName}"]`);
+                const icon = button.querySelector('i');
+
+                if (input.hasAttribute('readonly')) {
+                    input.removeAttribute('readonly');
+                    input.focus();
+                    icon.classList.replace('bi-pencil-fill', 'bi-check-fill');
+                    inputContainer.classList.add('is-editing');
+                    document.getElementById('saveBtn').disabled = false;
+                } else {
+                    input.setAttribute('readonly', '');
+                    icon.classList.replace('bi-check-fill', 'bi-pencil-fill');
+                    inputContainer.classList.remove('is-editing');
+                }
+            };
+
+            // Toggle password visibility
+            window.togglePasswordVisibility = function (container) {
+                const input = container.querySelector('input');
+                const icon = container.querySelector('.profile-toggle-password i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
+                }
+            };
+
+            // Evaluate password strength
+            window.evaluatePasswordStrength = function (password) {
+                const strengthBar = document.getElementById('passwordStrength');
+                const strengthText = document.getElementById('strengthText');
+
+                if (!password) {
+                    strengthBar.style.width = '0%';
+                    strengthBar.className = 'strength-indicator';
+                    strengthText.textContent = 'Độ mạnh mật khẩu';
+                    return;
+                }
+
+                let strength = 0;
+
+                // Length check
+                if (password.length >= 8) strength += 25;
+
+                // Character variety checks
+                if (/[A-Z]/.test(password)) strength += 25;
+                if (/[0-9]/.test(password)) strength += 25;
+                if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+
+                // Update UI
+                strengthBar.style.width = strength + '%';
+
+                if (strength <= 25) {
+                    strengthBar.className = 'strength-indicator weak';
+                    strengthText.textContent = 'Yếu';
+                } else if (strength <= 50) {
+                    strengthBar.className = 'strength-indicator medium';
+                    strengthText.textContent = 'Trung bình';
+                } else if (strength <= 75) {
+                    strengthBar.className = 'strength-indicator good';
+                    strengthText.textContent = 'Khá mạnh';
+                } else {
+                    strengthBar.className = 'strength-indicator strong';
+                    strengthText.textContent = 'Mạnh';
+                }
+            };
+
             // Setup password strength meter
             const newPasswordInput = document.getElementById('NewPassword');
             if (newPasswordInput) {
@@ -461,7 +455,7 @@
             }
 
             // Fetch provinces
-            async function loadProvinces() {
+            window.loadProvinces = async function () {
                 try {
                     setLoading(provinceSelect, true);
                     const response = await fetch('https://provinces.open-api.vn/api/p/');
@@ -476,13 +470,26 @@
                         const option = new Option(province.name, province.code);
                         provinceSelect.add(option);
                     });
+
+                    // Sau khi tải tỉnh/thành, điền giá trị đã lưu
+                    const savedProvince = sessionStorage.getItem('savedProvince');
+                    if (savedProvince) {
+                        // Tìm và chọn tỉnh/thành phù hợp
+                        for (let i = 0; i < provinceSelect.options.length; i++) {
+                            if (provinceSelect.options[i].text === savedProvince) {
+                                provinceSelect.selectedIndex = i;
+                                provinceSelect.dispatchEvent(new Event('change'));
+                                break;
+                            }
+                        }
+                    }
                 } catch (error) {
                     console.error('Error loading provinces:', error);
                     showAddressError('Không thể tải danh sách tỉnh/thành phố. Vui lòng thử lại sau.');
                 } finally {
                     setLoading(provinceSelect, false);
                 }
-            }
+            };
 
             // Show error message for address
             function showAddressError(message) {
@@ -522,6 +529,20 @@
                             const option = new Option(district.name, district.code);
                             districtSelect.add(option);
                         });
+
+                        // Sau khi tải quận/huyện, điền giá trị đã lưu
+                        const savedDistrict = sessionStorage.getItem('savedDistrict');
+                        if (savedDistrict) {
+                            setTimeout(() => {
+                                for (let i = 0; i < districtSelect.options.length; i++) {
+                                    if (districtSelect.options[i].text === savedDistrict) {
+                                        districtSelect.selectedIndex = i;
+                                        districtSelect.dispatchEvent(new Event('change'));
+                                        break;
+                                    }
+                                }
+                            }, 300);
+                        }
                     } catch (error) {
                         console.error('Error loading districts:', error);
                         showAddressError('Không thể tải danh sách quận/huyện. Vui lòng thử lại sau.');
@@ -550,6 +571,24 @@
                             const option = new Option(ward.name, ward.code);
                             wardSelect.add(option);
                         });
+
+                        // Sau khi tải phường/xã, điền giá trị đã lưu
+                        const savedWard = sessionStorage.getItem('savedWard');
+                        if (savedWard) {
+                            setTimeout(() => {
+                                for (let i = 0; i < wardSelect.options.length; i++) {
+                                    if (wardSelect.options[i].text === savedWard) {
+                                        wardSelect.selectedIndex = i;
+                                        updateFullAddress();
+                                        break;
+                                    }
+                                }
+                                // Xóa các giá trị đã lưu sau khi đã điền
+                                sessionStorage.removeItem('savedProvince');
+                                sessionStorage.removeItem('savedDistrict');
+                                sessionStorage.removeItem('savedWard');
+                            }, 300);
+                        }
                     } catch (error) {
                         console.error('Error loading wards:', error);
                         showAddressError('Không thể tải danh sách phường/xã. Vui lòng thử lại sau.');
@@ -593,29 +632,98 @@
             wardSelect.addEventListener('change', updateFullAddress);
             streetAddressInput.addEventListener('input', updateFullAddress);
 
-            // Initialize provinces loading
-            loadProvinces();
-
             // Collapse animation
             const collapseElement = document.getElementById('addressFormCollapse');
+            if (collapseElement) {
+                collapseElement.addEventListener('show.bs.collapse', function () {
+                    this.style.display = 'block';
 
-            collapseElement.addEventListener('show.bs.collapse', function () {
-                this.style.display = 'block';
+                    setTimeout(() => {
+                        this.style.height = this.scrollHeight + 'px';
+                        this.style.opacity = '1';
+                    }, 10);
+                });
 
-                setTimeout(() => {
-                    this.style.height = this.scrollHeight + 'px';
-                    this.style.opacity = '1';
-                }, 10);
-            });
+                collapseElement.addEventListener('hide.bs.collapse', function () {
+                    this.style.height = '0';
+                    this.style.opacity = '0';
 
-            collapseElement.addEventListener('hide.bs.collapse', function () {
-                this.style.height = '0';
-                this.style.opacity = '0';
+                    setTimeout(() => {
+                        this.style.display = 'none';
+                    }, 300);
+                });
+            }
 
-                setTimeout(() => {
-                    this.style.display = 'none';
-                }, 300);
-            });
+            // Hàm xử lý hiển thị/ẩn form chi tiết địa chỉ
+            window.toggleAddressEdit = function () {
+                const detailsSection = document.getElementById('addressDetails');
+                const fullAddressContainer = document.getElementById('fullAddressContainer');
+                const editButton = fullAddressContainer.querySelector('.profile-edit-button');
+                const icon = editButton.querySelector('i');
+
+                if (detailsSection.classList.contains('address-details-hidden')) {
+                    // Hiện form chi tiết
+                    detailsSection.classList.remove('address-details-hidden');
+                    detailsSection.classList.add('address-details-visible');
+                    fullAddressContainer.classList.add('is-editing');
+                    icon.classList.replace('bi-pencil-fill', 'bi-check-fill');
+
+                    // Nếu đã có địa chỉ, phân tích và đặt giá trị ban đầu cho form
+                    const currentAddress = document.getElementById('displayAddress').value;
+                    if (currentAddress && currentAddress !== "Chưa có địa chỉ") {
+                        parseAddressToFormFields(currentAddress);
+                    }
+
+                    // Tải dữ liệu tỉnh/thành phố nếu chưa được tải
+                    if (provinceSelect.options.length <= 1) {
+                        loadProvinces();
+                    }
+                } else {
+                    saveEditedAddress();
+                }
+            };
+
+            // Hủy chỉnh sửa
+            window.cancelAddressEdit = function () {
+                const detailsSection = document.getElementById('addressDetails');
+                const fullAddressContainer = document.getElementById('fullAddressContainer');
+                const editButton = fullAddressContainer.querySelector('.profile-edit-button');
+                const icon = editButton.querySelector('i');
+
+                detailsSection.classList.add('address-details-hidden');
+                detailsSection.classList.remove('address-details-visible');
+                fullAddressContainer.classList.remove('is-editing');
+                icon.classList.replace('bi-check-fill', 'bi-pencil-fill');
+            };
+
+            // Lưu địa chỉ đã chỉnh sửa (chỉ cập nhật hiển thị, không submit form)
+            function saveEditedAddress() {
+                const fullAddress = document.getElementById('fullAddress').textContent;
+                if (fullAddress && fullAddress !== "Vui lòng nhập thông tin địa chỉ") {
+                    document.getElementById('displayAddress').value = fullAddress;
+                }
+                cancelAddressEdit();
+            }
+
+            // Phân tích địa chỉ hiện tại để điền vào form
+            function parseAddressToFormFields(fullAddress) {
+                // Phân tách địa chỉ theo dấu phẩy: Số nhà đường, Phường xã, Quận huyện, Tỉnh thành
+                const parts = fullAddress.split(', ');
+                if (parts.length >= 4) {
+                    document.getElementById('streetAddress').value = parts[0];
+                    // Các phần còn lại sẽ được điền sau khi tải dữ liệu tỉnh/thành
+
+                    // Lưu giá trị để điền sau
+                    sessionStorage.setItem('savedProvince', parts[3]);
+                    sessionStorage.setItem('savedDistrict', parts[2]);
+                    sessionStorage.setItem('savedWard', parts[1]);
+                }
+            }
+
+            // Initialize provinces loading if needed
+            if (document.getElementById('addressDetails') && document.getElementById('addressDetails').classList.contains('address-details-visible')) {
+                loadProvinces();
+            }
         });
     </script>
 }

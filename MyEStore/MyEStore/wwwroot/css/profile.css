@@ -591,47 +591,92 @@
     margin-bottom: 1.25rem;
 }
 
-#addressFormCollapse {
-    height: 0;
+/* Thêm phần này vào file profile.css */
+
+/* Styles cho phần địa chỉ mới */
+.address-details-hidden {
+    display: none;
     opacity: 0;
+    max-height: 0;
     overflow: hidden;
-    transition: height 0.25s, opacity 0.25s;
+    transition: all 0.3s ease-out;
+}
+
+.address-details-visible {
+    display: block;
+    opacity: 1;
+    max-height: 1000px;
+    margin-top: 1.25rem;
+    transition: all 0.3s ease-in;
+}
+
+#fullAddressContainer.is-editing {
+    border-color: var(--profile-primary);
+    box-shadow: 0 0 0 3px rgba(82, 113, 255, 0.1);
+    background-color: var(--profile-white);
 }
 
 .profile-address-preview {
-    background-color: var(--profile-gray-100);
+    position: relative;
+    background-color: var(--profile-primary-light);
     border-radius: var(--profile-border-radius-sm);
     padding: 0.9rem;
     margin: 1.25rem 0;
-    border: 1px dashed var(--profile-gray-400);
+    border: 1px solid var(--profile-primary);
     transition: var(--profile-transition);
+    animation: fadeIn 0.3s ease-out;
 }
 
     .profile-address-preview h5 {
-        margin: 0 0 0.4rem;
-        font-size: 0.95rem;
-        color: var(--profile-gray-700);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        color: var(--profile-primary);
     }
 
         .profile-address-preview h5 i {
-            color: var(--profile-gray-500);
+            color: var(--profile-primary);
         }
 
-    .profile-address-preview.complete h5 i {
-        color: var(--profile-success);
+/* Hiệu ứng hiển thị trường chỉnh sửa */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 
-.profile-full-address {
-    margin: 0;
-    font-weight: 500;
-    color: var(--profile-gray-800);
-    word-break: break-word;
-    font-size: 0.9rem;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
+#addressDetails.address-details-visible .profile-form-row:nth-child(1) {
+    animation: slideDown 0.3s ease-out;
+}
+
+#addressDetails.address-details-visible .profile-form-row:nth-child(2) {
+    animation: slideDown 0.3s ease-out 0.1s;
+    animation-fill-mode: backwards;
+}
+
+#addressDetails.address-details-visible .profile-address-preview {
+    animation: slideDown 0.3s ease-out 0.2s;
+    animation-fill-mode: backwards;
+}
+
+#addressDetails.address-details-visible .profile-form-actions {
+    animation: slideDown 0.3s ease-out 0.3s;
+    animation-fill-mode: backwards;
+}
+
+/* Cải thiện trải nghiệm mobile */
+@media (max-width: 768px) {
+    .profile-address-preview {
+        padding: 0.7rem;
+    }
+
+    .profile-full-address {
+        font-size: 0.85rem;
+    }
+}
 /* Loading Spinner */
 .profile-input-container.is-loading {
     position: relative;
