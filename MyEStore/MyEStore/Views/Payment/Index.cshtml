@@ -83,12 +83,16 @@
                     </div>
 
                     <div class="mb-4 text-center">
+                        <div id="distanceResult" class="mt-2 fw-bold text-primary"></div>
+                        <div  >Phí giao hàng: <span id="shippingFee" class="text-danger fw-bold"></span></div>
+                        
                         @* <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label> *@
                         <input type="date" id="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem; position: absolute; left: -9999px;" />
                     </div>
 
                 </div>
-                <div id="map" style="height: 350px;" class="rounded shadow mt-3"></div>
+                @* <div id="map" style="height: 350px;" class="rounded shadow mt-3"></div> *@
+                
 
             </div>
         </div>
@@ -113,6 +117,7 @@
                         <form method="post" action="/Payment/VnpayOrder" onsubmit="return attachCommonData(this)">
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
+                            <input type="hidden" name="PhiVanChuyen" />
                             <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button>
                         </form>
 
@@ -120,6 +125,7 @@
                         <form id="paymentForm" method="post" action="@Url.Action("PaypalCapture", "Payment")">
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="selectedAddress" />
+                            <input type="hidden" name="PhiVanChuyen" />
                             <div id="paypal-button-container"></div>
                         </form>
 
@@ -127,6 +133,8 @@
                         <form method="post" action="/Payment/CodPayment" onsubmit="return attachCommonData(this)">
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
+                            <input type="hidden" name="PhiVanChuyen" />
+
                             <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">Thanh Toán Khi Nhận Hàng (COD)</button>
                         </form>
 
@@ -145,6 +153,72 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const defaultLat = 10.8450343;
+    const defaultLng = 106.8036769;
+
+    function toRad(degree) {
+        return degree * Math.PI / 180;
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                  Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function calculateShippingFee(distanceKm) {
+        if (distanceKm <= 5) return 10000;
+        return 10000 + Math.ceil(distanceKm - 5) * 2500;
+    }
+
+    async function updateDistanceFromAddress(address) {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+        const data = await res.json();
+        const distanceDiv = document.getElementById("distanceResult");
+        const shippingDiv = document.getElementById("shippingFee");
+
+        if (data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            const distance = calculateDistance(lat, lon, defaultLat, defaultLng);
+            const rounded = distance.toFixed(2);
+            const fee = calculateShippingFee(distance);
+
+            distanceDiv.innerText = `Khoảng cách đến kho: ${rounded} km`;
+            shippingDiv.innerText = ` ${fee.toLocaleString()} đ`;
+        } else {
+            distanceDiv.innerText = "Không tìm thấy địa chỉ.";
+            shippingDiv.innerText = "";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const addressSelect = document.getElementById("selectedAddress");
+        if (addressSelect && addressSelect.value) {
+            updateDistanceFromAddress(addressSelect.value);
+        }
+
+        addressSelect.addEventListener("change", function () {
+            if (this.value) {
+                updateDistanceFromAddress(this.value);
+            }
+        });
+    });
+</script>
+<script>
+    // Đồng bộ hiển thị phí trong bảng
+    document.addEventListener("DOMContentLoaded", () => {
+        const feeText = document.getElementById("shippingFee").innerText;
+        document.getElementById("shippingFeeView").innerText = feeText;
+    });
+</script>
+
 <script>
     let map;
     let marker;
@@ -378,14 +452,14 @@
     // Hàm lấy ngày mai ở định dạng yyyy-mm-dd
     function getTomorrowDateString() {
         const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setDate(tomorrow.getDate() + 7);
         const year = tomorrow.getFullYear();
         const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
         const day = String(tomorrow.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
-    // Đặt ngày mai vào input khi trang tải
+    // Đặt 7 ngày  vào input khi trang tải
     document.addEventListener("DOMContentLoaded", function () {
         const ngayGiaoInput = document.getElementById("ngayGiao");
         ngayGiaoInput.value = getTomorrowDateString();
@@ -403,28 +477,34 @@
     }
 
     function attachCommonData(form) {
-        const ngayGiao = document.getElementById("ngayGiao").value;
-        const address = document.getElementById("selectedAddress").value;
+    const ngayGiao = document.getElementById("ngayGiao").value;
+    const address = document.getElementById("selectedAddress").value;
 
-        if (!address || !ngayGiao || !isFutureDate(ngayGiao)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#d33'
-            });
-            return false;
-        }
-
-        form.querySelector('[name="ngayGiao"]').value = ngayGiao;
-        form.querySelector('[name="selectedAddress"]').value = address;
-        return true;
+    if (!address || !ngayGiao || !isFutureDate(ngayGiao)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#d33'
+        });
+        return false;
     }
+
+    form.querySelector('[name="ngayGiao"]').value = ngayGiao;
+    form.querySelector('[name="selectedAddress"]').value = address;
+
+    const shippingText = document.getElementById("shippingFee").innerText;
+    const match = shippingText.match(/([\d.,]+)/); // Lấy số tiền
+    const phiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+    form.querySelector('[name="PhiVanChuyen"]').value = phiVanChuyen;
+
+    return true;
+}
+
 </script>
 
 
-<!-- Paypal Script -->
 @section Scripts {
         <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
         <script>
@@ -438,6 +518,11 @@
                 createOrder: (data, actions) => {
                     const ngayGiao = document.getElementById('ngayGiao').value;
                     const address = document.getElementById('selectedAddress').value;
+
+                    // Lấy phí vận chuyển từ span
+                    const shippingText = document.getElementById("shippingFee").innerText;
+                    const match = shippingText.match(/([\d.,]+)/);
+                    const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
 
                     if (!ngayGiao || !isFutureDate(ngayGiao) || !address) {
                         Swal.fire({
@@ -455,7 +540,11 @@
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ ngayGiao, selectedAddress: address })
+                        body: JSON.stringify({ 
+                            ngayGiao, 
+                            selectedAddress: address,
+                            PhiVanChuyen // 👈 Gửi kèm phí
+                        })
                     })
                     .then(res => res.json())
                     .then(order => order.id);
@@ -464,7 +553,12 @@
                     const ngayGiao = document.getElementById('ngayGiao').value;
                     const address = document.getElementById('selectedAddress').value;
 
-                        return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}`, {
+                    // Lấy phí vận chuyển (lại) nếu cần
+                    const shippingText = document.getElementById("shippingFee").innerText;
+                    const match = shippingText.match(/([\d.,]+)/);
+                    const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+
+                    return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}&PhiVanChuyen=${PhiVanChuyen}`, {
                         method: "POST"
                     })
                     .then(() => {

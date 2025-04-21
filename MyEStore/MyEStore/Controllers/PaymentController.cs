@@ -296,7 +296,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, CancellationToken cancellationToken)
+        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, CancellationToken cancellationToken)
         {
             try
             {
@@ -325,6 +325,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
                         MaTrangThai = 1,
+                        PhiVanChuyen = PhiVanChuyen,
                         NgayGiao = ngayGiaoDate,
                         GhiChu = $"Thanh toán thành công, reference_id={reference}, transactionId={transactionId}"
                     };
@@ -344,6 +345,10 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         _ctx.Add(cthd);
                     }
                     _ctx.SaveChanges();
+
+                    // Thêm đoạn xử lý cộng điểm
+                    await CongDiemChoKhachHangAsync(hoaDon.MaHd);
+                    _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
 
                     try
                     {
@@ -382,8 +387,9 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 return BadRequest(error);
             }
         }
+
         [HttpPost]
-        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress)
+        public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen)
         {
             var tongTien = CartItems.Sum(p => p.ThanhTien);
             var userId = User.FindFirstValue("UserId");
@@ -401,6 +407,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     CachThanhToan = "VNPay",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 0,
+                    PhiVanChuyen = PhiVanChuyen,
                     NgayGiao = ngayGiaoDate,
                     GhiChu = "Đang chờ thanh toán VNPay"
                 };
@@ -586,7 +593,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao)
+        public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao, double PhiVanChuyen)
         {
             try
             {
@@ -598,7 +605,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     _logger.LogWarning("Không tìm thấy khách hàng với MaKh: " + userId);
                     return BadRequest("Không tìm thấy thông tin khách hàng.");
                 }
-
 
                 DateTime? giaoDate = null;
                 if (DateTime.TryParse(ngayGiao, out DateTime parsed))
@@ -615,6 +621,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     CachThanhToan = "COD",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 1, // Chờ xác nhận
+                    PhiVanChuyen = PhiVanChuyen,
                     NgayGiao = giaoDate,
                     GhiChu = "Thanh toán khi nhận hàng"
                 };
@@ -634,6 +641,10 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     _ctx.Add(cthd);
                 }
                 _ctx.SaveChanges();
+
+                // Cộng điểm cho khách hàng
+                await CongDiemChoKhachHangAsync(hoaDon.MaHd);
+                _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
 
                 try
                 {
@@ -659,8 +670,8 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 ViewBag.Message = "Lỗi khi tạo hóa đơn COD: " + ex.GetBaseException().Message;
                 return View("MomoFail");
             }
-
         }
+
 
 
 
@@ -683,8 +694,24 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 Credentials = new NetworkCredential(senderEmail, senderPassword),
                 EnableSsl = true,
             };
+            string filteredNote = "Không có";
+            if (!string.IsNullOrEmpty(order.GhiChu))
+            {
+                if (order.GhiChu == "Đang chờ thanh toán")
+                {
+                    filteredNote = order.GhiChu;
+                }
+                else if (order.GhiChu.StartsWith("Thanh toán thành công"))
+                {
+                    filteredNote = "Thanh toán thành công";
+                }
+                else
+                {
+                    filteredNote = order.GhiChu;
+                }
+            }
 
-            string subject = $"Xác nhận đơn hàng COD #{order.MaHd} - SIDERGIN";
+            string subject = $"Xác nhận đơn hàng  #{order.MaHd} - SIDERGIN";
             string body = $@"
             <!DOCTYPE html>
             <html lang='vi'>
@@ -771,7 +798,8 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                             <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                             <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
                             <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
-                            <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
+                            <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
+                            <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                         </div>
 
                         <p>Chúng tôi sẽ sớm liên hệ để xác nhận và tiến hành giao hàng.</p>
@@ -784,6 +812,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 </div>
             </body>
             </html>";
+           
 
 
             var mailMessage = new MailMessage(senderEmail, email, subject, body) { IsBodyHtml = true };
@@ -817,11 +846,27 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 Credentials = new NetworkCredential(senderEmail, senderPassword),
                 EnableSsl = true,
             };
+            string filteredNote = "Không có";
+            if (!string.IsNullOrEmpty(order.GhiChu))
+            {
+                if (order.GhiChu == "Đang chờ thanh toán")
+                {
+                    filteredNote = order.GhiChu;
+                }
+                else if (order.GhiChu.StartsWith("Thanh toán thành công"))
+                {
+                    filteredNote = "Thanh toán thành công";
+                }
+                else
+                {
+                    filteredNote = order.GhiChu;
+                }
+            }
 
-            string subject = $"📦 [SIDERGIN] Thông báo đơn hàng COD mới #{order.MaHd}";
+            string subject = $"📦 [SIDERGIN] Thông báo đơn hàng mới #{order.MaHd}";
 
             string body = $@"
-                <h2>📢 Thông báo đơn hàng COD mới</h2>
+                <h2>📢 Thông báo đơn hàng mới</h2>
                 <p>Xin chào Admin,</p>
                 <p>Một đơn hàng mới đã được khách hàng đặt thành công.</p>
                 <hr>
@@ -832,8 +877,9 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                 <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
+                <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
                 <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
-                <p><strong>📝 Ghi chú:</strong> {(string.IsNullOrEmpty(order.GhiChu) ? "Không có" : order.GhiChu)}</p>
+                <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                 <hr>
                 <p>📞 Vui lòng liên hệ với khách hàng để xác nhận đơn hàng sớm nhất có thể.</p>
                 <p>Trân trọng,</p>
