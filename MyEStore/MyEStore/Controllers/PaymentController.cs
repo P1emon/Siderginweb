@@ -798,6 +798,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                             <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                             <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
                             <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
+                            <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
                             <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                         </div>
 
@@ -876,6 +877,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                 <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
+                <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
                 <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
                 <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                 <hr>
