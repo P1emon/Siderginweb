@@ -56,21 +56,21 @@
                         <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mb-3">
                             <select id="selectedAddress" class="form-select" style="width: 280px; font-size: 1.05rem;">
                                 @if (ViewBag.KhachHangs is MyEStore.Entities.KhachHang kh)
-                                     {
+                                {
                                     if (!string.IsNullOrWhiteSpace(kh.DiaChi))
                                     {
-                                     <option value="@kh.DiaChi">@kh.DiaChi (Mặc định)</option>
+                              <option value="@kh.DiaChi">@kh.DiaChi (Mặc định)</option>
                                     }
                                     if (!string.IsNullOrWhiteSpace(kh.DiaChiPhu))
                                     {
-                                       <option value="@kh.DiaChiPhu">@kh.DiaChiPhu (Phụ)</option>
+                                <option value="@kh.DiaChiPhu">@kh.DiaChiPhu (Phụ)</option>
                                     }
                                 }
                                 else
                                 {
-                                 <option disabled selected>Không có địa chỉ</option>
+                         <option disabled selected>Không có địa chỉ</option>
                                 }
-                            </select>
+                             </select>
 
                             <button class="btn btn-outline-warning rounded-circle" onclick="openEditAddress()" title="Sửa Địa Chỉ Chính">
                                 <i class="bi bi-pencil-square fs-5"></i>
@@ -88,6 +88,8 @@
                     </div>
 
                 </div>
+                <div id="map" style="height: 350px;" class="rounded shadow mt-3"></div>
+
             </div>
         </div>
 
@@ -137,14 +139,64 @@
 
 <!-- SweetAlert + Validation -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let map;
+    let marker;
+
+    function initMap() {
+        map = L.map('map').setView([10.762622, 106.660172], 13); // Tạm default TPHCM
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        marker = L.marker([10.762622, 106.660172]).addTo(map)
+            .bindPopup("Địa chỉ giao hàng").openPopup();
+    }
+
+    async function updateMapFromAddress(address) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+            const data = await response.json();
+            if (data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 15);
+                marker.setLatLng([lat, lon])
+                    .bindPopup(address)
+                    .openPopup();
+            }
+        } catch (err) {
+            console.error("Lỗi khi tìm tọa độ từ địa chỉ:", err);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initMap();
+
+        const addressSelect = document.getElementById("selectedAddress");
+        if (addressSelect && addressSelect.value) {
+            updateMapFromAddress(addressSelect.value); // Load địa chỉ ban đầu
+        }
+
+        addressSelect.addEventListener("change", function () {
+            if (this.value) {
+                updateMapFromAddress(this.value);
+            }
+        });
+    });
+</script>
 <script>
     function openEditAddress() {
         Swal.fire({
             title: 'Sửa Địa Chỉ Chính',
             html: `
-                <input id="mainAddress" class="swal2-input" placeholder="Số nhà, tên đường...">
+                <input id="mainAddress" class="swal2-input" placeholder="Ví dụ 1 Đường ...">
                 <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
                 <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
                 <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
@@ -182,6 +234,7 @@
                     if (data.success) {
                         Swal.fire('Thành công!', 'Địa chỉ đã được cập nhật.', 'success');
                         updateAddressDropdown(data.diaChi, null);
+                        location.reload();
                     } else {
                         Swal.fire('Lỗi!', 'Không thể cập nhật địa chỉ.', 'error');
                     }
@@ -196,7 +249,7 @@
         Swal.fire({
             title: 'Thêm Địa Chỉ Phụ',
             html: `
-                <input id="secondaryAddress" class="swal2-input" placeholder="Số nhà, tên đường...">
+                <input id="secondaryAddress" class="swal2-input" placeholder="Ví dụ 1 Đường ...">
                 <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
                 <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
                 <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
