@@ -296,7 +296,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
 
         [HttpPost]
-        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, List<CartItem> CartItems, CancellationToken cancellationToken)
+        public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, CancellationToken cancellationToken)
         {
             try
             {

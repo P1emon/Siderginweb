@@ -151,16 +151,6 @@
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
-                            @for (int i = 0; i < Model.Count(); i++)
-                            {
-                                var item = Model.ElementAt(i);
-                                var giaGoc = item.DonGia * item.SoLuong;
-                                var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
-                                        <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
-                                        <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
-                                        <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
-                                        <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
-                            }
                             <div id="paypal-button-container"></div>
                         </form>
 
@@ -170,16 +160,6 @@
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
 
-                                @for (int i = 0; i < Model.Count(); i++)
-                                {
-                                    var item = Model.ElementAt(i);
-                                    var giaGoc = item.DonGia * item.SoLuong;
-                                    var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
-                                    <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
-                                    <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
-                                    <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
-                                    <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
-                                 }
 
                             <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
                                 Thanh Toán Khi Nhận Hàng (COD)
@@ -577,82 +557,82 @@
 
 
 @section Scripts {
-        <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
-        <script>
-            paypal.Buttons({
-                style: {
-                    layout: 'horizontal',
-                    color: 'blue',
-                    shape: 'rect',
-                    label: 'pay'
-                },
-                createOrder: (data, actions) => {
-                    const ngayGiao = document.getElementById('ngayGiao').value;
-                    const address = document.getElementById('selectedAddress').value;
+            <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
+            <script>
+                paypal.Buttons({
+                    style: {
+                        layout: 'horizontal',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'pay'
+                    },
+                    createOrder: (data, actions) => {
+                        const ngayGiao = document.getElementById('ngayGiao').value;
+                        const address = document.getElementById('selectedAddress').value;
 
-                    // Lấy phí vận chuyển từ span
-                    const shippingText = document.getElementById("shippingFee").innerText;
-                    const match = shippingText.match(/([\d.,]+)/);
-                    const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+                        // Lấy phí vận chuyển từ span
+                        const shippingText = document.getElementById("shippingFee").innerText;
+                        const match = shippingText.match(/([\d.,]+)/);
+                        const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
 
-                    if (!ngayGiao || !isFutureDate(ngayGiao) || !address) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#d33'
-                        });
-                        return;
-                    }
+                        if (!ngayGiao || !isFutureDate(ngayGiao) || !address) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#d33'
+                            });
+                            return;
+                        }
 
-                    return fetch("/Payment/PaypalOrder", {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            ngayGiao, 
-                            selectedAddress: address,
-                            PhiVanChuyen // 👈 Gửi kèm phí
+                        return fetch("/Payment/PaypalOrder", {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                ngayGiao, 
+                                selectedAddress: address,
+                                PhiVanChuyen // 👈 Gửi kèm phí
+                            })
                         })
-                    })
-                    .then(res => res.json())
-                    .then(order => order.id);
-                },
-                onApprove: (data, actions) => {
-                    const ngayGiao = document.getElementById('ngayGiao').value;
-                    const address = document.getElementById('selectedAddress').value;
+                        .then(res => res.json())
+                        .then(order => order.id);
+                    },
+                    onApprove: (data, actions) => {
+                        const ngayGiao = document.getElementById('ngayGiao').value;
+                        const address = document.getElementById('selectedAddress').value;
 
-                    // Lấy phí vận chuyển (lại) nếu cần
-                    const shippingText = document.getElementById("shippingFee").innerText;
-                    const match = shippingText.match(/([\d.,]+)/);
-                    const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+                        // Lấy phí vận chuyển (lại) nếu cần
+                        const shippingText = document.getElementById("shippingFee").innerText;
+                        const match = shippingText.match(/([\d.,]+)/);
+                        const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
 
-                    return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}&PhiVanChuyen=${PhiVanChuyen}`, {
-                        method: "POST"
-                    })
-                    .then(() => {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Thành công!',
-                            text: 'Đơn hàng đã được thanh toán.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#3085d6'
-                        }).then(() => {
-                            window.location.href = "/Payment/Success";
+                        return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}&PhiVanChuyen=${PhiVanChuyen}`, {
+                            method: "POST"
+                        })
+                        .then(() => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: 'Đơn hàng đã được thanh toán.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            }).then(() => {
+                                window.location.href = "/Payment/Success";
+                            });
+                        })
+                        .catch(() => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Thất bại!',
+                                text: 'Có lỗi xảy ra khi xử lý đơn hàng.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#d33'
+                            });
                         });
-                    })
-                    .catch(() => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Thất bại!',
-                            text: 'Có lỗi xảy ra khi xử lý đơn hàng.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#d33'
-                        });
-                    });
-                }
-            }).render('#paypal-button-container');
-        </script>
+                    }
+                }).render('#paypal-button-container');
+            </script>
 }
