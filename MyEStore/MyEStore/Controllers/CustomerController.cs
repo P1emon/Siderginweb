@@ -905,5 +905,59 @@ namespace MyEStore.Controllers
 
             return View(model);
         }
+        public IActionResult IndexPayment(int? id)
+        {
+            // Retrieve the user ID from claims
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+
+            // If user is not logged in, redirect to login
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // If id is not provided, redirect to Index (or you could show an error page)
+            if (!id.HasValue)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Get the customer details based on the userId
+            var maKhachHang = userId;
+            if (maKhachHang != null)
+            {
+                var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
+                ViewBag.KhachHangs = khachHang;
+            }
+
+            // Get the order details, including related ChiTietHds and HangHoa
+            var order = _ctx.HoaDons
+                .Where(hd => hd.MaKh == userId && hd.MaHd == id)
+                .Include(hd => hd.ChiTietHds)
+                    .ThenInclude(ct => ct.MaHhNavigation)
+                .FirstOrDefault();
+
+            // If order is not found, return a 404 error
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            // Calculate the total amount for the order
+            double total = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia);
+            ViewBag.TotalAmount = total; // You could use ViewBag or pass as part of the model
+
+            // Pass the single order model to the view
+            return View(order);
+        }
+
+
+
+
+
+
+
+
+
     }
 }

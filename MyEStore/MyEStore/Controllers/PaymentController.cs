@@ -196,17 +196,17 @@ namespace MyEStore.Controllers
         }
 
         public IActionResult Index()
-{
-    var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-    if (maKhachHang != null)
-    {
-        var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
-        ViewBag.KhachHangs = khachHang;
-    }
+            {
+                var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                if (maKhachHang != null)
+                {
+                    var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
+                    ViewBag.KhachHangs = khachHang;
+                }
 
-    ViewBag.PaypalClientId = _paypalClient.ClientId;
-    return View(CartItems);
-}
+                ViewBag.PaypalClientId = _paypalClient.ClientId;
+                return View(CartItems);
+            }
 
 [HttpPost]
 public IActionResult UpdateAddress(string newAddress)
@@ -630,7 +630,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     DiaChi = selectedAddress,
                     CachThanhToan = "COD",
                     CachVanChuyen = "N/A",
-                    MaTrangThai = 1, // Chờ xác nhận
+                    MaTrangThai = 0, // Chờ xác nhận
                     PhiVanChuyen = PhiVanChuyen,
                     NgayGiao = giaoDate,
                     GhiChu = "Thanh toán khi nhận hàng"

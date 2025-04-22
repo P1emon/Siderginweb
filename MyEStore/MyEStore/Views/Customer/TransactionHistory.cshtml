@@ -130,10 +130,12 @@
                                     </a>
                                     @if (!isPaid)
                                     {
-                                        <a href="#" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-credit-card"></i> Thanh toán
-                                        </a>
+                                    <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-credit-card"></i> Thanh toán
+                                    </a>
+
                                     }
+
                                 </div>
                             </div>
                         </div>

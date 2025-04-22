@@ -159,7 +159,16 @@
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
-
+                            @for (int i = 0; i < Model.Count(); i++)
+                            {
+                                var item = Model.ElementAt(i);
+                                var giaGoc = item.DonGia * item.SoLuong;
+                                var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
+                                        <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
+                                        <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
+                                        <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
+                                        <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
+                            }
 
                             <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
                                 Thanh Toán Khi Nhận Hàng (COD)
