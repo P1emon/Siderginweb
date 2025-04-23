@@ -260,20 +260,22 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
         }
 
         [HttpPost]
-        public async Task<IActionResult> PaypalOrder(CancellationToken cancellationToken)
+        public async Task<IActionResult> PaypalOrder(decimal PhiVanChuyen, CancellationToken cancellationToken)
         {
             // Tính tổng tiền bằng VND
             var tongTienVND = CartItems.Sum(p => p.ThanhTien);
 
             // Chuyển đổi VND sang USD
-            const decimal conversionRate = 25400; // 1 USD = 25,000 VND
+            const decimal conversionRate = 25400;
             var tongTienUSD = tongTienVND / (double)conversionRate;
+
+            // Add shipping fee to the total
+            tongTienUSD += (double)(PhiVanChuyen / conversionRate); // Convert shipping fee to USD
 
             // Đảm bảo số tiền có 2 chữ số thập phân
             var tongTien = tongTienUSD.ToString("F2");
 
             var donViTienTe = "USD";
-            // OrderId - mã tham chiếu (duy nhất)
             var orderIdref = "DH" + DateTime.Now.Ticks.ToString();
 
             try
@@ -289,7 +291,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 {
                     e.GetBaseException().Message
                 };
-
                 return BadRequest(error);
             }
         }
@@ -329,7 +330,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         MaTrangThai = 1,  // Assuming 1 is 'completed' status, adjust as necessary
                         PhiVanChuyen = PhiVanChuyen,
                         NgayGiao = ngayGiaoDate,
-                        GhiChu = $"Thanh toán thành công, reference_id={reference}, transactionId={transactionId}"
+                        GhiChu = $"Thanh toán thành công, phí vận chuyển sẽ trả khi nhân hàng, reference_id={reference}, transactionId={transactionId}"
                     };
 
                     _ctx.Add(hoaDon);
@@ -401,7 +402,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
         [HttpPost]
         public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen, List<CartItem> CartItems)
         {
-            var tongTien = CartItems.Sum(p => p.ThanhTien);
+            var tongTien = CartItems.Sum(p => p.ThanhTien) + PhiVanChuyen;
             var userId = User.FindFirstValue("UserId");
             var userProfile = _ctx.KhachHangs.FirstOrDefault(u => u.MaKh == userId);
             DateTime? ngayGiaoDate = DateTime.TryParse(ngayGiao, out DateTime parsedDate) ? parsedDate : (DateTime?)null;
@@ -511,6 +512,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     }
 
                     hoaDon.MaTrangThai = 1;
+                    hoaDon.CachThanhToan = "VNPay";
                     hoaDon.GhiChu = $"Thanh toán thành công, TransactionId={response.TransactionId}";
                     _ctx.SaveChanges();
 
@@ -566,7 +568,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
         }
         // Vnpay 2
         [HttpPost]
-        public IActionResult VnpayOrder2(int MaHd) // Changed to receive MaHd
+        public IActionResult VnpayOrder2(int MaHd)
         {
             try
             {
@@ -574,8 +576,19 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
                 if (hoaDon == null)
                 {
+                    _logger.LogWarning($"Không tìm thấy hóa đơn với MaHd: {MaHd}");
                     ViewBag.Message = "Không tìm thấy hóa đơn.";
-                    return View("VnpayCancel"); // Or an error view
+                    return View("VnpayCancel");
+                }
+
+                // Eagerly load ChiTietHds to ensure they're fetched
+                _ctx.Entry(hoaDon).Collection(h => h.ChiTietHds).Load();
+
+                if (hoaDon.ChiTietHds == null || !hoaDon.ChiTietHds.Any())
+                {
+                    _logger.LogError($"Không có chi tiết hóa đơn nào cho MaHd: {MaHd}");
+                    ViewBag.Message = "Hóa đơn không có chi tiết.";
+                    return View("VnpayCancel"); // Or a more appropriate error view
                 }
 
                 // Calculate total amount from the existing order's details
@@ -584,7 +597,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 var paymentRequest = new VnPaymentRequestModel
                 {
                     Amount = tongTien,
-                    OrderId = hoaDon.MaHd, // Use the existing MaHd
+                    OrderId = hoaDon.MaHd,
                     CreatedDate = DateTime.Now
                 };
 

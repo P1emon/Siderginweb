@@ -60,7 +60,7 @@
 
                     <div class="text-end mt-4">
                         <h3>
-                            Tổng cộng:
+                            Tổng tiền sản phẩm:
                             <span class="text-danger fw-bold">@Model.Sum(p => p.ThanhTien).ToString("#,##0") đ</span>
                         </h3>
                     </div>
@@ -617,6 +617,7 @@
                         const shippingText = document.getElementById("shippingFee").innerText;
                         const match = shippingText.match(/([\d.,]+)/);
                         const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+                        console.log("Shipping fee before fetch:", PhiVanChuyen);  // Add this line
 
                         return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}&PhiVanChuyen=${PhiVanChuyen}`, {
                             method: "POST"
