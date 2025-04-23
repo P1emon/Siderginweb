@@ -67,24 +67,31 @@
                         </form>
 
                         <!-- VNPay -->
-                        <form method="post" action="/Payment/VnpayOrder2" onsubmit="return attachCommonData(this)">
-                            <input type="hidden" name="ngayGiao" />
-                            <input type="hidden" name="selectedAddress" />
-                            <input type="hidden" name="PhiVanChuyen" />
-                            <input type="hidden" name="MaHh" value="@Model.ChiTietHds.FirstOrDefault().MaHh" />
-                            <input type="hidden" name="SoLuong" value="@Model.ChiTietHds.FirstOrDefault().SoLuong" />
-                            <input type="hidden" name="GiamGia" value="@Model.ChiTietHds.FirstOrDefault().GiamGia" />
-                            <input type="hidden" name="DonGia" value="@Model.ChiTietHds.FirstOrDefault().DonGia" />
-
-                        
-                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button>
-                        </form>
+                            <form method="post" action="/Payment/VnpayOrder2" onsubmit="return attachCommonData(this)">
+                                <input type="hidden" name="MaHd" value="@Model.MaHd" /> 
+                                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+                                    Thanh Toán Bằng VNPay
+                                </button>
+                            </form>
                     </div>
                 </div>
             </div>
     }
 </div>
+<script>
+    function attachCommonData(form) {
+        // This part remains, fetching address and date
+        fetch('/Payment/GetMainAddress')
+            .then(response => response.text())
+            .then(address => {
+                form.querySelector('input[name="selectedAddress"]').value = address;
+            });
 
+        form.querySelector('input[name="ngayGiao"]').value = new Date().toISOString();
+        form.querySelector('input[name="PhiVanChuyen"]').value = @Model.PhiVanChuyen;
+        return true;
+    }
+</script>
 <script>
     function openEditAddress() {
         Swal.fire({

@@ -196,17 +196,17 @@ namespace MyEStore.Controllers
         }
 
         public IActionResult Index()
+        {
+            var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (maKhachHang != null)
             {
-                var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-                if (maKhachHang != null)
-                {
-                    var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
-                    ViewBag.KhachHangs = khachHang;
-                }
-
-                ViewBag.PaypalClientId = _paypalClient.ClientId;
-                return View(CartItems);
+                var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
+                ViewBag.KhachHangs = khachHang;
             }
+
+            ViewBag.PaypalClientId = _paypalClient.ClientId;
+            return View(CartItems);
+        }
 
 [HttpPost]
 public IActionResult UpdateAddress(string newAddress)
@@ -561,6 +561,40 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             {
                 _logger.LogError(ex, "Lỗi xử lý callback từ VNPay");
                 ViewBag.Message = "Có lỗi xảy ra khi xử lý thanh toán: " + ex.Message;
+                return View("MomoFail");
+            }
+        }
+        // Vnpay 2
+        [HttpPost]
+        public IActionResult VnpayOrder2(int MaHd) // Changed to receive MaHd
+        {
+            try
+            {
+                var hoaDon = _ctx.HoaDons.FirstOrDefault(h => h.MaHd == MaHd);
+
+                if (hoaDon == null)
+                {
+                    ViewBag.Message = "Không tìm thấy hóa đơn.";
+                    return View("VnpayCancel"); // Or an error view
+                }
+
+                // Calculate total amount from the existing order's details
+                var tongTien = hoaDon.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + hoaDon.PhiVanChuyen;
+
+                var paymentRequest = new VnPaymentRequestModel
+                {
+                    Amount = tongTien,
+                    OrderId = hoaDon.MaHd, // Use the existing MaHd
+                    CreatedDate = DateTime.Now
+                };
+
+                var paymentUrl = _vnpayService.CreatePaymentUrl(HttpContext, paymentRequest);
+                return Redirect(paymentUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating VNPay payment request.");
+                ViewBag.Message = "Lỗi tạo yêu cầu thanh toán: " + ex.Message;
                 return View("MomoFail");
             }
         }
