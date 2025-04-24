@@ -106,7 +106,7 @@
                     </div>
 
                 </div>
-                @* <div id="map" style="height: 350px;" class="rounded shadow mt-3"></div> *@
+                 <div id="map" style="height: 400px;"></div>
                 
 
             </div>
@@ -226,8 +226,8 @@
         const dLat = toRad(lat2 - lat1);
         const dLon = toRad(lon2 - lon1);
         const a = Math.sin(dLat / 2) ** 2 +
-                  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                  Math.sin(dLon / 2) ** 2;
+                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                    Math.sin(dLon / 2) ** 2;
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
     }
@@ -237,36 +237,102 @@
         return 10000 + Math.ceil(distanceKm - 5) * 2500;
     }
 
-    async function updateDistanceFromAddress(address) {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
-        const data = await res.json();
-        const distanceDiv = document.getElementById("distanceResult");
-        const shippingDiv = document.getElementById("shippingFee");
+    async function getCoordinatesFromAddress(address) {
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+            const data = await res.json();
+            if (data.length > 0) {
+                return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+            }
+            return null;
+        } catch (error) {
+            console.error("Lỗi khi lấy tọa độ:", error);
+            return null;
+        }
+    }
 
-        if (data.length > 0) {
-            const lat = parseFloat(data[0].lat);
-            const lon = parseFloat(data[0].lon);
-            const distance = calculateDistance(lat, lon, defaultLat, defaultLng);
-            const rounded = distance.toFixed(2);
-            const fee = calculateShippingFee(distance);
+    async function calculateShippingFeeFromNearestPostOffice(customerAddress) {
+        const hanoiPostOffices = [
+            { name: "Hanoi Post Office", lat: 21.029137, lng: 105.852371 },
+            { name: "Central Post office", lat: 21.029137, lng: 105.852371 },
+            { name: "Vietnam Post Office", lat: 21.031024, lng: 105.851083 },
+            { name: "Vietnam Post Office", lat: 21.026749, lng: 105.848834 },
+            {name: "Vietnam Post Office", lat: 21.007137, lng: 105.820984}
+        ];
 
-            distanceDiv.innerText = `Khoảng cách đến kho: ${rounded} km`;
-            shippingDiv.innerText = ` ${fee.toLocaleString()} đ`;
+        const hoChiMinhPostOffices = [
+             { name: "Saigon Central Post Office", lat: 10.774173, lng: 106.700742 },
+            { name: "Ho Chi Minh City Post Office", lat: 10.774300, lng: 106.701100 },
+            { name: "District 5 Postoffice", lat: 10.752300, lng: 106.666900 },
+            { name: "Ho Chi Minh City Posts and Telecommunications", lat: 10.774500, lng: 106.701500 },
+            {name: "Bưu điện Chí Hoà", lat: 10.783600, lng: 106.671900}
+        ];
+
+        let nearestPostOffice = null;
+        let minDistance = Infinity;
+        let shippingFee = 0;
+
+        const customerCoords = await getCoordinatesFromAddress(customerAddress);
+        if (!customerCoords) {
+            document.getElementById("distanceResult").innerText = "Không thể xác định tọa độ địa chỉ.";
+            document.getElementById("shippingFee").innerText = "";
+            document.getElementById("shippingFeeView").innerText = "";
+            return;
+        }
+
+        const city = customerAddress.toLowerCase().includes("hà nội") ? "hà nội" : (customerAddress.toLowerCase().includes("hồ chí minh") || customerAddress.toLowerCase().includes("tp.hcm") ? "hồ chí minh" : null);
+        let postOffices = [];
+
+        if (city === "hà nội") {
+            postOffices = hanoiPostOffices;
+        } else if (city === "hồ chí minh") {
+            postOffices = hoChiMinhPostOffices;
         } else {
-            distanceDiv.innerText = "Không tìm thấy địa chỉ.";
-            shippingDiv.innerText = "";
+            document.getElementById("distanceResult").innerText = "Không xác định được thành phố để tìm bưu điện.";
+            document.getElementById("shippingFee").innerText = "";
+            document.getElementById("shippingFeeView").innerText = "";
+            return;
+        }
+
+        for (const postOffice of postOffices) {
+            const distance = calculateDistance(
+                customerCoords.lat,
+                customerCoords.lng,
+                postOffice.lat,
+                postOffice.lng
+            );
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPostOffice = postOffice;
+            }
+        }
+
+        if (nearestPostOffice) {
+            shippingFee = calculateShippingFee(minDistance);
+            const roundedDistance = minDistance.toFixed(2);
+            document.getElementById("distanceResult").innerText = `Bưu điện gần nhất: ${nearestPostOffice.name} (${roundedDistance} km)`;
+            document.getElementById("shippingFee").innerText = ` ${shippingFee.toLocaleString()} đ`;
+            document.getElementById("shippingFeeView").innerText = ` ${shippingFee.toLocaleString()} đ`;
+        } else {
+            document.getElementById("distanceResult").innerText = "Không tìm thấy bưu điện gần nhất.";
+            document.getElementById("shippingFee").innerText = "";
+            document.getElementById("shippingFeeView").innerText = "";
         }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
         const addressSelect = document.getElementById("selectedAddress");
         if (addressSelect && addressSelect.value) {
-            updateDistanceFromAddress(addressSelect.value);
+            calculateShippingFeeFromNearestPostOffice(addressSelect.value);
         }
 
         addressSelect.addEventListener("change", function () {
             if (this.value) {
-                updateDistanceFromAddress(this.value);
+                calculateShippingFeeFromNearestPostOffice(this.value);
+            } else {
+                document.getElementById("distanceResult").innerText = "";
+                document.getElementById("shippingFee").innerText = "";
+                document.getElementById("shippingFeeView").innerText = "";
             }
         });
     });
@@ -279,8 +345,69 @@
     });
 </script>
 
-<script>
+@* <script>
     let map;
+    let marker;
+    let geocoder;
+
+    const initMap = () => {
+        return new Promise((resolve, reject) => {
+            const defaultLatLng = { lat: 10.762622, lng: 106.660172 }; // TP HCM [cite: 72, 73]
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: defaultLatLng,
+            });
+            geocoder = new google.maps.Geocoder();
+            marker = new google.maps.Marker({
+                position: defaultLatLng,
+                map: map,
+                title: "Địa chỉ giao hàng",
+            });
+            resolve();
+        });
+    };
+
+    const updateMapFromAddress = (address) => {
+        return new Promise((resolve, reject) => {
+            geocoder.geocode({ address: address }, (results, status) => {
+                if (status === "OK") {
+                    const location = results[0].geometry.location;
+                    map.setCenter(location);
+                    marker.setPosition(location);
+                    marker.setTitle(address); [cite: 74, 75, 76]
+                    resolve();
+                } else {
+                    alert("Không tìm được địa chỉ: " + status);
+                    console.error("Geocoding error:", status);
+                    reject(status);
+                }
+            });
+        });
+    };
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            await initMap();
+
+            const addressSelect = document.getElementById("selectedAddress");
+            if (addressSelect && addressSelect.value) {
+                await updateMapFromAddress(addressSelect.value);
+            }
+
+            addressSelect.addEventListener("change", () => {
+                if (addressSelect.value) {
+                    updateMapFromAddress(addressSelect.value); [cite: 77, 78]
+                }
+            });
+        } catch (error) {
+            console.error("Failed to initialize map:", error);
+            // Handle error (e.g., display a message to the user)
+        }
+    });
+</script> *@
+<script>
+     let map;
     let marker;
 
     function initMap() {
@@ -324,6 +451,9 @@
             }
         });
     });
+    </script>
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
 </script>
 <script>
     function openEditAddress() {
@@ -461,50 +591,78 @@
     }
 
     async function loadProvinces() {
-        const provinceSelect = document.getElementById('provinceSelect');
-        const districtSelect = document.getElementById('districtSelect');
-        const wardSelect = document.getElementById('wardSelect');
+    const provinceSelect = document.getElementById('provinceSelect');
+    const districtSelect = document.getElementById('districtSelect');
+    const wardSelect = document.getElementById('wardSelect');
 
-        try {
-            const res = await fetch('https://provinces.open-api.vn/api/p/');
-            const data = await res.json();
-            provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
-            data.forEach(p => {
-                provinceSelect.add(new Option(p.name, p.code));
-            });
+    try {
+        const res = await fetch('https://provinces.open-api.vn/api/p/');
+        const data = await res.json();
 
-            provinceSelect.onchange = async function () {
-                districtSelect.disabled = true;
-                wardSelect.disabled = true;
-                districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-                wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+        // Clear existing options
+        provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
+        districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
 
-                if (this.value) {
-                    const res = await fetch(`https://provinces.open-api.vn/api/p/${this.value}?depth=2`);
-                    const data = await res.json();
-                    data.districts.forEach(d => {
-                        districtSelect.add(new Option(d.name, d.code));
-                    });
-                    districtSelect.disabled = false;
+        // Use a DocumentFragment to minimize DOM manipulations
+        const provinceFragment = document.createDocumentFragment();
+        data.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.code;
+            option.textContent = p.name;
+            provinceFragment.appendChild(option);
+        });
+        provinceSelect.appendChild(provinceFragment);
 
-                    districtSelect.onchange = async function () {
-                        wardSelect.disabled = true;
-                        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                        if (this.value) {
-                            const res = await fetch(`https://provinces.open-api.vn/api/d/${this.value}?depth=2`);
-                            const data = await res.json();
-                            data.wards.forEach(w => {
-                                wardSelect.add(new Option(w.name, w.code));
-                            });
-                            wardSelect.disabled = false;
-                        }
-                    };
-                }
-            };
-        } catch (err) {
-            console.error('Error loading provinces:', err);
-        }
+        provinceSelect.onchange = async function () {
+            districtSelect.disabled = true;
+            wardSelect.disabled = true;
+            districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+            wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+
+            if (this.value) {
+                const res = await fetch(`https://provinces.open-api.vn/api/p/${this.value}?depth=2`);
+                const data = await res.json();
+
+                const districtFragment = document.createDocumentFragment();
+                data.districts.forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d.code;
+                    option.textContent = d.name;
+                    districtFragment.appendChild(option);
+                });
+                districtSelect.appendChild(districtFragment);
+
+                districtSelect.disabled = false;
+
+                districtSelect.onchange = async function () {
+                    wardSelect.disabled = true;
+                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                    if (this.value) {
+                        const res = await fetch(`https://provinces.open-api.vn/api/d/${this.value}?depth=2`);
+                        const data = await res.json();
+
+                        const wardFragment = document.createDocumentFragment();
+                        data.wards.forEach(w => {
+                            const option = document.createElement('option');
+                            option.value = w.code;
+                            option.textContent = w.name;
+                            wardFragment.appendChild(option);
+                        });
+                        wardSelect.appendChild(wardFragment);
+                        wardSelect.disabled = false;
+                    }
+                };
+            }
+        };
+
+    } catch (err) {
+        console.error('Error loading provinces:', err);
+        // Handle the error appropriately (e.g., display a message to the user)
     }
+}
+
+document.addEventListener('DOMContentLoaded', loadProvinces);
 </script>
 
 
