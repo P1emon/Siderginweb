@@ -1,0 +1,37 @@
+﻿@model List<MyEStore.Models.Slider>
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Danh sách hàng hóa";
+    var siteUrl = ViewContext.HttpContext.Request.Scheme + "://" + ViewContext.HttpContext.Request.Host;
+    var sliders = ViewData["Sliders"] as List<MyEStore.Models.Slider> ?? new List<MyEStore.Models.Slider>();
+    var newProducts = ViewData["NewProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
+    var saleProducts = ViewData["SaleProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
+}
+
+<meta property="og:title" content="@ViewData["Title"]" />
+<meta property="og:description" content="Khám phá các sản phẩm đa dạng tại MyStore." />
+<meta property="og:image" content="@Url.Content("~/images/default-og-image.jpg")" />
+<meta property="og:url" content="@siteUrl" />
+<meta property="og:type" content="website" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="@Url.Content("~/css/PHome.css")" />
+
+
+<h2>Thông Báo Sự Kiện Sắp Diễn Ra</h2>
+
+@if (!Model.Any())
+{
+    <p>Không có sự kiện nào sắp diễn ra trong 7 ngày tới.</p>
+}
+else
+{
+    <ul>
+        @foreach (var s in Model)
+        {
+            <li>
+                <strong>@s.TieuDe</strong> – bắt đầu: @s.NgayBatDau.ToShortDateString()
+                <br />
+                <a href="@s.LinkQuangCao">Xem chi tiết</a>
+            </li>
+        }
+    </ul>
+}

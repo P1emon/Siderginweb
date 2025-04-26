@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MyEStore.Entities;
 using MyEStore.Models;
+using MyEStore.Services;
 using MyEStore.Servicess;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +38,12 @@ builder.Services.AddSingleton(x =>
 );
 
 builder.Services.AddSingleton<IVnpayService, VnPayService>();
+
+builder.Services.AddScoped<ISliderThongBaoService, SliderThongBaoService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>(); 
+builder.Services.AddHostedService<ThongBaoEmailService>();
+
+
 
 var app = builder.Build();
 

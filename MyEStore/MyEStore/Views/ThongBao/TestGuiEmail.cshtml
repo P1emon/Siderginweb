@@ -1,0 +1,22 @@
+﻿
+@model List<MyEStore.Models.Slider>
+
+<h2>Thông Báo Sự Kiện Sắp Diễn Ra</h2>
+
+@if (!Model.Any())
+{
+    <p>Không có sự kiện nào sắp diễn ra trong 7 ngày tới.</p>
+}
+else
+{
+    <ul>
+        @foreach (var item in Model)
+        {
+            <li>
+                <strong>@item.TieuDe</strong> - Bắt đầu: @item.NgayBatDau.ToString("dd/MM/yyyy")
+                <br />
+                <a href="@item.LinkQuangCao">Xem chi tiết</a>
+            </li>
+        }
+    </ul>
+}
