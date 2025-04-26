@@ -130,12 +130,15 @@
                                     </a>
                                     @if (!isPaid)
                                     {
-                                    <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
-                                        <i class="fas fa-credit-card"></i> Thanh toán
-                                    </a>
-
+                                        <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-credit-card"></i> Thanh toán
+                                        </a>
                                     }
-
+                                    <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-shopping-cart"></i> Mua lại
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
