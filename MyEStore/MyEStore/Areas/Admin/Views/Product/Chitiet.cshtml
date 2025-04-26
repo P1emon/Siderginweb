@@ -1,0 +1,70 @@
+﻿@model MyEStore.Entities.HangHoaChiTiet
+
+@{
+    ViewData["Title"] = "Nhập Chi Tiết Sản Phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1>Nhập Chi Tiết Sản Phẩm</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateDetail">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="MaHh" class="control-label"></label>
+                <select asp-for="MaHh" class="form-control" asp-items="ViewBag.MaHh"></select>
+                <span asp-validation-for="MaHh" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CongDung" class="control-label"></label>
+                <textarea asp-for="CongDung" class="form-control"></textarea>
+                <span asp-validation-for="CongDung" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoiTuongSuDung" class="control-label"></label>
+                <textarea asp-for="DoiTuongSuDung" class="form-control"></textarea>
+                <span asp-validation-for="DoiTuongSuDung" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="QuyCachDongGoi" class="control-label"></label>
+                <input asp-for="QuyCachDongGoi" class="form-control" />
+                <span asp-validation-for="QuyCachDongGoi" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ThanhPhan" class="control-label"></label>
+                <textarea asp-for="ThanhPhan" class="form-control"></textarea>
+                <span asp-validation-for="ThanhPhan" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CongNgheDacBiet" class="control-label"></label>
+                <textarea asp-for="CongNgheDacBiet" class="form-control"></textarea>
+                <span asp-validation-for="CongNgheDacBiet" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LoiIchNoiBat" class="control-label"></label>
+                <textarea asp-for="LoiIchNoiBat" class="form-control"></textarea>
+                <span asp-validation-for="LoiIchNoiBat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LuuY" class="control-label"></label>
+                <textarea asp-for="LuuY" class="form-control"></textarea>
+                <span asp-validation-for="LuuY" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Tạo" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Quay lại danh sách sản phẩm</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

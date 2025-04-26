@@ -1,0 +1,95 @@
+﻿@model IEnumerable<MyEStore.Entities.HangHoa>
+
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1>Danh sách sản phẩm</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TenHh)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TenAlias)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaLoaiNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MoTaDonVi)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DonGia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Hinh)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NgaySx)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GiamGia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SoLanXem)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaNccNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenHh)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TenAlias)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MaLoaiNavigation.TenLoai)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MoTaDonVi)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DonGia)
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Hinh))
+                    {
+                            <img src="~/@item.Hinh" alt="@item.TenHh" style="max-height: 50px;" />
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NgaySx)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GiamGia)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SoLanXem)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MaNccNavigation.TenCongTy)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.MaHh" class="btn btn-sm btn-warning">Sửa</a> |
+                    <a asp-action="Details" asp-route-id="@item.MaHh" class="btn btn-sm btn-info">Chi tiết</a> |
+                    <a asp-action="Delete" asp-route-id="@item.MaHh" class="btn btn-sm btn-danger">Xóa</a> |
+                    <a asp-action="CreateDetail" asp-controller="Product" class="btn btn-sm btn-success">Thêm chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
