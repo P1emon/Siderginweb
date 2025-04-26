@@ -83,12 +83,15 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.MaNccNavigation.TenCongTy)
                 </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.MaHh" class="btn btn-sm btn-warning">Sửa</a> |
-                    <a asp-action="Details" asp-route-id="@item.MaHh" class="btn btn-sm btn-info">Chi tiết</a> |
-                    <a asp-action="Delete" asp-route-id="@item.MaHh" class="btn btn-sm btn-danger">Xóa</a> |
-                    <a asp-action="CreateDetail" asp-controller="Product" class="btn btn-sm btn-success">Thêm chi tiết</a>
-                </td>
+                @* <td>
+                    @if (!string.IsNullOrEmpty(item.MaHh))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.MaHh" class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp - action = "Details" asp - route - id = "@item.MaHh" class="btn btn-sm btn-info">Chi tiết</a> 
+                        <a asp-action= "Delete" asp-route-id= "@item.MaHh" class="btn btn-sm btn-danger">Xóa</a> 
+                        <a asp-action="CreateDetail" asp-controller="Product" asp-route-id="@item.MaHh" class="btn btn-sm btn-success">Thêm chi tiết</a>
+                    }
+                </td> *@
             </tr>
         }
     </tbody>
