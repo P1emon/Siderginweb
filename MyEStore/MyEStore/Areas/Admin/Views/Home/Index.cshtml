@@ -1,9 +1,84 @@
-﻿@{
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
     ViewData["Title"] = "Trang chủ Admin";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="~/css/LayoutStyles.css" asp-append-version="true" />
 <div class="container my-5">
     <h2 class="fw-bold text-center">Chào mừng đến với <span class="text-highlight">Trang quản trị</span></h2>
     <p class="text-center">Quản lý sản phẩm, nhà cung cấp, và đơn hàng tại đây.</p>
+<header>
+        <div class="header-container">
+            <div class="logo">
+                <a asp-area="" asp-controller="Products" asp-action="Index">
+                    <h1><span class="highlight">S</span>idergin</h1>
+                </a>
+            </div>
+
+            <!-- Thêm form tìm kiếm vào đây -->
+            <form method="get" asp-action="Search" asp-controller="Products" class="search-container">
+                <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." />
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            <nav>
+                <ul>
+                    <li class="nav-item">
+                        <a class="main-nav-link" asp-area="" asp-controller="News" asp-action="Index">
+                            <i class="bi bi-newspaper"></i> Tin tức
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="main-nav-link" asp-controller="ThongBao" asp-action="Index">
+                            <i class="bi bi-bell"></i> Thông Báo
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item cart-wrapper">
+                        <a class="main-nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
+                            <i class="bi bi-cart"></i> Giỏ hàng
+                            <span class="badge" id="cart-count">0</span>
+                        </a>
+                    </li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                            <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i> <b>@User.Identity.Name</b>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
+                                            <i class="bi bi-bell"></i> Thông báo
+                                        @*    @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
+                                        {
+                                            <span class="badge bg-danger">@ViewData["UpcomingDeliveriesCount"]</span>
+                                        } *@
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" asp-area="" asp-controller="Customer" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
+                                </ul>
+                            </li>
+                    }
+                    else
+                    {
+                            <li class="nav-item"><a class="main-nav-link" asp-area="" asp-controller="Customer" asp-action="Register"><i class="bi bi-person-plus"></i> Đăng ký</a></li>
+                            <li class="nav-item"><a class="main-nav-link" asp-area="" asp-controller="Customer" asp-action="Login"><i class="bi bi-box-arrow-in-right"></i> Đăng nhập</a></li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </header>
 </div>

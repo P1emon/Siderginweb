@@ -955,7 +955,26 @@ namespace MyEStore.Controllers
             // Pass the single order model to the view
             return View(order);
         }
+        [Authorize]
+        [HttpGet]
+        public IActionResult PrintInvoice(int maHd)
+        {
+            var userId = User.FindFirstValue("UserId");
+            var hoaDon = _ctx.HoaDons
+                .Include(h => h.ChiTietHds)
+                .ThenInclude(ct => ct.MaHhNavigation)
+                .FirstOrDefault(h => h.MaHd == maHd && h.MaKh == userId);
 
+            if (hoaDon == null)
+            {
+                return NotFound("Hóa đơn không tồn tại hoặc bạn không có quyền xem.");
+            }
+
+            var khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == hoaDon.MaKh);
+            ViewBag.KhachHang = khachHang;
+
+            return View(hoaDon);
+        }
 
 
 

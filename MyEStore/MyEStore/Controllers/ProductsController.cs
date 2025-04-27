@@ -53,9 +53,10 @@ namespace MyEStore.Controllers
                     TenAlias = hh.TenAlias,
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
-                    GiamGia = hh.GiamGia
+                    GiamGia = hh.GiamGia,
+                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
                 })
-                .Take(8) // Limit to 8 new products
+                .Take(8)
                 .ToList();
 
             // Fetch sale products (all products with discount)
@@ -68,9 +69,10 @@ namespace MyEStore.Controllers
                     TenAlias = hh.TenAlias,
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
-                    GiamGia = hh.GiamGia
+                    GiamGia = hh.GiamGia,
+                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
                 })
-                .Take(8) // Limit to 8 sale products
+                .Take(8)
                 .ToList();
 
             // Fetch all products with pagination
@@ -102,7 +104,8 @@ namespace MyEStore.Controllers
                     TenAlias = hh.TenAlias,
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
-                    GiamGia = hh.GiamGia
+                    GiamGia = hh.GiamGia,
+                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
                 }).ToList();
 
             // Fetch active sliders
@@ -137,7 +140,8 @@ namespace MyEStore.Controllers
                     TenAlias = hh.TenAlias,
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
-                    GiamGia = hh.GiamGia
+                    GiamGia = hh.GiamGia,
+                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
                 }).ToList();
 
             ViewData["Title"] = $"Kết quả tìm kiếm cho '{query}'";

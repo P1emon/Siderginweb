@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyEStore.Entities;
 using MyEStore.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MyEStore.Controllers
 {
@@ -43,20 +45,34 @@ namespace MyEStore.Controllers
 
         public IActionResult AddToCart(int id, int qty = 1)
         {
+            var hangHoa = _ctx.HangHoas.SingleOrDefault(h => h.MaHh == id);
+            if (hangHoa == null)
+            {
+                TempData["ThongBao"] = $"Không tìm thấy hàng hóa có mã {id}";
+                return RedirectToAction("Index", "Products");
+            }
+
+            // Check available stock
+            if (hangHoa.SoLuong < qty)
+            {
+                TempData["ThongBao"] = $"Sản phẩm {hangHoa.TenHh} chỉ còn {hangHoa.SoLuong} đơn vị trong kho.";
+                return RedirectToAction("Index", "Products");
+            }
+
             var cart = CartItems;
             var cartItem = cart.SingleOrDefault(p => p.MaHh == id);
             if (cartItem != null)
             {
+                // Check if increasing quantity exceeds stock
+                if (hangHoa.SoLuong < cartItem.SoLuong + qty)
+                {
+                    TempData["ThongBao"] = $"Sản phẩm {hangHoa.TenHh} chỉ còn {hangHoa.SoLuong} đơn vị trong kho.";
+                    return RedirectToAction("Index");
+                }
                 cartItem.SoLuong += qty;
             }
             else
             {
-                var hangHoa = _ctx.HangHoas.SingleOrDefault(h => h.MaHh == id);
-                if (hangHoa == null)
-                {
-                    TempData["ThongBao"] = $"Không tìm thấy hàng hóa có mã {id}";
-                    return RedirectToAction("Index", "Products");
-                }
                 cartItem = new CartItem
                 {
                     MaHh = id,
@@ -64,10 +80,11 @@ namespace MyEStore.Controllers
                     TenHh = hangHoa.TenHh,
                     Hinh = hangHoa.Hinh,
                     DonGia = hangHoa.DonGia ?? 0,
-                    GiamGia = hangHoa.GiamGia // Store the discount
+                    GiamGia = hangHoa.GiamGia
                 };
                 cart.Add(cartItem);
             }
+
             HttpContext.Session.Set(CART_KEY, cart);
             return RedirectToAction("Index");
         }
@@ -89,23 +106,79 @@ namespace MyEStore.Controllers
         {
             var cart = CartItems;
             var cartItem = cart.SingleOrDefault(p => p.MaHh == request.Id);
-
-            if (cartItem != null)
+            if (cartItem == null)
             {
-                cartItem.SoLuong = request.Qty; // Update the quantity
-                HttpContext.Session.Set(CART_KEY, cart);
+                return Json(new { success = false, message = "Sản phẩm không tồn tại trong giỏ hàng." });
             }
 
-            var itemTotalPrice = cartItem?.ThanhTien ?? 0; // Uses discounted price
-            var cartTotal = cart.Sum(item => item.ThanhTien); // Uses discounted price
+            var hangHoa = _ctx.HangHoas.SingleOrDefault(h => h.MaHh == request.Id);
+            if (hangHoa == null)
+            {
+                return Json(new { success = false, message = "Sản phẩm không tồn tại." });
+            }
+
+            // Check if requested quantity exceeds stock
+            if (request.Qty > hangHoa.SoLuong)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Sản phẩm {hangHoa.TenHh} chỉ còn {hangHoa.SoLuong} đơn vị trong kho."
+                });
+            }
+
+            // Update quantity
+            cartItem.SoLuong = request.Qty;
+            HttpContext.Session.Set(CART_KEY, cart);
+
+            var itemTotalPrice = cartItem.ThanhTien;
+            var cartTotal = cart.Sum(item => item.ThanhTien);
 
             return Json(new
             {
+                success = true,
                 newItemTotalPrice = itemTotalPrice,
                 cartTotal = cartTotal
             });
         }
 
+        [HttpPost]
+        public IActionResult CheckStockBeforeCheckout()
+        {
+            var cart = CartItems;
+            if (!cart.Any())
+            {
+                return Json(new
+                {
+                    
+                    success = false,
+                    message = "Giỏ hàng của bạn đang trống."
+                });
+            }
+
+            var outOfStockItems = new List<string>();
+            foreach (var cartItem in cart)
+            {
+                var hangHoa = _ctx.HangHoas.SingleOrDefault(h => h.MaHh == cartItem.MaHh);
+                if (hangHoa == null)
+                {
+                    outOfStockItems.Add($"Sản phẩm {cartItem.TenHh} không còn tồn tại.");
+                }
+                else if (hangHoa.SoLuong < cartItem.SoLuong)
+                {
+                    outOfStockItems.Add($"Sản phẩm {cartItem.TenHh} chỉ còn {hangHoa.SoLuong} đơn vị trong kho, nhưng bạn đã chọn {cartItem.SoLuong}.");
+                }
+            }
+
+            if (outOfStockItems.Any())
+            {
+                // Join messages with <br> for HTML display in SweetAlert
+                var message = string.Join("<br>", outOfStockItems);
+                return Json(new { success = false, message });
+            }
+
+            return Json(new { success = true });
+        }
 
         [HttpPost]
         public IActionResult ReorderItems(int orderId)
@@ -116,7 +189,6 @@ namespace MyEStore.Controllers
                 return RedirectToAction("Login", "Customer");
             }
 
-            // Lấy chi tiết đơn hàng cần mua lại
             var orderDetails = _ctx.ChiTietHds
                 .Where(ct => ct.MaHd == orderId)
                 .Include(ct => ct.MaHhNavigation)
@@ -128,48 +200,52 @@ namespace MyEStore.Controllers
                 return RedirectToAction("TransactionHistory", "Customer");
             }
 
-            // Lấy giỏ hàng hiện tại
             var cart = CartItems;
-
-            // Thêm từng sản phẩm vào giỏ hàng
             foreach (var item in orderDetails)
             {
-                // Kiểm tra nếu sản phẩm tồn tại trong giỏ hàng
-                var existingItem = cart.SingleOrDefault(c => c.MaHh == item.MaHh);
+                var product = item.MaHhNavigation;
+                if (product == null)
+                {
+                    TempData["ThongBao"] = $"Sản phẩm mã {item.MaHh} không còn tồn tại.";
+                    continue;
+                }
 
+                // Check stock availability
+                if (item.SoLuong > product.SoLuong)
+                {
+                    TempData["ThongBao"] = $"Sản phẩm {product.TenHh} chỉ còn {product.SoLuong} đơn vị trong kho.";
+                    continue;
+                }
+
+                var existingItem = cart.SingleOrDefault(c => c.MaHh == item.MaHh);
                 if (existingItem != null)
                 {
-                    // Nếu sản phẩm đã có trong giỏ hàng, tăng số lượng
+                    if (existingItem.SoLuong + item.SoLuong > product.SoLuong)
+                    {
+                        TempData["ThongBao"] = $"Sản phẩm {product.TenHh} chỉ còn {product.SoLuong} đơn vị trong kho.";
+                        continue;
+                    }
                     existingItem.SoLuong += item.SoLuong;
                 }
                 else
                 {
-                    // Nếu sản phẩm chưa có trong giỏ hàng, thêm mới
-                    var product = item.MaHhNavigation;
-                    if (product != null)
+                    var cartItem = new CartItem
                     {
-                        var cartItem = new CartItem
-                        {
-                            MaHh = item.MaHh,
-                            TenHh = product.TenHh,
-                            DonGia = product.DonGia ?? 0,
-                            GiamGia = product.GiamGia,
-                            SoLuong = item.SoLuong,
-                            Hinh = product.Hinh
-                        };
-                        cart.Add(cartItem);
-                    }
+                        MaHh = item.MaHh,
+                        TenHh = product.TenHh,
+                        DonGia = product.DonGia ?? 0,
+                        GiamGia = product.GiamGia,
+                        SoLuong = item.SoLuong,
+                        Hinh = product.Hinh
+                    };
+                    cart.Add(cartItem);
                 }
             }
 
-            // Lưu giỏ hàng vào session
             HttpContext.Session.Set(CART_KEY, cart);
-
             TempData["ThongBao"] = "Đã thêm sản phẩm vào giỏ hàng thành công!";
             return RedirectToAction("Index", "Cart");
         }
-
-
 
         public class UpdateQuantityRequest
         {

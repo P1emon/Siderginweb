@@ -1,0 +1,115 @@
+﻿@model MyEStore.Entities.HoaDon
+@{
+    ViewData["Title"] = "Hóa Đơn Thanh Toán";
+    var khachHang = ViewBag.KhachHang as MyEStore.Entities.KhachHang;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa Đơn Thanh Toán</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .invoice-header img {
+            max-width: 150px;
+        }
+        .invoice-details, .customer-info {
+            margin-bottom: 20px;
+        }
+        .table {
+            margin-bottom: 20px;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: right;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="invoice-header">
+            <img src="~/images/logo.png" alt="SIDERGIN Logo" /> <!-- Replace with your logo path -->
+            <h2>HÓA ĐƠN THANH TOÁN</h2>
+            <p>SIDERGIN - Cửa hàng trực tuyến</p>
+        </div>
+
+        <div class="invoice-details">
+            <p><strong>Mã hóa đơn:</strong> #@Model.MaHd</p>
+            <p><strong>Ngày đặt:</strong> @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>Phương thức thanh toán:</strong> @Model.CachThanhToan</p>
+            <p><strong>Phí vận chuyển:</strong> @Model.PhiVanChuyen.ToString("#,##0") VNĐ</p>
+            <p><strong>Ghi chú:</strong> @Model.GhiChu</p>
+        </div>
+
+        <div class="customer-info">
+            <h5>Thông tin khách hàng</h5>
+            <p><strong>Họ tên:</strong> @Model.HoTen</p>
+            <p><strong>Địa chỉ:</strong> @Model.DiaChi</p>
+            <p><strong>Email:</strong> @(khachHang?.Email ?? "Không có")</p>
+            <p><strong>Số điện thoại:</strong> @(khachHang?.DienThoai ?? "Không có")</p>
+        </div>
+
+        <h5>Chi tiết hóa đơn</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Đơn giá</th>
+                    <th>Số lượng</th>
+                    <th>Giảm giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ChiTietHds)
+                {
+                    var thanhTien = item.DonGia * item.SoLuong * (1 - item.GiamGia);
+                        <tr>
+                            <td>@item.MaHhNavigation.TenHh</td>
+                            <td>@item.DonGia.ToString("#,##0") VNĐ</td>
+                            <td>@item.SoLuong</td>
+                            <td>@(item.GiamGia * 100)%</td>
+                            <td>@thanhTien.ToString("#,##0") VNĐ</td>
+                        </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="total">
+            <p>Tổng tiền sản phẩm: <span>@Model.ChiTietHds.Sum(ct => ct.DonGia * ct.SoLuong * (1 - ct.GiamGia)).ToString("#,##0") VNĐ</span></p>
+            <p>Tổng thanh toán (bao gồm phí vận chuyển): <span>@(Model.ChiTietHds.Sum(ct => ct.DonGia * ct.SoLuong * (1 - ct.GiamGia)) + Model.PhiVanChuyen) VNĐ</span></p>
+        </div>
+
+        
+    </div>
+
+    <script>
+        // Auto-print option (optional)
+        window.onload = function () {
+            // Uncomment to auto-print when the page loads
+            // window.print();
+        };
+    </script>
+</body>
+</html>

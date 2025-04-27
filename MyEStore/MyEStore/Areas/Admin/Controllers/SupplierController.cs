@@ -15,21 +15,20 @@ namespace MyEStore.Areas.Admin.Controllers
             _context = context;
         }
 
-        // GET: Admin/Supplier
+        // GET: Supplier
         public async Task<IActionResult> Index()
         {
-            return View(await _context.NhaCungCaps.ToListAsync());
+            var nhaCungCaps = await _context.NhaCungCaps.ToListAsync();
+            return View(nhaCungCaps);
         }
 
-        // GET: Admin/Supplier/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        // GET: Supplier/Details/5
         public async Task<IActionResult> Details(string id)
         {
+            Console.WriteLine($"Details called with id: {id}");
             if (id == null)
             {
+                Console.WriteLine("ID is null");
                 return NotFound();
             }
 
@@ -37,26 +36,48 @@ namespace MyEStore.Areas.Admin.Controllers
                 .FirstOrDefaultAsync(m => m.MaNcc == id);
             if (nhaCungCap == null)
             {
+                Console.WriteLine($"No supplier found for id: {id}");
                 return NotFound();
             }
 
             return View(nhaCungCap);
         }
-        // POST: Admin/Supplier/Create
+
+        // GET: Supplier/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Supplier/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MaNcc,TenCongTy,Logo,NguoiLienLac,Email,DienThoai,DiaChi,MoTa")] NhaCungCap nhaCungCap)
+        public async Task<IActionResult> Create(NhaCungCap model, IFormFile LogoFile)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(nhaCungCap);
+                if (LogoFile != null && LogoFile.Length > 0)
+                {
+                    var fileName = Path.GetFileName(LogoFile.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await LogoFile.CopyToAsync(stream);
+                    }
+
+                    model.Logo = fileName;
+                }
+
+                _context.NhaCungCaps.Add(model);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(nhaCungCap);
+
+            return View(model);
         }
 
-        // GET: Admin/Supplier/Edit/5
+
+        // GET: Supplier/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
@@ -72,7 +93,7 @@ namespace MyEStore.Areas.Admin.Controllers
             return View(nhaCungCap);
         }
 
-        // POST: Admin/Supplier/Edit/5
+        // POST: Supplier/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("MaNcc,TenCongTy,Logo,NguoiLienLac,Email,DienThoai,DiaChi,MoTa")] NhaCungCap nhaCungCap)
@@ -105,7 +126,7 @@ namespace MyEStore.Areas.Admin.Controllers
             return View(nhaCungCap);
         }
 
-        // GET: Admin/Supplier/Delete/5
+        // GET: Supplier/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -123,14 +144,17 @@ namespace MyEStore.Areas.Admin.Controllers
             return View(nhaCungCap);
         }
 
-        // POST: Admin/Supplier/Delete/5
+        // POST: Supplier/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var nhaCungCap = await _context.NhaCungCaps.FindAsync(id);
-            _context.NhaCungCaps.Remove(nhaCungCap);
-            await _context.SaveChangesAsync();
+            if (nhaCungCap != null)
+            {
+                _context.NhaCungCaps.Remove(nhaCungCap);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 

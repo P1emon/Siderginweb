@@ -8,5 +8,6 @@
 		public double DonGia { get; set; }
         public string TenAlias { get; set; }
         public double GiamGia { get; internal set; }
+        public bool IsInStock { get; set; }
     }
 }
