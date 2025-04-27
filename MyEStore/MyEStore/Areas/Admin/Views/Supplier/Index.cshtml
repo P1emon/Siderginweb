@@ -1,53 +1,54 @@
-﻿@model IEnumerable<MyEStore.Entities.NhaCungCap>
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers  
+
+@model IEnumerable<MyEStore.Entities.NhaCungCap>
 
 @{
-    ViewData["Title"] = "Danh sách nhà cung cấp";
+   ViewData["Title"] = "Danh sách nhà cung cấp";
 }
 
 <h1>@ViewData["Title"]</h1>
 
 <a class="btn btn-primary mb-3" asp-area="Admin" asp-controller="Supplier" asp-action="Create">Thêm Nhà Cung Cấp</a>
 
-
 <table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Mã NCC</th>
-            <th>Tên Công Ty</th>
+   <thead>
+       <tr>
+           <th>Mã NCC</th>
+           <th>Tên Công Ty</th>
 @*             <th>Logo</th> *@
-            <th>Người Liên Lạc</th>
-            <th>Email</th>
-            <th>Điện Thoại</th>
-            <th>Địa Chỉ</th>
-            <th>Mô Tả</th>
-            <th>Hành Động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var ncc in Model)
-        {
-                <tr>
-                    <td>@ncc.MaNcc</td>
-                    <td>@ncc.TenCongTy</td>
+           <th>Người Liên Lạc</th>
+           <th>Email</th>
+           <th>Điện Thoại</th>
+           <th>Địa Chỉ</th>
+           <th>Mô Tả</th>
+           <th>Hành Động</th>
+       </tr>
+   </thead>
+   <tbody>
+       @foreach (var ncc in Model)
+       {
+               <tr>
+                   <td>@ncc.MaNcc</td>
+                   <td>@ncc.TenCongTy</td>
 @*                     <td>
-                    @if (!string.IsNullOrEmpty(ncc.Logo))
-                    {
-                                <img src="@Url.Content("~/uploads/" + ncc.Logo)" alt="Logo" width="50" />
-                    }
-                    </td> *@
-                    <td>@ncc.NguoiLienLac</td>
-                    <td>@ncc.Email</td>
-                    <td>@ncc.DienThoai</td>
-                    <td>@ncc.DiaChi</td>
-                    <td>@ncc.MoTa</td>
-                    <td>
-        <a class="btn btn-sm btn-warning" asp-area="Admin" asp-controller="Supplier" asp-action="Edit" asp-route-id="@ncc.MaNcc">Sửa</a>
+                   @if (!string.IsNullOrEmpty(ncc.Logo))
+                   {
+                               <img src="@Url.Content("~/uploads/" + ncc.Logo)" alt="Logo" width="50" />
+                   }
+                   </td> *@
+                   <td>@ncc.NguoiLienLac</td>
+                   <td>@ncc.Email</td>
+                   <td>@ncc.DienThoai</td>
+                   <td>@ncc.DiaChi</td>
+                   <td>@ncc.MoTa</td>
+                   <td>
+       <a class="btn btn-sm btn-warning" asp-area="Admin" asp-controller="Supplier" asp-action="Edit" asp-route-id="@ncc.MaNcc">Sửa</a>
 
-    <!-- Link Xóa -->
-        <a class="btn btn-sm btn-danger" asp-area="Admin" asp-controller="Supplier" asp-action="Delete" asp-route-id="@ncc.MaNcc" 
-       onclick="return confirm('Bạn có chắc chắn muốn xóa?');">Xóa</a>
-                    </td>
-                </tr>
-        }
-    </tbody>
+   <!-- Link Xóa -->
+       <a class="btn btn-sm btn-danger" asp-area="Admin" asp-controller="Supplier" asp-action="Delete" asp-route-id="@ncc.MaNcc" 
+      onclick="return confirm('Bạn có chắc chắn muốn xóa?');">Xóa</a>
+                   </td>
+               </tr>
+       }
+   </tbody>
 </table>
