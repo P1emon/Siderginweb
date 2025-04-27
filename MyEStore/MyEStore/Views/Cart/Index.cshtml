@@ -10,87 +10,89 @@
 
     @if (!Model.Any())
     {
-        <div class="cart-card">
-            <div class="empty-cart">
-                <i class="bi bi-capsule empty-cart-icon"></i>
-                <p class="empty-cart-message">Giỏ hàng của bạn đang trống.</p>
-                <a href="/" class="btn btn-primary">
-                    <i class="bi bi-shop"></i> Tiếp tục mua thuốc
-                </a>
+            <div class="cart-card">
+                <div class="empty-cart">
+                    <i class="bi bi-capsule empty-cart-icon"></i>
+                    <p class="empty-cart-message">Giỏ hàng của bạn đang trống.</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="bi bi-shop"></i> Tiếp tục mua thuốc
+                    </a>
+                </div>
             </div>
-        </div>
     }
     else
     {
-        <div class="cart-card">
-            <div class="cart-header">
-                <h5 class="cart-title">Chi tiết đơn hàng</h5>
-                <span class="pharmacy-brand">MyPharma</span>
-            </div>
-            <div class="cart-body">
-                <div class="cart-items">
+            <div class="cart-card">
+                <div class="cart-header">
+                    <h5 class="cart-title">Chi tiết đơn hàng</h5>
+                    <span class="pharmacy-brand">MyPharma</span>
+                </div>
+                <div class="cart-body">
+                    <div class="cart-items">
                     @foreach (var item in Model)
                     {
-                        <div class="cart-item-card" data-id="@item.MaHh">
-                            <div class="cart-item-image">
-                                <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="product-img" />
-                            </div>
-                            <div class="cart-item-details">
-                                <div class="product-name">@item.TenHh</div>
-                                <div class="cart-item-price">
+                                <div class="cart-item-card" data-id="@item.MaHh">
+                                    <div class="cart-item-image">
+                                        <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="product-img" />
+                                    </div>
+                                    <div class="cart-item-details">
+                                        <div class="product-name">@item.TenHh</div>
+                                        <div class="cart-item-price">
                                     @if (item.GiamGia > 0)
                                     {
-                                        <div class="original-price">@item.DonGia.ToString("N0") đ</div>
-                                        <div class="discounted-price">@((item.DonGia * (1 - item.GiamGia)).ToString("N0")) đ</div>
+                                                    <div class="original-price">@item.DonGia.ToString("N0") đ</div>
+                                                    <div class="discounted-price">@((item.DonGia * (1 - item.GiamGia)).ToString("N0")) đ</div>
                                     }
                                     else
                                     {
-                                        <div class="discounted-price">@item.DonGia.ToString("N0") đ</div>
+                                                    <div class="discounted-price">@item.DonGia.ToString("N0") đ</div>
                                     }
-                                </div>
-                                <div class="cart-item-total total-price" data-id="@item.MaHh">
-                                    Thành tiền: @item.ThanhTien.ToString("N0") đ
-                                </div>
-                            </div>
-                            <div class="cart-item-actions">
-                                <div class="quantity-control">
-                                    <button type="button" class="quantity-btn quantity-decrease">-</button>
-                                    <div class="quantity-input">
-                                        <input type="number" value="@item.SoLuong" min="1" class="quantity" data-id="@item.MaHh" />
+                                        </div>
+                                        <div class="cart-item-total total-price" data-id="@item.MaHh">
+                                            Thành tiền: @item.ThanhTien.ToString("N0") đ
+                                        </div>
                                     </div>
-                                    <button type="button" class="quantity-btn quantity-increase">+</button>
+                                    <div class="cart-item-actions">
+                                        <div class="quantity-control">
+                                            <button type="button" class="quantity-btn quantity-decrease">-</button>
+                                            <div class="quantity-input">
+                                                <input type="number" value="@item.SoLuong" min="1" class="quantity" data-id="@item.MaHh" />
+                                            </div>
+                                            <button type="button" class="quantity-btn quantity-increase">+</button>
+                                        </div>
+                                        <a asp-action="RemoveCartItem" asp-route-id="@item.MaHh" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
                                 </div>
-                                <a asp-action="RemoveCartItem" asp-route-id="@item.MaHh" class="btn btn-sm btn-danger">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                        </div>
                     }
+                    </div>
                 </div>
-            </div>
-            <div class="cart-footer">
-                <div class="row">
-                    <div class="col-12 col-md-6 offset-md-6">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="cart-total">Tổng cộng:</span>
-                            <span class="cart-total-amount" id="total-price">@Model.Sum(item => item.ThanhTien).ToString("N0") đ</span>
+                <div class="cart-footer">
+                    <div class="row">
+                        <div class="col-12 col-md-6 offset-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="cart-total">Tổng cộng:</span>
+                                <span class="cart-total-amount" id="total-price">@Model.Sum(item => item.ThanhTien).ToString("N0") đ</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="checkout-section text-end">
-            <a href="/" class="btn btn-primary">
-                <i class="bi bi-arrow-left"></i> Tiếp tục mua thuốc
-            </a>
-            <a asp-action="Index" asp-controller="Payment" class="btn btn-success btn-lg">
-                <i class="bi bi-credit-card"></i> Thanh toán
-            </a>
-        </div>
+            <div class="checkout-section text-end">
+                <a href="/" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Tiếp tục mua thuốc
+                </a>
+                <button id="checkout-button" class="btn btn-success btn-lg">
+                    <i class="bi bi-credit-card"></i> Thanh toán
+                </button>
+            </div>
     }
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // Xử lý nút tăng giảm số lượng
@@ -123,10 +125,10 @@
         input.addEventListener('change', function () {
             var itemId = this.getAttribute('data-id');
             var newQuantity = parseInt(this.value);
+            var inputElement = this;
 
-            // Kiểm tra số lượng tối thiểu
             if (newQuantity < 1) {
-                this.value = 1; // Đặt lại giá trị thành 1 nếu số lượng nhỏ hơn
+                inputElement.value = 1;
                 Swal.fire({
                     icon: 'warning',
                     title: 'Cảnh báo',
@@ -135,7 +137,6 @@
                 return;
             }
 
-            // Gửi AJAX để cập nhật giỏ hàng
             fetch('/Cart/UpdateQuantity', {
                 method: 'POST',
                 headers: {
@@ -145,29 +146,87 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    // Cập nhật thành tiền cho sản phẩm
-                    const totalPriceElement = document.querySelector(`.total-price[data-id='${itemId}']`);
-                    totalPriceElement.innerText = 'Thành tiền: ' + data.newItemTotalPrice.toLocaleString('vi-VN') + ' đ';
+                    if (data.success) {
+                        const totalPriceElement = document.querySelector(`.total-price[data-id='${itemId}']`);
+                        totalPriceElement.innerText = 'Thành tiền: ' + data.newItemTotalPrice.toLocaleString('vi-VN') + ' đ';
 
-                    // Cập nhật tổng tiền giỏ hàng
-                    const cartTotalElement = document.getElementById('total-price');
-                    cartTotalElement.innerText = data.cartTotal.toLocaleString('vi-VN') + ' đ';
+                        const cartTotalElement = document.getElementById('total-price');
+                        cartTotalElement.innerText = data.cartTotal.toLocaleString('vi-VN') + ' đ';
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Cập nhật thành công!',
-                        text: 'Số lượng thuốc đã được thay đổi.',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                        
+                    } else {
+                        let availableStock = 1;
+                        const stockMatch = data.message.match(/chỉ còn (\d+) đơn vị/);
+                        if (stockMatch) {
+                            availableStock = parseInt(stockMatch[1]);
+                        }
+
+                        inputElement.value = availableStock > 0 ? availableStock : 1;
+
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Cảnh báo',
+                            text: data.message,
+                            confirmButtonText: 'OK',
+                            onClose: () => {
+                                if (availableStock > 0) {
+                                    triggerChangeEvent(inputElement);
+                                }
+                            }
+                        });
+                    }
                 })
                 .catch(error => {
+                    inputElement.value = 1;
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi!',
                         text: 'Không thể cập nhật số lượng. Vui lòng thử lại.',
                     });
                 });
+        });
+    });
+
+    // Xử lý khi nhấn nút Thanh toán
+    document.getElementById('checkout-button').addEventListener('click', function() {
+        console.log('Checkout button clicked'); // Debugging
+        fetch('/Cart/CheckStockBeforeCheckout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({}) // Empty body since no data is needed
+        })
+        .then(response => {
+            console.log('Response received:', response); // Debugging
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data received:', data); // Debugging
+            if (data.success) {
+                console.log('All items in stock, redirecting to payment');
+                window.location.href = '/Payment/Index';
+            } else {
+                console.log('Stock issue detected, showing alert');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cảnh báo',
+                    html: data.message || 'Có lỗi xảy ra khi kiểm tra tồn kho.',
+                    confirmButtonText: 'Đóng'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error during fetch:', error); // Debugging
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Không thể kiểm tra tồn kho. Vui lòng thử lại.',
+                confirmButtonText: 'Đóng'
+            });
         });
     });
 </script>

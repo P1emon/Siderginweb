@@ -6,15 +6,14 @@ using MyEStore.Helpers;
 using MyEStore.Models;
 using MyEStore.Servicess;
 using Newtonsoft.Json;
-using System.Net.Mail;
 using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Net;
-using System.Net.Mail;
 using Microsoft.EntityFrameworkCore;
+using System;
+
 namespace MyEStore.Controllers
 {
     [Authorize]
@@ -38,7 +37,6 @@ namespace MyEStore.Controllers
         [HttpPost]
         public IActionResult MomoPayment()
         {
-            // Lấy thông tin từ cấu hình
             var endpoint = _configuration["MoMo:Endpoint"];
             var partnerCode = _configuration["MoMo:PartnerCode"];
             var accessKey = _configuration["MoMo:AccessKey"];
@@ -46,20 +44,16 @@ namespace MyEStore.Controllers
             var returnUrl = _configuration["MoMo:ReturnUrl"];
             var notifyUrl = _configuration["MoMo:NotifyUrl"];
 
-            // Tính tổng tiền (VND)
             var tongTien = CartItems.Sum(p => p.ThanhTien);
 
-            // Tạo các tham số thanh toán
             var orderInfo = "Thanh toán đơn hàng tại MyEStore";
             var requestId = Guid.NewGuid().ToString();
             var orderId = "DH" + DateTime.Now.Ticks.ToString();
             var extraData = "";
 
-            // Tạo chữ ký (signature)
             string rawHash = $"accessKey={accessKey}&amount={tongTien}&extraData={extraData}&ipnUrl={notifyUrl}&orderId={orderId}&orderInfo={orderInfo}&partnerCode={partnerCode}&redirectUrl={returnUrl}&requestId={requestId}&requestType=captureWallet";
             string signature = GenerateSignature(rawHash, secretKey);
 
-            // Tạo body yêu cầu
             var body = new
             {
                 partnerCode = partnerCode,
@@ -86,7 +80,7 @@ namespace MyEStore.Controllers
                     dynamic jsonResponse = JsonConvert.DeserializeObject(responseContent);
                     string payUrl = jsonResponse.payUrl;
 
-                    return Redirect(payUrl); // Chuyển hướng đến MoMo để thanh toán
+                    return Redirect(payUrl);
                 }
                 else
                 {
@@ -94,6 +88,7 @@ namespace MyEStore.Controllers
                 }
             }
         }
+
         public IActionResult MomoReturn()
         {
             var queryString = Request.Query;
@@ -107,7 +102,6 @@ namespace MyEStore.Controllers
             {
                 try
                 {
-                    // Tạo hóa đơn mới
                     var hoaDon = new HoaDon
                     {
                         MaKh = User.FindFirstValue("UserId"),
@@ -122,7 +116,6 @@ namespace MyEStore.Controllers
                     _ctx.Add(hoaDon);
                     _ctx.SaveChanges();
 
-                    // Lưu chi tiết hóa đơn
                     foreach (var item in CartItems)
                     {
                         var cthd = new ChiTietHd
@@ -137,10 +130,8 @@ namespace MyEStore.Controllers
                     }
                     _ctx.SaveChanges();
 
-                    // Xóa giỏ hàng
                     HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
-                    // Gửi dữ liệu qua TempData
                     TempData["TransactionId"] = transId;
                     TempData["OrderId"] = orderId;
 
@@ -162,7 +153,6 @@ namespace MyEStore.Controllers
             }
         }
 
-
         private static string GenerateSignature(string data, string secretKey)
         {
             var encoding = Encoding.UTF8;
@@ -172,7 +162,6 @@ namespace MyEStore.Controllers
                 return BitConverter.ToString(hashmessage).Replace("-", "").ToLower();
             }
         }
-
 
         [HttpPost]
         public IActionResult MomoNotify()
@@ -184,12 +173,10 @@ namespace MyEStore.Controllers
 
                 if (jsonBody.resultCode == "0")
                 {
-                    // Xử lý đơn hàng thành công
                     return Ok();
                 }
                 else
                 {
-                    // Xử lý thất bại
                     return BadRequest();
                 }
             }
@@ -208,42 +195,41 @@ namespace MyEStore.Controllers
             return View(CartItems);
         }
 
-[HttpPost]
-public IActionResult UpdateAddress(string newAddress)
-{
-    var maKh = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-    if (maKh != null && !string.IsNullOrWhiteSpace(newAddress))
-    {
-        var kh = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKh);
-        if (kh != null)
+        [HttpPost]
+        public IActionResult UpdateAddress(string newAddress)
         {
-            kh.DiaChi = newAddress;
-            _ctx.SaveChanges();
-            return Json(new { success = true, diaChi = kh.DiaChi });
+            var maKh = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (maKh != null && !string.IsNullOrWhiteSpace(newAddress))
+            {
+                var kh = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKh);
+                if (kh != null)
+                {
+                    kh.DiaChi = newAddress;
+                    _ctx.SaveChanges();
+                    return Json(new { success = true, diaChi = kh.DiaChi });
+                }
+            }
+
+            return Json(new { success = false });
         }
-    }
 
-    return Json(new { success = false });
-}
-
-[HttpPost]
-public IActionResult AddSecondaryAddress(string secondaryAddress)
-{
-    var maKh = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-    if (maKh != null && !string.IsNullOrWhiteSpace(secondaryAddress))
-    {
-        var kh = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKh);
-        if (kh != null)
+        [HttpPost]
+        public IActionResult AddSecondaryAddress(string secondaryAddress)
         {
-            kh.DiaChiPhu = secondaryAddress;
-            _ctx.SaveChanges();
-            return Json(new { success = true, diaChiPhu = kh.DiaChiPhu });
+            var maKh = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (maKh != null && !string.IsNullOrWhiteSpace(secondaryAddress))
+            {
+                var kh = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKh);
+                if (kh != null)
+                {
+                    kh.DiaChiPhu = secondaryAddress;
+                    _ctx.SaveChanges();
+                    return Json(new { success = true, diaChiPhu = kh.DiaChiPhu });
+                }
+            }
+
+            return Json(new { success = false });
         }
-    }
-
-    return Json(new { success = false });
-}
-
 
         const string CART_KEY = "MY_CART";
         public List<CartItem> CartItems
@@ -262,46 +248,31 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
         [HttpPost]
         public async Task<IActionResult> PaypalOrder(decimal PhiVanChuyen, CancellationToken cancellationToken)
         {
-            // Tính tổng tiền bằng VND
             var tongTienVND = CartItems.Sum(p => p.ThanhTien);
-
-            // Chuyển đổi VND sang USD
             const decimal conversionRate = 25400;
             var tongTienUSD = tongTienVND / (double)conversionRate;
-
-            // Add shipping fee to the total
-            tongTienUSD += (double)(PhiVanChuyen / conversionRate); // Convert shipping fee to USD
-
-            // Đảm bảo số tiền có 2 chữ số thập phân
+            tongTienUSD += (double)(PhiVanChuyen / conversionRate);
             var tongTien = tongTienUSD.ToString("F2");
-
             var donViTienTe = "USD";
             var orderIdref = "DH" + DateTime.Now.Ticks.ToString();
 
             try
             {
-                // a. Create paypal order
                 var response = await _paypalClient.CreateOrder(tongTien, donViTienTe, orderIdref);
-
                 return Ok(response);
             }
             catch (Exception e)
             {
-                var error = new
-                {
-                    e.GetBaseException().Message
-                };
+                var error = new { e.GetBaseException().Message };
                 return BadRequest(error);
             }
         }
-
 
         [HttpPost]
         public async Task<IActionResult> PaypalCapture(string orderId, string ngayGiao, string selectedAddress, double PhiVanChuyen, CancellationToken cancellationToken)
         {
             try
             {
-                // Capture the PayPal order
                 var response = await _paypalClient.CaptureOrder(orderId);
 
                 if (response.status == "COMPLETED")
@@ -318,7 +289,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         ngayGiaoDate = parsedDate;
                     }
 
-                    // Create the HoaDon (Invoice) record
                     var hoaDon = new HoaDon
                     {
                         MaKh = userId,
@@ -327,16 +297,15 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         DiaChi = selectedAddress,
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
-                        MaTrangThai = 1,  // Assuming 1 is 'completed' status, adjust as necessary
+                        MaTrangThai = 1,
                         PhiVanChuyen = PhiVanChuyen,
                         NgayGiao = ngayGiaoDate,
-                        GhiChu = $"Thanh toán thành công, phí vận chuyển sẽ trả khi nhân hàng, reference_id={reference}, transactionId={transactionId}"
+                        GhiChu = $"Thanh toán thành công, phí vận chuyển sẽ trả khi nhận hàng, reference_id={reference}, transactionId={transactionId}"
                     };
 
                     _ctx.Add(hoaDon);
                     await _ctx.SaveChangesAsync();
 
-                    // Add CartItems to ChiTietHd (Invoice Detail)
                     foreach (var item in CartItems)
                     {
                         var cthd = new ChiTietHd
@@ -348,14 +317,25 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                             GiamGia = item.GiamGia
                         };
                         _ctx.Add(cthd);
+
+                        // Deduct stock from HangHoa
+                        var hangHoa = await _ctx.HangHoas.FirstOrDefaultAsync(hh => hh.MaHh == cthd.MaHh);
+                        if (hangHoa != null && hangHoa.SoLuong >= cthd.SoLuong)
+                        {
+                            hangHoa.SoLuong -= cthd.SoLuong;
+                            _ctx.Update(hangHoa);
+                        }
+                        else
+                        {
+                            _logger.LogError($"Hàng hóa {cthd.MaHh} không đủ tồn kho hoặc không tồn tại.");
+                            throw new Exception($"Hàng hóa {cthd.MaHh} không đủ tồn kho hoặc không tồn tại.");
+                        }
                     }
                     await _ctx.SaveChangesAsync();
 
-                    // Handle loyalty points for the customer
                     await CongDiemChoKhachHangAsync(hoaDon.MaHd);
                     _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
 
-                    // Send emails to customer and admin
                     try
                     {
                         string customerEmail = userProfile?.Email ?? "Không rõ";
@@ -371,33 +351,24 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         _logger.LogError(ex, "Lỗi khi gửi email Paypal");
                     }
 
-                    // Clear the cart in the session
                     HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
                     TempData["TransactionId"] = transactionId;
                     TempData["ReferenceId"] = reference;
 
-                    // Redirect to the success page
                     return RedirectToAction("Success");
                 }
                 else
                 {
-                    // Handle payment failure
                     return BadRequest(new { Message = "Có lỗi thanh toán" });
                 }
             }
             catch (Exception e)
             {
-                // Log the exception and return error
-                var error = new
-                {
-                    e.GetBaseException().Message
-                };
-
+                var error = new { e.GetBaseException().Message };
                 return BadRequest(error);
             }
         }
-
 
         [HttpPost]
         public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen, List<CartItem> CartItems)
@@ -424,35 +395,32 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 };
 
                 _ctx.Add(hoaDon);
-                _ctx.SaveChanges(); // MaHd sẽ được cập nhật tại đây
+                _ctx.SaveChanges();
 
-                // Gán MaHd vào OrderId để callback xử lý đúng hóa đơn
-                var paymentRequest = new VnPaymentRequestModel
-                {
-                    Amount = tongTien,
-                    OrderId = hoaDon.MaHd, // Gán MaHd thật
-                    CreatedDate = DateTime.Now
-                };
-
-                // Thêm chi tiết hóa đơn
                 foreach (var item in CartItems)
                 {
-                    _ctx.Add(new ChiTietHd
+                    var cthd = new ChiTietHd
                     {
                         MaHd = hoaDon.MaHd,
                         MaHh = item.MaHh,
                         DonGia = item.DonGia,
                         SoLuong = item.SoLuong,
                         GiamGia = item.GiamGia
-                    });
+                    };
+                    _ctx.Add(cthd);
                 }
 
                 _ctx.SaveChanges();
 
-                // Xóa giỏ hàng trong session
                 HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
-                // Tạo URL thanh toán
+                var paymentRequest = new VnPaymentRequestModel
+                {
+                    Amount = tongTien,
+                    OrderId = hoaDon.MaHd,
+                    CreatedDate = DateTime.Now
+                };
+
                 var paymentUrl = _vnpayService.CreatePaymentUrl(HttpContext, paymentRequest);
                 return Redirect(paymentUrl);
             }
@@ -464,8 +432,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             }
         }
 
-
-
         public async Task<IActionResult> Success()
         {
             return View();
@@ -475,10 +441,12 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
         {
             return View();
         }
+
         public IActionResult VnpayCancel()
         {
             return View();
         }
+
         public async Task<IActionResult> VnpayCallback()
         {
             try
@@ -516,14 +484,27 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     hoaDon.GhiChu = $"Thanh toán thành công, TransactionId={response.TransactionId}";
                     _ctx.SaveChanges();
 
-                    // Gọi hàm cộng điểm
+                    // Deduct stock from HangHoa
+                    var chiTietHds = _ctx.ChiTietHds.Where(ct => ct.MaHd == maHd).ToList();
+                    foreach (var cthd in chiTietHds)
+                    {
+                        var hangHoa = await _ctx.HangHoas.FirstOrDefaultAsync(hh => hh.MaHh == cthd.MaHh);
+                        if (hangHoa != null && hangHoa.SoLuong >= cthd.SoLuong)
+                        {
+                            hangHoa.SoLuong -= cthd.SoLuong;
+                            _ctx.Update(hangHoa);
+                        }
+                        else
+                        {
+                            _logger.LogError($"Hàng hóa {cthd.MaHh} không đủ tồn kho hoặc không tồn tại.");
+                            throw new Exception($"Hàng hóa {cthd.MaHh} không đủ tồn kho hoặc không tồn tại.");
+                        }
+                    }
+                    await _ctx.SaveChangesAsync();
+
                     await CongDiemChoKhachHangAsync(maHd);
                     _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", maHd);
 
-                    // Xóa giỏ hàng sau thanh toán
-                    HttpContext.Session.Set(CART_KEY, new List<CartItem>());
-
-                    // Gửi email xác nhận
                     try
                     {
                         var userId = User.FindFirstValue("UserId");
@@ -541,6 +522,8 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     {
                         _logger.LogError(ex, "Lỗi khi gửi email xác nhận thanh toán VNPay");
                     }
+
+                    HttpContext.Session.Set(CART_KEY, new List<CartItem>());
 
                     ViewBag.Message = "Thanh toán thành công!";
                     return View("Success");
@@ -566,7 +549,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 return View("MomoFail");
             }
         }
-        // Vnpay 2
+
         [HttpPost]
         public IActionResult VnpayOrder2(int MaHd)
         {
@@ -581,17 +564,15 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     return View("VnpayCancel");
                 }
 
-                // Eagerly load ChiTietHds to ensure they're fetched
                 _ctx.Entry(hoaDon).Collection(h => h.ChiTietHds).Load();
 
                 if (hoaDon.ChiTietHds == null || !hoaDon.ChiTietHds.Any())
                 {
                     _logger.LogError($"Không có chi tiết hóa đơn nào cho MaHd: {MaHd}");
                     ViewBag.Message = "Hóa đơn không có chi tiết.";
-                    return View("VnpayCancel"); // Or a more appropriate error view
+                    return View("VnpayCancel");
                 }
 
-                // Calculate total amount from the existing order's details
                 var tongTien = hoaDon.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + hoaDon.PhiVanChuyen;
 
                 var paymentRequest = new VnPaymentRequestModel
@@ -611,43 +592,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 return View("MomoFail");
             }
         }
-        private async Task CongDiemChoKhachHangAsync(int maHd)
-        {
-            try
-            {
-                var chiTietHoaDons = _ctx.ChiTietHds
-                 .Where(ct => ct.MaHd == maHd)
-                 .ToList();
-
-
-                double tongTien = chiTietHoaDons.Sum(ct => ct.DonGia * ct.SoLuong);
-                int diemCong = (int)(tongTien / 60000);
-
-                var hoaDon = _ctx.HoaDons.FirstOrDefault(h => h.MaHd == maHd);
-                if (hoaDon == null)
-                {
-                    _logger.LogWarning("Không tìm thấy hóa đơn với mã {maHd} để cộng điểm", maHd);
-                    return;
-                }
-
-                var khachHang = _ctx.KhachHangs.FirstOrDefault(kh => kh.MaKh == hoaDon.MaKh);
-                if (khachHang != null)
-                {
-                    khachHang.Diem += diemCong;
-                    khachHang.MuaHangLanCuoi = DateTime.Now;
-
-                    await _ctx.SaveChangesAsync();
-                    _logger.LogInformation("Đã cộng {Diem} điểm cho khách hàng {MaKh}", diemCong, khachHang.MaKh);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi cộng điểm cho khách hàng với MaHd={maHd}", maHd);
-            }
-        }
-
-
-
 
         [HttpPost]
         public async Task<IActionResult> CodPayment(string selectedAddress, string ngayGiao, double PhiVanChuyen, List<CartItem> CartItems)
@@ -677,7 +621,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                     DiaChi = selectedAddress,
                     CachThanhToan = "COD",
                     CachVanChuyen = "N/A",
-                    MaTrangThai = 0, // Chờ xác nhận
+                    MaTrangThai = 0,
                     PhiVanChuyen = PhiVanChuyen,
                     NgayGiao = giaoDate,
                     GhiChu = "Thanh toán khi nhận hàng"
@@ -696,10 +640,22 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         GiamGia = item.GiamGia
                     };
                     _ctx.Add(cthd);
+
+                    // Deduct stock from HangHoa
+                    var hangHoa = await _ctx.HangHoas.FirstOrDefaultAsync(hh => hh.MaHh == cthd.MaHh);
+                    if (hangHoa != null && hangHoa.SoLuong >= cthd.SoLuong)
+                    {
+                        hangHoa.SoLuong -= cthd.SoLuong;
+                        _ctx.Update(hangHoa);
+                    }
+                    else
+                    {
+                        _logger.LogError($"Hàng hóa {cthd.MaHh} không đủ tồn kho hoặc không tồn tại.");
+                        throw new Exception($"Hàng hóa {cthd.MaHh} không đủ tồn kho hoặc không tồn tại.");
+                    }
                 }
                 _ctx.SaveChanges();
 
-                // Cộng điểm cho khách hàng
                 await CongDiemChoKhachHangAsync(hoaDon.MaHd);
                 _logger.LogInformation("Cộng điểm cho khách hàng với MaHd={maHd}", hoaDon.MaHd);
 
@@ -729,9 +685,39 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             }
         }
 
+        private async Task CongDiemChoKhachHangAsync(int maHd)
+        {
+            try
+            {
+                var chiTietHoaDons = _ctx.ChiTietHds
+                    .Where(ct => ct.MaHd == maHd)
+                    .ToList();
 
+                double tongTien = chiTietHoaDons.Sum(ct => ct.DonGia * ct.SoLuong);
+                int diemCong = (int)(tongTien / 60000);
 
+                var hoaDon = _ctx.HoaDons.FirstOrDefault(h => h.MaHd == maHd);
+                if (hoaDon == null)
+                {
+                    _logger.LogWarning("Không tìm thấy hóa đơn với mã {maHd} để cộng điểm", maHd);
+                    return;
+                }
 
+                var khachHang = _ctx.KhachHangs.FirstOrDefault(kh => kh.MaKh == hoaDon.MaKh);
+                if (khachHang != null)
+                {
+                    khachHang.Diem += diemCong;
+                    khachHang.MuaHangLanCuoi = DateTime.Now;
+
+                    await _ctx.SaveChangesAsync();
+                    _logger.LogInformation("Đã cộng {Diem} điểm cho khách hàng {MaKh}", diemCong, khachHang.MaKh);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cộng điểm cho khách hàng với MaHd={maHd}", maHd);
+            }
+        }
 
         private async Task SendCustomerEmail(string email, HoaDon order, string phone, string userName)
         {
@@ -744,10 +730,9 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
 
             string orderDateFormatted = order.NgayDat.ToString("dd/MM/yyyy HH:mm");
             string formattedAmount = _ctx.ChiTietHds
-                 .Where(ct => ct.MaHd == order.MaHd)
-                 .Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia))
-                 .ToString("N0") + " VNĐ";
-
+                .Where(ct => ct.MaHd == order.MaHd)
+                .Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia))
+                .ToString("N0") + " VNĐ";
 
             using var smtpClient = new SmtpClient(smtpServer)
             {
@@ -873,11 +858,9 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 </div>
             </body>
             </html>";
-           
-
 
             var mailMessage = new MailMessage(senderEmail, email, subject, body) { IsBodyHtml = true };
-            
+
             try
             {
                 await smtpClient.SendMailAsync(mailMessage);
@@ -887,7 +870,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             {
                 _logger.LogError(ex, $"Gửi mail thất bại tới {email}: {ex.Message}");
             }
-
         }
 
         private async Task SendAdminEmail(string email, HoaDon order, string phone, string userName, string customerEmail)
@@ -903,7 +885,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 .Where(ct => ct.MaHd == order.MaHd)
                 .Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia))
                 .ToString("N0") + " VNĐ";
-
 
             using var smtpClient = new SmtpClient(smtpServer)
             {
@@ -941,7 +922,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 <p><strong>📞 Số điện thoại:</strong> {phone}</p>
                 <p><strong>📦 Tổng số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong)}</p>
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
-                <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
+                <p><strong>🏠 Địa chỉ giao hàng:</undry> {order.DiaChi}</p>
                 <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
                 <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
                 <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
@@ -950,7 +931,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 <p>Trân trọng,</p>
                 <p><strong>Hệ thống quản lý đơn hàng - SIDERGIN</strong></p>";
             var mailMessage = new MailMessage(senderEmail, email, subject, body) { IsBodyHtml = true };
-            
+
             try
             {
                 await smtpClient.SendMailAsync(mailMessage);
@@ -960,9 +941,6 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
             {
                 _logger.LogError(ex, $"Gửi mail thất bại tới {email}: {ex.Message}");
             }
-
         }
-
-
     }
 }
