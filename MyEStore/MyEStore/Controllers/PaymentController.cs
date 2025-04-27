@@ -855,7 +855,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                         <div class='order-info'>
                             <p><strong>🧾 Mã đơn hàng:</strong> #{order.MaHd}</p>
                             <p><strong>📅 Ngày đặt:</strong> {orderDateFormatted}</p>
-                            <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
+                            <p><strong>📦 Tổng số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong)}</p>
                             <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                             <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
                             <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
@@ -939,7 +939,7 @@ public IActionResult AddSecondaryAddress(string secondaryAddress)
                 <p><strong>👤 Họ tên khách hàng:</strong> {userName}</p>
                 <p><strong>📧 Email:</strong> {customerEmail ?? "Không có"}</p>
                 <p><strong>📞 Số điện thoại:</strong> {phone}</p>
-                <p><strong>📦 Số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Count(ct => ct.MaHd == order.MaHd)}</p>
+                <p><strong>📦 Tổng số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong)}</p>
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                 <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
                 <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
