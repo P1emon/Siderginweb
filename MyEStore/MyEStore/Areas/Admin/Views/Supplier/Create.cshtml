@@ -1,59 +1,93 @@
 ﻿@model MyEStore.Entities.NhaCungCap
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    ViewData["Title"] = "Thêm nhà cung cấp";
+    ViewData["Title"] = "Thêm Nhà Cung Cấp";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">@ViewData["Title"]</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" class="needs-validation" novalidate>
+                @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
+                {
+                        <div class="alert alert-danger" role="alert">
+                            Vui lòng kiểm tra và sửa các lỗi dưới đây.
+                        </div>
+                }
 
-<form asp-action="Create" method="post" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label asp-for="MaNcc" class="form-label"></label>
-        <input asp-for="MaNcc" class="form-control" />
-        <span asp-validation-for="MaNcc" class="text-danger"></span>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="MaNcc" class="form-label fw-bold">Mã Nhà Cung Cấp <span class="text-danger">*</span></label>
+                        <input asp-for="MaNcc" class="form-control" required maxlength="50" placeholder="VD: NCC001" />
+                        <span asp-validation-for="MaNcc" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="TenCongTy" class="form-label fw-bold">Tên Công Ty <span class="text-danger">*</span></label>
+                        <input asp-for="TenCongTy" class="form-control" required maxlength="100" placeholder="Tên công ty" />
+                        <span asp-validation-for="TenCongTy" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="NguoiLienLac" class="form-label fw-bold">Người Liên Lạc</label>
+                        <input asp-for="NguoiLienLac" class="form-control" maxlength="100" placeholder="Họ và tên" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                        <input asp-for="Email" class="form-control" type="email" required maxlength="100" placeholder="email@domain.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DienThoai" class="form-label fw-bold">Điện Thoại</label>
+                        <input asp-for="DienThoai" class="form-control" type="tel" maxlength="20" placeholder="+84..." />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DiaChi" class="form-label fw-bold">Địa Chỉ</label>
+                        <input asp-for="DiaChi" class="form-control" maxlength="200" placeholder="Số nhà, đường, thành phố" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MoTa" class="form-label fw-bold">Mô Tả</label>
+                    <textarea asp-for="MoTa" class="form-control" rows="4" maxlength="500" placeholder="Thông tin thêm về nhà cung cấp"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Lưu Nhà Cung Cấp</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Quay Lại</a>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="TenCongTy" class="form-label"></label>
-        <input asp-for="TenCongTy" class="form-control" />
-        <span asp-validation-for="TenCongTy" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Logo" class="form-label">Logo</label>
-        <input type="file" name="LogoFile" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="NguoiLienLac" class="form-label"></label>
-        <input asp-for="NguoiLienLac" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="DienThoai" class="form-label"></label>
-        <input asp-for="DienThoai" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="DiaChi" class="form-label"></label>
-        <input asp-for="DiaChi" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="MoTa" class="form-label"></label>
-        <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-success">Lưu</button>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
-</form>
+</div>
 
 @section Scripts {
         <partial name="_ValidationScriptsPartial" />
+        <script>
+            // Client-side form validation
+            (function () {
+                'use strict'
+                var forms = document.querySelectorAll('.needs-validation')
+                Array.prototype.slice.call(forms).forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+            })()
+        </script>
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyEStore.Entities;
+using System;
 using System.Threading.Tasks;
 
 namespace MyEStore.Areas.Admin.Controllers
@@ -25,10 +26,8 @@ namespace MyEStore.Areas.Admin.Controllers
         // GET: Supplier/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            Console.WriteLine($"Details called with id: {id}");
             if (id == null)
             {
-                Console.WriteLine("ID is null");
                 return NotFound();
             }
 
@@ -36,7 +35,6 @@ namespace MyEStore.Areas.Admin.Controllers
                 .FirstOrDefaultAsync(m => m.MaNcc == id);
             if (nhaCungCap == null)
             {
-                Console.WriteLine($"No supplier found for id: {id}");
                 return NotFound();
             }
 
@@ -51,31 +49,68 @@ namespace MyEStore.Areas.Admin.Controllers
 
         // POST: Supplier/Create
         [HttpPost]
-        public async Task<IActionResult> Create(NhaCungCap model, IFormFile LogoFile)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(NhaCungCap model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                if (LogoFile != null && LogoFile.Length > 0)
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(model.MaNcc))
                 {
-                    var fileName = Path.GetFileName(LogoFile.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await LogoFile.CopyToAsync(stream);
-                    }
-
-                    model.Logo = fileName;
+                    ModelState.AddModelError("MaNcc", "Mã nhà cung cấp là bắt buộc.");
                 }
 
-                _context.NhaCungCaps.Add(model);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (string.IsNullOrWhiteSpace(model.TenCongTy))
+                {
+                    ModelState.AddModelError("TenCongTy", "Tên công ty là bắt buộc.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email là bắt buộc.");
+                }
+
+                // Validate unique MaNcc
+                if (await _context.NhaCungCaps.AnyAsync(n => n.MaNcc == model.MaNcc))
+                {
+                    ModelState.AddModelError("MaNcc", "Mã nhà cung cấp đã tồn tại.");
+                }
+
+                // Validate email format
+                if (!IsValidEmail(model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email không đúng định dạng.");
+                }
+
+                // Set Logo to MaNcc
+                if (ModelState.IsValid || ModelState.ErrorCount == 0 || (ModelState.ContainsKey("MaNcc") && ModelState["MaNcc"].Errors.Count == 0))
+                {
+                    model.Logo = model.MaNcc; // Set Logo to MaNcc
+                }
+                else
+                {
+                    model.Logo = "0"; // Fallback if MaNcc is invalid
+                }
+
+                if (ModelState.IsValid)
+                {
+                    model.MaNcc = model.MaNcc.Trim().ToUpper();
+                    model.TenCongTy = model.TenCongTy.Trim();
+                    model.Email = model.Email.Trim().ToLower();
+
+                    _context.NhaCungCaps.Add(model);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Thêm nhà cung cấp thành công!";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Đã xảy ra lỗi: {ex.Message}");
             }
 
             return View(model);
         }
-
 
         // GET: Supplier/Edit/5
         public async Task<IActionResult> Edit(string id)
@@ -156,6 +191,19 @@ namespace MyEStore.Areas.Admin.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private bool NhaCungCapExists(string id)
