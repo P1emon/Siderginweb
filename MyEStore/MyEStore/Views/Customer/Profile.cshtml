@@ -3,7 +3,94 @@
     Layout = "_Layout";
     ViewData["Title"] = "Quản lý tài khoản | MyEStore";
 }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    /* Rank Tab Styles */
+.rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
 
+.rank-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.rank-item.current-rank {
+    background-color: #e7f3ff; /* Light blue for current rank */
+    border: 2px solid #007bff; /* Blue border for emphasis */
+}
+
+.rank-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rank-icon {
+    width: 65px;
+    height: 50px;
+}
+
+.rank-title {
+    font-size: 1.25rem;
+    margin: 0;
+    color: #333;
+}
+
+.rank-details {
+    margin-top: 0.5rem;
+}
+
+.rank-details p {
+    margin: 0.25rem 0;
+    color: #555;
+}
+
+.current-rank-badge {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.profile-points-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.profile-points-display strong {
+    color: #007bff;
+}
+
+/* Ensure consistency with other profile styles */
+.profile-section {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+</style>
 <link href="~/css/profile.css" rel="stylesheet">
 
 <div class="container profile-container">
@@ -39,9 +126,65 @@
                         <span>Địa chỉ</span>
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link profile-tab-button" id="rank-tab" data-bs-toggle="tab" data-bs-target="#rank" type="button" role="tab" aria-controls="rank" aria-selected="false">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>Xếp hạng</span>
+                    </button>
+                </li>
             </ul>
 
+
             <div class="tab-content profile-tab-content">
+                <!-- Rank Tab -->
+                <!-- Rank Tab -->
+                <div class="tab-pane fade" id="rank" role="tabpanel" aria-labelledby="rank-tab">
+                    <div class="profile-section">
+                        <h4 class="profile-section-title">
+                            <i class="bi bi-trophy-fill"></i>
+                            Xếp hạng
+                        </h4>
+
+                        <!-- Display customer's current points -->
+                        <div class="profile-points-display">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Điểm hiện tại của bạn: <strong>@Model.Diem</strong></span>
+                        </div>
+
+                        <!-- List of ranks -->
+                        <div class="rank-list">
+                                            @foreach (var rank in Model.Ranks)
+                                            {
+                                    <!-- Determine if this is the customer's current rank -->
+                                                var isCurrentRank = Model.Diem >= rank.MucDiemTu && Model.Diem <= rank.MucDiemDen;
+                                    <div class="rank-item @(isCurrentRank ? "current-rank" : "")">
+                                        <div class="rank-header">
+                                            @if (!string.IsNullOrEmpty(rank.Icon))
+                                            {
+                                                    <img src="~/Hinh/Others/@rank.Icon" alt="@rank.TenRank" class="rank-icon" />
+                                            }
+                                            else
+                                            {
+                                                     <i class="bi bi-award-fill rank-icon"></i>
+                                            }
+                                            <h5 class="rank-title">@rank.TenRank</h5>
+                                      </div>
+                                        <div class="rank-details">
+                                            <p><strong>Điểm yêu cầu:</strong> Từ @rank.MucDiemTu đến @rank.MucDiemDen</p>
+                                                        @if (!string.IsNullOrEmpty(rank.LoiIch))
+                                                        {
+                                                    <p><strong>Lợi ích:</strong> @rank.LoiIch</p>
+                                                        }
+                                                        @if (isCurrentRank)
+                                                        {
+                                                    <span class="current-rank-badge">Hạng hiện tại</span>
+                                                        }
+                                        </div>
+                                    </div>
+                                            }
+                        </div>
+                    </div>
+                </div>
                 <!-- Profile Tab -->
                 <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                     <div class="profile-section">

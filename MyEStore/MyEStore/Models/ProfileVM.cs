@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MyEStore.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyEStore.Models
 {
@@ -32,7 +33,8 @@ namespace MyEStore.Models
 
         public string DiaChi { get; set; } // Thêm để lưu địa chỉ
         public string DiaChiPhu { get; set; } // Thêm để lưu địa chỉ phụ
-        public List<Ranks> Ranks { get; set; } = new List<Ranks>();
+        public List<Rank> Ranks { get; set; } = new List<Rank>();
+        public int Diem { get; internal set; }
     }
     public class ProfileUpdateVM
     {

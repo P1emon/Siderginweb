@@ -453,6 +453,9 @@ namespace MyEStore.Controllers
                 return NotFound("Không tìm thấy thông tin người dùng.");
             }
 
+            // Fetch all ranks, ordered by MucDiemTu
+            var ranks = _ctx.Ranks.OrderBy(r => r.MucDiemTu).ToList();
+
             var model = new ProfileVM
             {
                 FullName = customer.HoTen,
@@ -460,11 +463,12 @@ namespace MyEStore.Controllers
                 PhoneNumber = customer.DienThoai,
                 DiaChi = customer.DiaChi,
                 DiaChiPhu = customer.DiaChiPhu,
+                Diem = customer.Diem, // Customer's points
+                Ranks = ranks // List of ranks
             };
 
             return View(model);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Profile(ProfileUpdateVM model)
