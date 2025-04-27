@@ -438,3 +438,103 @@ body {
 .order-panel {
     animation: fadeIn 0.3s ease forwards;
 }
+
+/* Thêm style cho modal hủy đơn hàng */
+.cancel-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.cancel-modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cancel-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.cancel-modal-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.close-modal {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #777;
+    transition: color 0.2s;
+}
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+.cancel-modal-body {
+    margin-bottom: 20px;
+}
+
+.cancel-reason {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.cancel-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancel-order {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+    .btn-cancel-order:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+/* Thêm style cho trạng thái đơn hàng đã hủy */
+.order-badge-cancelled {
+    background-color: rgba(255, 0, 0, 0.2); /* đỏ mờ */
+    color: #b30000; /* chữ đỏ đậm hơn */
+}
+
+
+
+.order-badge-gray {
+    background-color: #6c757d;
+    color: white;
+}

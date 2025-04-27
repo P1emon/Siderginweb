@@ -585,18 +585,20 @@ namespace MyEStore.Controllers
         public IActionResult TransactionHistory()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-
             if (userId == null)
             {
                 return RedirectToAction("Login");
             }
 
+            // Lấy danh sách trạng thái
+            ViewBag.TrangThais = _ctx.TrangThais.ToList();
+
             var orders = _ctx.HoaDons
                 .Where(hd => hd.MaKh == userId)
                 .Include(hd => hd.ChiTietHds)
+                .Include(hd => hd.MaTrangThaiNavigation)
                 .OrderByDescending(hd => hd.NgayDat)
                 .ToList();
-
             return View(orders);
         }
         [Authorize]
@@ -634,7 +636,52 @@ namespace MyEStore.Controllers
             }
             return View(order);
         }
+        public async Task<IActionResult> CancelOrder(int orderId, string reason)
+        {
+            try
+            {
+                // Lấy đơn hàng cần hủy
+                var order = await _ctx.HoaDons
+                    .Include(o => o.MaTrangThaiNavigation)
+                    .FirstOrDefaultAsync(o => o.MaHd == orderId);
 
+                if (order == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy đơn hàng!";
+                    return RedirectToAction("TransactionHistory");
+                }
+
+                // Kiểm tra xem đơn hàng có thể hủy không (sử dụng tên trạng thái nếu cần)
+                if (order.MaTrangThai == 1)
+                {
+                    TempData["ErrorMessage"] = $"Không thể hủy đơn hàng đã {order.MaTrangThaiNavigation?.TenTrangThai}!";
+                    return RedirectToAction("TransactionHistory");
+                }
+
+                if (order.MaTrangThai == 4)
+                {
+                    TempData["ErrorMessage"] = "Đơn hàng này đã được hủy trước đó!";
+                    return RedirectToAction("TransactionHistory");
+                }
+
+                // Cập nhật trạng thái đơn hàng thành "Đã hủy"
+                order.MaTrangThai = 4;
+
+                // Lưu lý do hủy đơn nếu có cột tương ứng
+                order.LyDo = reason;
+                order.NgayHuy = DateTime.Now;
+
+                await _ctx.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Đơn hàng #" + orderId + " đã được hủy thành công!";
+                return RedirectToAction("TransactionHistory");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Đã xảy ra lỗi khi hủy đơn hàng: " + ex.Message;
+                return RedirectToAction("TransactionHistory");
+            }
+        }
 
         [HttpGet]
         public IActionResult ForgotPassword()

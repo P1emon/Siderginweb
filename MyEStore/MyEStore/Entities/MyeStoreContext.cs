@@ -217,30 +217,49 @@ public partial class MyeStoreContext : DbContext
             entity.ToTable("HoaDon");
 
             entity.Property(e => e.MaHd).HasColumnName("MaHD");
+
             entity.Property(e => e.CachThanhToan)
                 .HasMaxLength(50)
                 .HasDefaultValue("Cash");
+
             entity.Property(e => e.CachVanChuyen)
                 .HasMaxLength(50)
                 .HasDefaultValue("Airline");
+
             entity.Property(e => e.DiaChi).HasColumnType("nvarchar(max)");
+
             entity.Property(e => e.GhiChu).HasMaxLength(255);
+
             entity.Property(e => e.HoTen).HasMaxLength(50);
+
             entity.Property(e => e.MaKh)
                 .HasMaxLength(20)
                 .HasColumnName("MaKH");
+
             entity.Property(e => e.MaNv)
                 .HasMaxLength(50)
                 .HasColumnName("MaNV");
+
             entity.Property(e => e.NgayCan)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.NgayDat)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
             entity.Property(e => e.NgayGiao)
                 .HasDefaultValueSql("(((1)/(1))/(1900))")
                 .HasColumnType("datetime");
+
+            // 🆕 Thêm NgayHuy
+            entity.Property(e => e.NgayHuy)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(NULL)");
+
+            // 🆕 Thêm LyDo
+            entity.Property(e => e.LyDo)
+                .HasColumnType("nvarchar(max)");
 
             entity.HasOne(d => d.MaKhNavigation).WithMany(p => p.HoaDons)
                 .HasForeignKey(d => d.MaKh)
@@ -257,6 +276,7 @@ public partial class MyeStoreContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HoaDon_TrangThai");
         });
+
 
         modelBuilder.Entity<HoiDap>(entity =>
         {

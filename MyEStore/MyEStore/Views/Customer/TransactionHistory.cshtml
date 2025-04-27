@@ -6,12 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch sử đơn hàng</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 
 
     <link rel="stylesheet" href="~/css/historyorder.css" asp-append-version="true" />
+
 </head>
 <body>
     <div class="dashboard-container">
@@ -23,13 +24,15 @@
                 <label class="filter-label">Tìm kiếm đơn hàng</label>
                 <input type="text" id="orderSearchInput" placeholder="Nhập mã đơn hàng..." class="filter-input">
             </div>
-            
+
             <div class="filter-group">
                 <label class="filter-label">Trạng thái thanh toán</label>
                 <select id="orderStatusFilter" class="filter-select">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="Đã thanh toán">Đã thanh toán</option>
-                    <option value="Chưa thanh toán">Chưa thanh toán</option>
+                    @foreach (var status in ViewBag.TrangThais)
+                    {
+                        <option value="@status.TenTrangThai">@status.TenTrangThai</option>
+                    }
                 </select>
             </div>
             
@@ -76,25 +79,52 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">Chưa thanh toán</div>
-                    <div class="stat-value">@Model.Count(o => o.MaTrangThai != 1)</div>
+                    <div class="stat-value">@Model.Count(o => o.MaTrangThai != 1 && o.MaTrangThai != 4)</div>
                     <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-title">Đã hủy</div>
+                    <div class="stat-value">@Model.Count(o => o.MaTrangThai == 4)</div>
+                    <div class="stat-icon"><i class="fas fa-ban"></i></div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-title">Tổng giá trị</div>
-                    <div class="stat-value">@Model.Sum(o => o.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + o.PhiVanChuyen).ToString("N0") đ</div>
+                    <div class="stat-value">@Model.Where(o => o.MaTrangThai != 4).Sum(o => o.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + o.PhiVanChuyen).ToString("N0") đ</div>
                     <div class="stat-icon"><i class="fas fa-coins"></i></div>
                 </div>
             </div>
-
             <!-- Danh sách đơn hàng -->
             <div class="order-list">
                 @foreach (var order in Model)
                 {
                     var totalDiscountedAmount = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia));
                     var totalWithShipping = totalDiscountedAmount + order.PhiVanChuyen;
-                    var isPaid = order.MaTrangThai == 1;
-                    var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
-                    var statusBadgeClass = isPaid ? "order-badge-success" : "order-badge-danger";
+                    var statusBadgeClass = "";
+
+                    // Lấy tên trạng thái từ đối tượng liên kết
+                    var statusText = order.MaTrangThaiNavigation?.TenTrangThai ?? "Không xác định";
+
+                    // Xác định class cho badge dựa trên mã trạng thái
+                    if (order.MaTrangThai == 1)
+                    {
+                        statusBadgeClass = "order-badge-success";
+                    }
+                    else if (order.MaTrangThai == 4)
+                    {
+                        statusBadgeClass = "order-badge-cancelled";
+                    }
+                    else if (order.MaTrangThai == 2 || order.MaTrangThai == 3)
+                    {
+                        statusBadgeClass = "order-badge-gray";
+                    }
+                    else
+                    {
+                        statusBadgeClass = "order-badge-danger";
+                    }
+
+                    var isCancelled = order.MaTrangThai == 4;
+                    var canCancel = !isCancelled && order.MaTrangThai != 1; // Chỉ cho phép hủy đơn khi chưa thanh toán
+
                     <div class="order-panel" data-order-id="@order.MaHd" data-status="@statusText" data-date="@order.NgayDat.ToString("yyyy-MM-dd")">
                         <div class="panel-header" onclick="togglePanel(this)">
                             <div class="panel-meta">
@@ -137,20 +167,37 @@
                                     <a href="@Url.Action("OrderDetails", "Customer", new { id = order.MaHd })" class="btn btn-info btn-sm">
                                         <i class="fas fa-eye"></i> Xem chi tiết
                                     </a>
-                                    @if (!isPaid)
+                                    @if (!isCancelled)
                                     {
-                                        <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-credit-card"></i> Thanh toán
-                                        </a>
-                                    }
+                                        if (order.MaTrangThai != 1)
+                                        {
+                                            <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-credit-card"></i> Thanh toán
+                                            </a>
+                                        }
                                         <a href="@Url.Action("PrintInvoice", "Customer", new { maHd = order.MaHd })" class="btn btn-secondary btn-sm">
                                             <i class="fas fa-print"></i> In hóa đơn
                                         </a>
-                                    <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
-                                        <button type="submit" class="btn btn-success btn-sm">
-                                            <i class="fas fa-shopping-cart"></i> Mua lại
-                                        </button>
-                                    </form>
+                                        <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-shopping-cart"></i> Mua lại
+                                            </button>
+                                        </form>
+                                        @if (canCancel)
+                                        {
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="showCancelModal(@order.MaHd)">
+                                                <i class="fas fa-times"></i> Hủy đơn
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-shopping-cart"></i> Đặt lại
+                                            </button>
+                                        </form>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -160,8 +207,42 @@
         </div>
     </div>
 
+    <!-- Modal hủy đơn hàng -->
+    <div id="cancelOrderModal" class="cancel-modal">
+        <div class="cancel-modal-content">
+            <div class="cancel-modal-header">
+                <div class="cancel-modal-title">Xác nhận hủy đơn hàng</div>
+                <span class="close-modal" onclick="closeCancelModal()">&times;</span>
+            </div>
+            <div class="cancel-modal-body">
+                <p>Bạn có chắc chắn muốn hủy đơn hàng #<span id="cancelOrderId"></span>?</p>
+                <p>Hành động này không thể hoàn tác sau khi xác nhận.</p>
+                <label for="cancelReason">Lý do hủy đơn:</label>
+                <select id="cancelReason" class="cancel-reason">
+                    <option value="Thay đổi ý định mua hàng">Thay đổi ý định mua hàng</option>
+                    <option value="Tìm thấy sản phẩm tốt hơn">Tìm thấy sản phẩm tốt hơn</option>
+                    <option value="Không đủ tiền thanh toán">Không đủ tiền thanh toán</option>
+                    <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
+                    <option value="Lý do khác">Lý do khác</option>
+                </select>
+                <div id="otherReasonContainer" style="display: none; margin-top: 10px;">
+                    <label for="otherReason">Lý do khác:</label>
+                    <textarea id="otherReason" class="cancel-reason" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="cancel-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Đóng</button>
+                <form id="cancelOrderForm" method="post" action="@Url.Action("CancelOrder", "Customer")">
+                    <input type="hidden" id="hiddenOrderId" name="orderId" value="">
+                    <input type="hidden" id="hiddenReason" name="reason" value="">
+                    <button type="submit" class="btn btn-danger btn-cancel-order">Xác nhận hủy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function togglePanel(header) {
             const details = header.nextElementSibling;
@@ -177,6 +258,49 @@
                 header.closest('.order-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+
+        // Xử lý modal hủy đơn hàng
+        function showCancelModal(orderId) {
+            document.getElementById('cancelOrderId').textContent = orderId;
+            document.getElementById('hiddenOrderId').value = orderId;
+            document.getElementById('cancelOrderModal').style.display = 'block';
+        }
+        
+        function closeCancelModal() {
+            document.getElementById('cancelOrderModal').style.display = 'none';
+        }
+        
+        // Xử lý khi người dùng chọn lý do hủy
+        document.getElementById('cancelReason').addEventListener('change', function() {
+            const otherReasonContainer = document.getElementById('otherReasonContainer');
+            if (this.value === 'Lý do khác') {
+                otherReasonContainer.style.display = 'block';
+            } else {
+                otherReasonContainer.style.display = 'none';
+            }
+        });
+        
+        // Xử lý form hủy đơn hàng
+        document.getElementById('cancelOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectReason = document.getElementById('cancelReason').value;
+            let finalReason = selectReason;
+            
+            if (selectReason === 'Lý do khác') {
+                const otherReason = document.getElementById('otherReason').value.trim();
+                if (otherReason === '') {
+                    alert('Vui lòng nhập lý do hủy đơn hàng');
+                    return;
+                }
+                finalReason = otherReason;
+            }
+            
+            document.getElementById('hiddenReason').value = finalReason;
+            
+            // Gửi form
+            this.submit();
+        });
 
         // Filter functionality
         const searchInput = document.getElementById('orderSearchInput');
@@ -242,9 +366,15 @@
                 panel.style.animationDelay = `${index * 0.05}s`;
             });
         });
-
-
+        
+        // Đóng modal khi nhấp ngoài vùng modal
+        window.onclick = function(event) {
+            const modal = document.getElementById('cancelOrderModal');
+            if (event.target == modal) {
+                closeCancelModal();
+            }
+        }
     </script>
-       <script src="~/js/dropdown.js" asp-append-version="true"></script>
+    <script src="~/js/dropdown.js" asp-append-version="true"></script>
 </body>
 </html>
