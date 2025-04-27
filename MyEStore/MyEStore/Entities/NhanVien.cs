@@ -13,6 +13,13 @@ public partial class NhanVien
     public string Email { get; set; } = null!;
 
     public string? MatKhau { get; set; }
+    public DateTime NgayTaoTaiKhoan { get; set; }
+    public string? RandomKey { get; set; }
+    public bool GioiTinh { get; set; }
+    public string? DiaChi { get; set; }
+    public string? Hinh { get; set; }
+    public DateTime? DangNhapLanCuoi { get; set; }
+    public string? DienThoai { get; set; }
 
     public virtual ICollection<ChuDe> ChuDes { get; set; } = new List<ChuDe>();
 
