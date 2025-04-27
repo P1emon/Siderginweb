@@ -1,0 +1,64 @@
+﻿body {
+    background: #f1f3f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #343a40;
+}
+
+.navbar-custom {
+    background: #4e54c8; /* Màu tím trầm */
+    background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+    .navbar-custom .nav-link {
+        color: #ffffff;
+        font-weight: 500;
+        margin-left: 15px;
+        transition: all 0.3s ease;
+    }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffe082;
+            transform: translateY(-2px);
+        }
+
+.main-content {
+    background: #ffffff;
+    padding: 30px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.footer-custom {
+    background-color: #343a40;
+    color: #adb5bd;
+    font-size: 0.9rem;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .navbar-brand i {
+        margin-right: 8px;
+    }
+
+/* Responsive Menu */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        background: #6a11cb;
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+        .navbar-nav .nav-item {
+            margin-bottom: 10px;
+        }
+}

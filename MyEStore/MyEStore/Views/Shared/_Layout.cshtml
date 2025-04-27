@@ -43,7 +43,12 @@
                             <i class="bi bi-bell"></i> Thông Báo
                         </a>
                     </li>
-                   
+                    <li class="nav-item">
+
+                        <a class="main-nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-bell"></i> Admin
+                        </a>
+                    </li>
                     <li class="nav-item cart-wrapper">
                         <a class="main-nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
                             <i class="bi bi-cart"></i> Giỏ hàng
@@ -57,13 +62,13 @@
                                 <i class="bi bi-person-circle"></i> <b>@User.Identity.Name</b>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                             
+
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
                                 <li>
                                     <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
                                         <i class="bi bi-bell"></i> Thông báo
-                                     @*    @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
+                                        @*    @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
                                         {
                                             <span class="badge bg-danger">@ViewData["UpcomingDeliveriesCount"]</span>
                                         } *@
