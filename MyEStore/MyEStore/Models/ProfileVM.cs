@@ -32,6 +32,7 @@ namespace MyEStore.Models
 
         public string DiaChi { get; set; } // Thêm để lưu địa chỉ
         public string DiaChiPhu { get; set; } // Thêm để lưu địa chỉ phụ
+        public List<Ranks> Ranks { get; set; } = new List<Ranks>();
     }
     public class ProfileUpdateVM
     {
@@ -62,5 +63,11 @@ namespace MyEStore.Models
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu xác nhận phải có ít nhất 6 ký tự và không vượt quá 100 ký tự.")]
         [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp với mật khẩu mới.")]
         public string ConfirmPassword { get; set; } = null!;
+    }
+    public class Ranks
+    {
+        public string Name { get; set; }
+        public string Icon { get; set; }
+        public List<string> Benefits { get; set; }
     }
 }

@@ -56,14 +56,36 @@ public partial class MyeStoreContext : DbContext
     public virtual DbSet<YeuThich> YeuThiches { get; set; }
 
     public virtual DbSet<HangHoaChiTiet> HangHoaChiTiets { get; set; }
+    public DbSet<Rank> Ranks { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-QBAUIQJE\\PIEMON;Initial Catalog=MyESidergin;Integrated Security=True;Trust Server Certificate=True");
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-QBAUIQJE\\PIEMON;Initial Catalog=MyESidergin;Integrated Security=True;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<HangHoa>().Ignore(hh => hh.HangHoaChiTiet);
+        modelBuilder.Entity<Rank>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.TenRank)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.MucDiemTu)
+                .IsRequired();
+
+            entity.Property(e => e.MucDiemDen)
+                .IsRequired();
+
+            entity.Property(e => e.LoiIch)
+                .HasColumnType("nvarchar(max)")
+                .IsRequired(false);
+            entity.Property(e => e.Icon)
+                .HasMaxLength(100)
+                .IsRequired(false);
+        });
 
         modelBuilder.Entity<BanBe>(entity =>
         {

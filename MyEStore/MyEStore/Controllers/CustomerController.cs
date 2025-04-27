@@ -66,38 +66,38 @@ namespace MyEStore.Controllers
 
                     var unlockLink = Url.Action("UnlockAccount", "Customer", new { code = unlockCode }, Request.Scheme);
                     var message = $@"
-                    <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
-                        <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
-                            <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
-                                <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
-                                <p style='color: #666; margin: 5px 0 0;'>Yêu cầu mở khóa tài khoản</p>
-                            </div>
-                            <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {kh.HoTen},</h2>
-                            <p style='line-height: 1.6; margin-bottom: 20px;'>Tài khoản của bạn tại <strong>SiderGin</strong> đã bị tạm khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng nhấp vào liên kết bên dưới trong vòng <strong>5 phút</strong> để mở khóa tài khoản:</p>
-                            <div style='text-align: center; margin: 25px 0;'>
-                                <a href='{unlockLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Mở khóa tài khoản</a>
-                            </div>
-                            <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu mở khóa lại tại trang đăng nhập.</p>
-                            <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này, vui lòng liên hệ với chúng tôi qua:</p>
-                            <div style='display: flex; margin: 15px 0 25px;'>
-                                <div style='margin-right: 20px;'>
-                                    <p style='margin: 0; color: #666;'>
-                                        <span style='font-size: 16px;'>📞</span> Hotline
-                                    </p>
-                                    <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
-                                </div>
-                                <div>
-                                    <p style='margin: 0; color: #666;'>
-                                        <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
-                                    </p>
-                                    <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
-                                </div>
-                            </div>
-                            <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
-                                <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
-                            </div>
+            <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                    <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                        <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                        <p style='color: #666; margin: 5px 0 0;'>Yêu cầu mở khóa tài khoản</p>
+                    </div>
+                    <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {kh.HoTen},</h2>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Tài khoản của bạn tại <strong>SiderGin</strong> đã bị tạm khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng nhấp vào liên kết bên dưới trong vòng <strong>5 phút</strong> để mở khóa tài khoản:</p>
+                    <div style='text-align: center; margin: 25px 0;'>
+                        <a href='{unlockLink}' style='display: inline-block; padding: 12px 24px; background-color: #0066cc; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Mở khóa tài khoản</a>
+                    </div>
+                    <p style='line-height: 1.6; margin-bottom: 20px;'>Liên kết này sẽ hết hạn sau 5 phút. Nếu liên kết hết hạn, bạn có thể yêu cầu mở khóa lại tại trang đăng nhập.</p>
+                    <p style='line-height: 1.6;'>Nếu bạn không thực hiện yêu cầu này, vui lòng liên hệ với chúng tôi qua:</p>
+                    <div style='display: flex; margin: 15px 0 25px;'>
+                        <div style='margin-right: 20px;'>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>📞</span> Hotline
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
                         </div>
-                    </div>";
+                        <div>
+                            <p style='margin: 0; color: #666;'>
+                                <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                            </p>
+                            <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                        </div>
+                    </div>
+                    <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                        <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                    </div>
+                </div>
+            </div>";
 
                     await SendEmail(kh.Email, "Mở khóa tài khoản SiderGin", message);
                     _ctx.SaveChanges();
@@ -115,13 +115,24 @@ namespace MyEStore.Controllers
             kh.DangNhapLanCuoi = DateTime.Now;
             _ctx.SaveChanges();
 
+            // Fetch the user's rank based on points
+            var rank = _ctx.Ranks
+                .FirstOrDefault(r => kh.Diem >= r.MucDiemTu && kh.Diem <= r.MucDiemDen);
+
+            // Construct the full icon path (assuming Icon contains the filename, e.g., "gold.png")
+            var rankIconPath = rank != null && !string.IsNullOrEmpty(rank.Icon)
+                ? $"{rank.Icon}"
+                : ""; // Empty if no rank or no icon
+
+            // Create claims, including the rank icon path
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, kh.HoTen),
-                new Claim(ClaimTypes.Email, kh.Email),
-                new Claim("UserId", kh.MaKh),
-                new Claim(ClaimTypes.Role, "Administrator")
-            };
+    {
+        new Claim(ClaimTypes.Name, kh.HoTen),
+        new Claim(ClaimTypes.Email, kh.Email),
+        new Claim("UserId", kh.MaKh),
+        new Claim(ClaimTypes.Role, "Administrator"),
+        new Claim("RankIcon", rankIconPath) // Store the full path to the icon
+    };
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimPrincipal = new ClaimsPrincipal(claimsIdentity);
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyEStore.Entities;
 
@@ -11,9 +12,11 @@ using MyEStore.Entities;
 namespace MyEStore.Migrations
 {
     [DbContext(typeof(MyeStoreContext))]
-    partial class MyeStoreContextModelSnapshot : ModelSnapshot
+    [Migration("20250427140242_CreateRankTable")]
+    partial class CreateRankTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -748,10 +751,6 @@ namespace MyEStore.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Icon")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("LoiIch")
                         .HasColumnType("nvarchar(max)");

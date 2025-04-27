@@ -11,7 +11,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="~/css/LayoutStyles.css" asp-append-version="true" />
-
 </head>
 <body>
     <!-- Header -->
@@ -44,7 +43,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-
                         <a class="main-nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index">
                             <i class="bi bi-bell"></i> Admin
                         </a>
@@ -59,19 +57,23 @@
                     {
                         <li class="nav-item dropdown">
                             <a class="dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> <b>@User.Identity.Name</b>
+                                <i class="bi bi-person-circle"></i> 
+                                @if (User.Claims.Any(c => c.Type == "RankIcon" && !string.IsNullOrEmpty(c.Value)))
+                                {
+                                 <img src="~/Hinh/Others/@User.Claims.First(c => c.Type == "RankIcon").Value" alt="Rank Icon" style="width: 60px; height: 40px; margin-right: 8px; vertical-align: middle;" />
+                                }
+                                <b>@User.Identity.Name</b>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Profile"><i class="bi bi-person-circle"></i> Cập nhật hồ sơ</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="TransactionHistory"><i class="bi bi-bag-check"></i> Đơn hàng từng mua</a></li>
                                 <li>
                                     <a class="dropdown-item" asp-area="" asp-controller="Customer" asp-action="Thongbao">
                                         <i class="bi bi-bell"></i> Thông báo
-                                        @*    @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
+                                        @if (ViewData["UpcomingDeliveriesCount"] != null && (int)ViewData["UpcomingDeliveriesCount"] > 0)
                                         {
                                             <span class="badge bg-danger">@ViewData["UpcomingDeliveriesCount"]</span>
-                                        } *@
+                                        }
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -88,7 +90,6 @@
             </nav>
         </div>
     </header>
-
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -167,5 +168,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
-
