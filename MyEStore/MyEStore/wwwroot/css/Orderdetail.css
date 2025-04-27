@@ -263,18 +263,23 @@ body {
 
 .product-meta {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* Thay đổi từ 3 cột thành 2 cột */
     gap: 15px;
+    margin-top: 10px;
 }
 
 .product-meta-item {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row; /* Thay đổi từ column thành row */
+    justify-content: space-between; /* Đặt label bên trái và value bên phải */
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #e2e8f0;
 }
 
     .product-meta-item .label {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: 500;
         color: #64748b;
     }
@@ -283,8 +288,117 @@ body {
         font-size: 0.95rem;
         font-weight: 600;
         color: #4f46e5;
+        text-align: right; /* Căn phải các giá trị */
     }
 
+    /* Đơn giá gốc bị gạch đi */
+    .product-meta-item:nth-child(2) .value {
+        text-decoration: line-through;
+        color: #94a3b8;
+    }
+
+    /* Đơn giá sau giảm in đậm và màu đỏ */
+    .product-meta-item:nth-child(4) .value {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    /* Thành tiền có cỡ chữ lớn và in đậm */
+    .product-meta-item:nth-child(5) {
+        grid-column: span 2; /* Chiếm cả 2 cột */
+        margin-top: 5px;
+        border-top: 2px solid #e2e8f0;
+        border-bottom: none;
+        padding-top: 10px;
+    }
+
+        .product-meta-item:nth-child(5) .label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .product-meta-item:nth-child(5) .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+/* Shipping Fee Section Styling */
+.shipping-fee-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px dashed #e2e8f0;
+}
+
+.shipping-fee-card {
+    background-color: #f8fafc;
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+    .shipping-fee-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+.shipping-fee-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+    .shipping-fee-header i {
+        font-size: 1.2rem;
+        color: #4f46e5;
+    }
+
+    .shipping-fee-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+.shipping-fee-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+    .shipping-fee-amount .label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #64748b;
+    }
+
+    .shipping-fee-amount .value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #4f46e5;
+    }
+
+/* Enhance the summary styling */
+.summary-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-row.total {
+        margin-top: 10px;
+        padding-top: 15px;
+        border-top: 2px solid #e2e8f0;
+        font-size: 1.1rem;
+    }
 /* Summary Section */
 .summary-section {
     max-width: 500px;

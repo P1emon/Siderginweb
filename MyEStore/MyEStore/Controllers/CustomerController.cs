@@ -599,7 +599,6 @@ namespace MyEStore.Controllers
 
             return View(orders);
         }
-
         [Authorize]
         public IActionResult OrderDetails(int id)
         {
@@ -618,18 +617,24 @@ namespace MyEStore.Controllers
                         ct.MaHh,
                         ct.SoLuong,
                         ct.DonGia,
+                        ct.GiamGia,
                         ProductName = ct.MaHhNavigation.TenHh,
-                        Hinh = ct.MaHhNavigation.Hinh
-                    }).ToList()
-                }).FirstOrDefault();
-
+                        Hinh = ct.MaHhNavigation.Hinh,
+                        ThanhTien = ct.SoLuong * ct.DonGia * (1 - ct.GiamGia) // tính tiền sau giảm giá cho từng sản phẩm
+                    }).ToList(),
+                    // Tổng tiền sản phẩm (chưa có phí vận chuyển)
+                    SubTotal = hd.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)),
+                    // Tổng tiền = tổng (số lượng * đơn giá * (1 - giảm giá)) + phí vận chuyển
+                    TotalAmount = hd.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + hd.PhiVanChuyen
+                })
+                .FirstOrDefault();
             if (order == null)
             {
                 return NotFound("Order not found.");
             }
-
             return View(order);
         }
+
 
         [HttpGet]
         public IActionResult ForgotPassword()

@@ -81,7 +81,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">Tổng giá trị</div>
-                    <div class="stat-value">@Model.Sum(o => o.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia)).ToString("N0") đ</div>
+                    <div class="stat-value">@Model.Sum(o => o.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + o.PhiVanChuyen).ToString("N0") đ</div>
                     <div class="stat-icon"><i class="fas fa-coins"></i></div>
                 </div>
             </div>
@@ -90,7 +90,8 @@
             <div class="order-list">
                 @foreach (var order in Model)
                 {
-                    var totalAmount = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia);
+                    var totalDiscountedAmount = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia));
+                    var totalWithShipping = totalDiscountedAmount + order.PhiVanChuyen;
                     var isPaid = order.MaTrangThai == 1;
                     var statusText = isPaid ? "Đã thanh toán" : "Chưa thanh toán";
                     var statusBadgeClass = isPaid ? "order-badge-success" : "order-badge-danger";
@@ -115,8 +116,16 @@
                                 <span class="value">@order.NgayDat.ToString("dd/MM/yyyy HH:mm")</span>
                             </div>
                             <div class="detail-item">
+                                <span class="label">Tạm tính:</span>
+                                <span class="value">@totalDiscountedAmount.ToString("N0") đ</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Phí vận chuyển:</span>
+                                <span class="value">@order.PhiVanChuyen.ToString("N0") đ</span>
+                            </div>
+                            <div class="detail-item total-amount">
                                 <span class="label">Tổng tiền:</span>
-                                <span class="value">@totalAmount.ToString("N0") đ</span>
+                                <span class="value">@totalWithShipping.ToString("N0") đ</span>
                             </div>
                             <div class="detail-item">
                                 <span class="label">Trạng thái thanh toán:</span>

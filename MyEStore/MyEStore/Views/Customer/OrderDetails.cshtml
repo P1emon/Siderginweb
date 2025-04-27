@@ -90,20 +90,45 @@
                                         <span class="value">@product.SoLuong</span>
                                     </div>
                                     <div class="product-meta-item">
-                                        <span class="label">Đơn giá</span>
+                                        <span class="label">Đơn giá gốc</span>
                                         <span class="value currency" data-value="@product.DonGia">@product.DonGia</span>
                                     </div>
                                     <div class="product-meta-item">
-                                        <span class="label">Thành tiền</span>
-                                        <span class="value currency" data-value="@(product.DonGia * product.SoLuong)">@(product.DonGia * product.SoLuong)</span>
+                                        <span class="label">Giảm giá (%)</span>
+                                        <span class="value">@(product.GiamGia * 100) %</span>
                                     </div>
+                                    <div class="product-meta-item">
+                                        <span class="label">Đơn giá sau giảm</span>
+                                        <span class="value currency" data-value="@((product.DonGia * (1 - product.GiamGia)))">
+                                            @((product.DonGia * (1 - product.GiamGia)).ToString("N0"))
+                                        </span>
+                                    </div>
+                                    <div class="product-meta-item">
+                                        <span class="label">Thành tiền</span>
+                                        <span class="value currency" data-value="@((product.DonGia * (1 - product.GiamGia)) * product.SoLuong)">
+                                            @(((product.DonGia * (1 - product.GiamGia)) * product.SoLuong).ToString("N0"))
+                                        </span>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
                     }
+                    < <div class="shipping-fee-section">
+                        <div class="shipping-fee-card">
+                            <div class="shipping-fee-header">
+                                <i class="fas fa-truck"></i>
+                                <h3>Phí vận chuyển</h3>
+                            </div>
+                            <div class="shipping-fee-amount">
+                                <span class="label">Phí vận chuyển</span>
+                                <span class="value currency" data-value="@Model.PhiVanChuyen">@Model.PhiVanChuyen.ToString("N0")</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+            </div>
 
         <div id="summary" class="tab-pane">
             <div class="detail-section">
@@ -121,6 +146,14 @@
                         <div class="summary-row">
                             <span class="label">Khách hàng</span>
                             <span class="value">@Model.HoTen</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Tạm tính</span>
+                            <span class="value currency" data-value="@Model.SubTotal">@Model.SubTotal.ToString("N0")</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Phí vận chuyển</span>
+                            <span class="value currency" data-value="@Model.PhiVanChuyen">@Model.PhiVanChuyen.ToString("N0")</span>
                         </div>
                         <div class="summary-row total">
                             <span class="label">Tổng cộng</span>
@@ -190,39 +223,48 @@
         
         // Currency conversion
         const currencySelect = document.getElementById('currency');
-        
+
         function updateCurrency() {
             const currency = currencySelect.value;
             const currencySymbol = document.getElementById('currencySymbol');
-            let total = 0;
-            
+            let subtotal = 0;
+            let shippingFee = 0;
+
             // Store original values if not already stored
             document.querySelectorAll('.currency').forEach(element => {
                 if (!element.hasAttribute('data-value')) {
                     element.setAttribute('data-value', element.textContent.trim());
                 }
             });
-            
-            // Update currency display and calculate total
+
+            // Get shipping fee value
+            const shippingFeeElements = document.querySelectorAll('.shipping-fee-amount .value');
+            if (shippingFeeElements.length > 0) {
+                shippingFee = parseFloat(shippingFeeElements[0].getAttribute('data-value')) || 0;
+            }
+
+            // Update currency display and calculate subtotal
             document.querySelectorAll('.currency').forEach(element => {
-                const value = parseFloat(element.getAttribute('data-value'));
-                
+                const value = parseFloat(element.getAttribute('data-value')) || 0;
+
                 if (element.closest('.product-meta-item')) {
                     const isTotal = element.closest('.product-meta-item').querySelector('.label').textContent.includes('Thành tiền');
                     if (isTotal) {
-                        total += value;
+                        subtotal += value;
                     }
                 }
-                
+
                 if (currency === 'USD') {
                     element.textContent = (value / 25400).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 } else {
                     element.textContent = value.toLocaleString('vi-VN');
                 }
             });
-            
-            // Update total and currency symbol
+
+            // Update total (subtotal + shipping fee) and currency symbol
             const totalPrice = document.getElementById('totalPrice');
+            const total = subtotal + shippingFee;
+
             if (currency === 'USD') {
                 totalPrice.textContent = (total / 25400).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 currencySymbol.textContent = ' USD';
