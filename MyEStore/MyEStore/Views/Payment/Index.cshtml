@@ -174,8 +174,7 @@
                                 Thanh Toán Khi Nhận Hàng (COD)
                             </button>
                         </form>
-
-
+                        <a href="@Url.Action("PrintInvoice", "Payment")?shippingFee=" + document.getElementById('shippingFee').textContent.replace(' đ', '').trim()" class="btn btn-primary">Xem và In Hóa Đơn</a>
 
                     </div>
                 </div>

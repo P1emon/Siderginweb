@@ -942,5 +942,42 @@ namespace MyEStore.Controllers
                 _logger.LogError(ex, $"Gửi mail thất bại tới {email}: {ex.Message}");
             }
         }
+        [HttpGet]
+        public IActionResult PrintInvoice(double shippingFee)
+        {
+            var maKhachHang = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            KhachHang khachHang = null;
+            if (maKhachHang != null)
+            {
+                khachHang = _ctx.KhachHangs.FirstOrDefault(k => k.MaKh == maKhachHang);
+            }
+
+            // Lấy thông tin giỏ hàng từ session
+            var cartItems = HttpContext.Session.Get<List<CartItem>>("MY_CART");
+
+            // Tạo một đối tượng HoaDon hoặc ViewModel để chứa dữ liệu cần thiết
+            var hoaDon = new HoaDon
+            {
+                // Các thông tin chung của hóa đơn
+                MaKh = maKhachHang,
+                NgayDat = DateTime.Now,
+                HoTen = User.Identity.Name,
+                DiaChi = khachHang?.DiaChi,
+                CachThanhToan = "",
+                ChiTietHds = cartItems.Select(item => new ChiTietHd
+                {
+                    MaHh = item.MaHh,
+                    DonGia = item.DonGia,
+                    SoLuong = item.SoLuong,
+                    GiamGia = item.GiamGia,
+                    MaHhNavigation = _ctx.HangHoas.FirstOrDefault(hh => hh.MaHh == item.MaHh)
+                }).ToList(),
+                PhiVanChuyen = shippingFee // Assign the shipping fee to the HoaDon object
+            };
+
+            ViewBag.HoaDon = hoaDon; // Use ViewBag to pass HoaDon to the view
+            ViewBag.KhachHang = khachHang;
+            return View(hoaDon);
+        }
     }
 }

@@ -134,6 +134,9 @@
                                             <i class="fas fa-credit-card"></i> Thanh toán
                                         </a>
                                     }
+                                        <a href="@Url.Action("PrintInvoice", "Customer", new { maHd = order.MaHd })" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-print"></i> In hóa đơn
+                                        </a>
                                     <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
                                         <button type="submit" class="btn btn-success btn-sm">
                                             <i class="fas fa-shopping-cart"></i> Mua lại
