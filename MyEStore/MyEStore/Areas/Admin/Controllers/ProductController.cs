@@ -83,7 +83,7 @@ namespace MyEStore.Areas.Admin.Controllers
                 {
                     // Định nghĩa đường dẫn lưu file
                     var uniqueFileName = Guid.NewGuid().ToString() + "_" + hinhFile.FileName;
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Hinh", "HangHoa");
 
                     // Tạo thư mục nếu không tồn tại
                     if (!Directory.Exists(uploadsFolder))
@@ -177,7 +177,7 @@ namespace MyEStore.Areas.Admin.Controllers
                         // Xóa hình cũ nếu có
                         if (!string.IsNullOrEmpty(existingProduct.Hinh))
                         {
-                            var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products", existingProduct.Hinh);
+                            var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Hinh", "HangHoa", existingProduct.Hinh);
                             if (System.IO.File.Exists(oldImagePath))
                             {
                                 System.IO.File.Delete(oldImagePath);
@@ -186,7 +186,7 @@ namespace MyEStore.Areas.Admin.Controllers
 
                         // Lưu hình mới
                         var uniqueFileName = Guid.NewGuid().ToString() + "_" + hinhFile.FileName;
-                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Hinh", "HangHoa");
 
                         if (!Directory.Exists(uploadsFolder))
                         {
