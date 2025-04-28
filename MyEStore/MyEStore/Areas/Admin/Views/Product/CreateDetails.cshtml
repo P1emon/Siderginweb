@@ -1,0 +1,104 @@
+﻿
+ @model MyEStore.Entities.HangHoaChiTiet
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = Model.MaChiTiet > 0 ? "Chỉnh Sửa Chi Tiết Sản Phẩm" : "Tạo Chi Tiết Sản Phẩm";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (ViewBag.TenHh != null)
+{
+    <h4>Sản phẩm: @ViewBag.TenHh</h4>
+     <h4>Ma san pham : @ViewBag.MaHh</h4>
+}
+else
+{
+    <h4>Chọn sản phẩm</h4>
+}
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="CreateDetails" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="MaChiTiet" />
+
+            @if (ViewBag.TenHh == null)
+            {
+                <div class="form-group">
+                    <label asp-for="MaHh" class="control-label">Sản Phẩm</label>
+                    <select asp-for="MaHh" class="form-control" required data-val-required="Vui lòng chọn một sản phẩm.">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        @if (ViewBag.HangHoaList != null)
+                        {
+                            @foreach (var item in ViewBag.HangHoaList)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == Model.MaHh.ToString() ? "selected" : null)">@item.Text</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="MaHh" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="MaHh" />
+            }
+
+            <div class="form-group">
+                <label asp-for="CongDung" class="control-label">Công Dụng</label>
+                <textarea asp-for="CongDung" class="form-control" rows="4" maxlength="500" required data-val-required="Công Dụng là bắt buộc."></textarea>
+                <span asp-validation-for="CongDung" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DoiTuongSuDung" class="control-label">Đối Tượng Sử Dụng</label>
+                <textarea asp-for="DoiTuongSuDung" class="form-control" rows="4" maxlength="500" required data-val-required="Đối Tượng Sử Dụng là bắt buộc."></textarea>
+                <span asp-validation-for="DoiTuongSuDung" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="QuyCachDongGoi" class="control-label">Quy Cách Đóng Gói</label>
+                <input asp-for="QuyCachDongGoi" class="form-control" maxlength="100" required data-val-required="Quy Cách Đóng Gói là bắt buộc." />
+                <span asp-validation-for="QuyCachDongGoi" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ThanhPhan" class="control-label">Thành Phần</label>
+                <textarea asp-for="ThanhPhan" class="form-control" rows="4" maxlength="1000" required data-val-required="Thành Phần là bắt buộc."></textarea>
+                <span asp-validation-for="ThanhPhan" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CongNgheDacBiet" class="control-label">Công Nghệ Đặc Biệt</label>
+                <textarea asp-for="CongNgheDacBiet" class="form-control" rows="4" maxlength="1000" required data-val-required="Công Nghệ Đặc Biệt là bắt buộc."></textarea>
+                <span asp-validation-for="CongNgheDacBiet" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LoiIchNoiBat" class="control-label">Lợi Ích Nổi Bật</label>
+                <textarea asp-for="LoiIchNoiBat" class="form-control" rows="4" maxlength="1000" required data-val-required="Lợi Ích Nổi Bật là bắt buộc."></textarea>
+                <span asp-validation-for="LoiIchNoiBat" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LuuY" class="control-label">Lưu Ý</label>
+                <textarea asp-for="LuuY" class="form-control" rows="4" maxlength="500" required data-val-required="Lưu Ý là bắt buộc."></textarea>
+                <span asp-validation-for="LuuY" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="@(Model.MaChiTiet > 0 ? "Cập Nhật" : "Tạo")" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay Lại Danh Sách</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

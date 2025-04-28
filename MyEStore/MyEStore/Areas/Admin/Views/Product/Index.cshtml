@@ -10,8 +10,8 @@
 <p>
     <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
 </p>
-<table class="table">
-    <thead>
+<table class="table table-bordered table-hover">
+    <thead class="thead-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.TenHh)
@@ -28,71 +28,82 @@
             <th>
                 @Html.DisplayNameFor(model => model.DonGia)
             </th>
-            <th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.Hinh)
-            </th>
+            </th> *@
             <th>
                 @Html.DisplayNameFor(model => model.NgaySx)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.GiamGia)
             </th>
-            <th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.SoLanXem)
-            </th>
+            </th> *@
             <th>
                 @Html.DisplayNameFor(model => model.MaNccNavigation)
             </th>
-            <th></th>
+            <th>Hành động</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
+                <tr>
+                    <td>
                     @Html.DisplayFor(modelItem => item.TenHh)
-                </td>
-                <td>
+                    </td>
+                    <td>
                     @Html.DisplayFor(modelItem => item.TenAlias)
-                </td>
-                <td>
+                    </td>
+                    <td>
                     @Html.DisplayFor(modelItem => item.MaLoaiNavigation.TenLoai)
-                </td>
-                <td>
+                    </td>
+                    <td>
                     @Html.DisplayFor(modelItem => item.MoTaDonVi)
-                </td>
-                <td>
+                    </td>
+                    <td>
                     @Html.DisplayFor(modelItem => item.DonGia)
-                </td>
-                <td>
+                    </td>
+                @* <td>
                     @if (!string.IsNullOrEmpty(item.Hinh))
                     {
-                            <img src="~/@item.Hinh" alt="@item.TenHh" style="max-height: 50px;" />
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.NgaySx)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.GiamGia)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SoLanXem)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MaNccNavigation.TenCongTy)
-                </td>
-                @* <td>
-                    @if (!string.IsNullOrEmpty(item.MaHh))
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.MaHh" class="btn btn-sm btn-warning">Sửa</a>
-                        <a asp - action = "Details" asp - route - id = "@item.MaHh" class="btn btn-sm btn-info">Chi tiết</a> 
-                        <a asp-action= "Delete" asp-route-id= "@item.MaHh" class="btn btn-sm btn-danger">Xóa</a> 
-                        <a asp-action="CreateDetail" asp-controller="Product" asp-route-id="@item.MaHh" class="btn btn-sm btn-success">Thêm chi tiết</a>
+                        <img src="~/@item.Hinh" alt="@item.TenHh" style="max-height: 50px;" />
                     }
                 </td> *@
-            </tr>
+                    <td>
+                    @Html.DisplayFor(modelItem => item.NgaySx)
+                    </td>
+                    <td>
+                    @Html.DisplayFor(modelItem => item.GiamGia)
+                    </td>
+                    <td>
+                    @Html.DisplayFor(modelItem => item.MaNccNavigation.TenCongTy)
+                    </td>
+                    <td>
+                    @if (item.MaHh > 0)
+                    {
+                                <a asp-action="Edit" asp-route-id="@item.MaHh" class="btn btn-sm btn-warning">Sửa</a>
+                                <a asp-action="Details" asp-route-id="@item.MaHh" class="btn btn-sm btn-info">Chi tiết</a>
+                                <a asp-action="Delete" asp-route-id="@item.MaHh" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">Xóa</a>
+                                <a asp-action="CreateDetails" asp-controller="Product" asp-route-maHh="@item.MaHh" class="btn btn-sm btn-success">Thêm chi tiết</a>
+                                <a asp-action="DetailsHangHoaChiTiet" asp-controller="Product" asp-route-maHh="@item.MaHh" class="btn btn-sm btn-success">chi tiết</a>
+
+                            }
+                    </td>
+                </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+        <script>
+            $(document).ready(function () {
+                $('.table').DataTable({
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                    }
+                });
+            });
+        </script>
+}

@@ -1,0 +1,46 @@
+﻿@model MyEStore.Entities.HangHoaChiTiet
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Chi Tiết Sản Phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Sản phẩm: @Model.HangHoa.TenHh</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Công Dụng</dt>
+            <dd class="col-sm-9">@Model.CongDung</dd>
+
+            <dt class="col-sm-3">Đối Tượng Sử Dụng</dt>
+            <dd class="col-sm-9">@Model.DoiTuongSuDung</dd>
+
+            <dt class="col-sm-3">Quy Cách Đóng Gói</dt>
+            <dd class="col-sm-9">@Model.QuyCachDongGoi</dd>
+
+            <dt class="col-sm-3">Thành Phần</dt>
+            <dd class="col-sm-9">@Model.ThanhPhan</dd>
+
+            <dt class="col-sm-3">Công Nghệ Đặc Biệt</dt>
+            <dd class="col-sm-9">@Model.CongNgheDacBiet</dd>
+
+            <dt class="col-sm-3">Lợi Ích Nổi Bật</dt>
+            <dd class="col-sm-9">@Model.LoiIchNoiBat</dd>
+
+            <dt class="col-sm-3">Lưu Ý</dt>
+            <dd class="col-sm-9">@Model.LuuY</dd>
+
+            <dt class="col-sm-3">Mã Hàng Hóa</dt>
+            <dd class="col-sm-9">@Model.MaHh</dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <a asp-action="CreateDetails" asp-controller="Product" asp-route-maHh="@Model.MaHh" class="btn btn-success">Chỉnh Sửa Chi Tiết</a>
+        <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Quay Lại Danh Sách</a>
+    </div>
+</div>
