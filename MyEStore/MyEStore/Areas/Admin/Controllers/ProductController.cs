@@ -66,7 +66,10 @@ namespace MyEStore.Areas.Admin.Controllers
             ModelState.Remove("TenAlias"); // Nếu TenAlias có thể tự động tạo
             ModelState.Remove("NgayTao"); // Nếu NgayTao có thể tự động tạo
             ModelState.Remove("SoLanXem"); // Nếu SoLanXem mặc định là 0
-
+            ModelState.Remove("HangHoaChiTiet");
+            ModelState.Remove("MaLoaiNavigation");
+            ModelState.Remove("MaNccNavigation");
+            
             if (ModelState.IsValid)
             {
                 // Xử lý các trường thiếu
