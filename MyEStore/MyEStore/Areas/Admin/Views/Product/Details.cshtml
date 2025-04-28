@@ -1,0 +1,90 @@
+﻿@model MyEStore.Entities.HangHoa
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <h2 class="mt-4">Chi tiết sản phẩm</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle mr-1"></i>
+            Thông tin sản phẩm
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    @if (!string.IsNullOrEmpty(Model.Hinh))
+                    {
+                        <img src="~/images/products/@Model.Hinh" alt="@Model.TenHh" class="img-fluid mb-3" style="max-height: 300px;" />
+                    }
+                    else
+                    {
+                        <img src="~/images/no-image.png" alt="No Image" class="img-fluid mb-3" style="max-height: 300px;" />
+                    }
+                </div>
+                <div class="col-md-8">
+                    <h3>@Model.TenHh</h3>
+                    <hr />
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã sản phẩm:</dt>
+                        <dd class="col-sm-8">@Model.MaHh</dd>
+
+                        <dt class="col-sm-4">Tên Alias:</dt>
+                        <dd class="col-sm-8">@Model.TenAlias</dd>
+
+                        <dt class="col-sm-4">Loại sản phẩm:</dt>
+                        <dd class="col-sm-8">@Model.MaLoaiNavigation?.TenLoai</dd>
+
+                        <dt class="col-sm-4">Nhà cung cấp:</dt>
+                        <dd class="col-sm-8">@Model.MaNccNavigation?.TenCongTy</dd>
+
+                        <dt class="col-sm-4">Đơn giá:</dt>
+                        <dd class="col-sm-8">@Model.DonGia?.ToString("N0") VNĐ</dd>
+
+                        <dt class="col-sm-4">Giảm giá:</dt>
+                        <dd class="col-sm-8">@Model.GiamGia%</dd>
+
+                        <dt class="col-sm-4">Số lượng:</dt>
+                        <dd class="col-sm-8">@Model.SoLuong</dd>
+
+                        <dt class="col-sm-4">Đơn vị:</dt>
+                        <dd class="col-sm-8">@Model.MoTaDonVi</dd>
+
+                        <dt class="col-sm-4">Ngày sản xuất:</dt>
+                        <dd class="col-sm-9">@Model.NgaySx.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-4">Ngày tạo:</dt>
+                        <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-4">Số lần xem:</dt>
+                        <dd class="col-sm-8">@Model.SoLanXem</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5>Mô tả sản phẩm:</h5>
+                    <div class="p-3 bg-light">
+                        @Html.Raw(Model.MoTa)
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a asp-action="Edit" asp-route-id="@Model.MaHh" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </a>
+                <a asp-action="EditDetails" asp-route-id="@Model.MaHh" class="btn btn-info">
+                    <i class="fas fa-list-alt"></i> Chi tiết sản phẩm
+                </a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

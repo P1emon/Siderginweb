@@ -1,46 +1,56 @@
 ﻿@model MyEStore.Entities.HangHoaChiTiet
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-
 @{
-    ViewData["Title"] = "Chi Tiết Sản Phẩm";
+    ViewData["Title"] = "Chi tiết sản phẩm";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container-fluid">
+    <h2 class="mt-4">Thông tin chi tiết sản phẩm</h2>
 
-<div class="card">
-    <div class="card-header">
-        <h4>Sản phẩm: @Model.HangHoa.TenHh</h4>
-    </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Công Dụng</dt>
-            <dd class="col-sm-9">@Model.CongDung</dd>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle mr-1"></i>
+            <span>Chi tiết sản phẩm: @Model.HangHoa?.TenHh</span>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Công dụng:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.CongDung)</dd>
 
-            <dt class="col-sm-3">Đối Tượng Sử Dụng</dt>
-            <dd class="col-sm-9">@Model.DoiTuongSuDung</dd>
+                <dt class="col-sm-3">Đối tượng sử dụng:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.DoiTuongSuDung)</dd>
 
-            <dt class="col-sm-3">Quy Cách Đóng Gói</dt>
-            <dd class="col-sm-9">@Model.QuyCachDongGoi</dd>
+                <dt class="col-sm-3">Quy cách đóng gói:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.QuyCachDongGoi)</dd>
 
-            <dt class="col-sm-3">Thành Phần</dt>
-            <dd class="col-sm-9">@Model.ThanhPhan</dd>
+                <dt class="col-sm-3">Thành phần:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.ThanhPhan)</dd>
 
-            <dt class="col-sm-3">Công Nghệ Đặc Biệt</dt>
-            <dd class="col-sm-9">@Model.CongNgheDacBiet</dd>
+                <dt class="col-sm-3">Công nghệ đặc biệt:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.CongNgheDacBiet)</dd>
 
-            <dt class="col-sm-3">Lợi Ích Nổi Bật</dt>
-            <dd class="col-sm-9">@Model.LoiIchNoiBat</dd>
+                <dt class="col-sm-3">Lợi ích nổi bật:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.LoiIchNoiBat)</dd>
 
-            <dt class="col-sm-3">Lưu Ý</dt>
-            <dd class="col-sm-9">@Model.LuuY</dd>
+                <dt class="col-sm-3">Lưu ý:</dt>
+                <dd class="col-sm-9">@Html.Raw(Model.LuuY)</dd>
+            </dl>
 
-            <dt class="col-sm-3">Mã Hàng Hóa</dt>
-            <dd class="col-sm-9">@Model.MaHh</dd>
-        </dl>
-    </div>
-    <div class="card-footer">
-        <a asp-action="CreateDetails" asp-controller="Product" asp-route-maHh="@Model.MaHh" class="btn btn-success">Chỉnh Sửa Chi Tiết</a>
-        <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Quay Lại Danh Sách</a>
+            <div class="mt-4">
+                <a asp-action="EditDetails" asp-route-id="@Model.MaHh" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </a>
+                <a asp-action="DeleteDetails" asp-route-id="@Model.MaHh" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Xóa
+                </a>
+                <a asp-action="Details" asp-route-id="@Model.MaHh" class="btn btn-info">
+                    <i class="fas fa-info-circle"></i> Xem thông tin sản phẩm
+                </a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </a>
+            </div>
+        </div>
     </div>
 </div>

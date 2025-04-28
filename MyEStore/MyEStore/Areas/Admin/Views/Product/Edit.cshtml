@@ -1,21 +1,24 @@
 ﻿@model MyEStore.Entities.HangHoa
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    ViewData["Title"] = "Thêm sản phẩm mới";
+    ViewData["Title"] = "Chỉnh sửa sản phẩm";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container-fluid">
-    <h2 class="mt-4">Thêm sản phẩm mới</h2>
+    <h2 class="mt-4">Chỉnh sửa sản phẩm</h2>
 
     <div class="card mb-4">
         <div class="card-header">
-            <i class="fas fa-plus mr-1"></i>
+            <i class="fas fa-edit mr-1"></i>
             Thông tin sản phẩm
         </div>
         <div class="card-body">
-            <form asp-action="Create" enctype="multipart/form-data">
+            <form asp-action="Edit" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="MaHh" />
+                <input type="hidden" asp-for="NgayTao" />
+                <input type="hidden" asp-for="SoLanXem" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -64,13 +67,13 @@
 
                         <div class="form-group">
                             <label asp-for="GiamGia" class="control-label">Giảm giá (%)</label>
-                            <input asp-for="GiamGia" class="form-control" type="number" min="0" max="100" value="0" />
+                            <input asp-for="GiamGia" class="form-control" type="number" min="0" max="100" />
                             <span asp-validation-for="GiamGia" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">
                             <label asp-for="SoLuong" class="control-label">Số lượng</label>
-                            <input asp-for="SoLuong" class="form-control" type="number" min="0" value="0" required />
+                            <input asp-for="SoLuong" class="form-control" type="number" min="0" required />
                             <span asp-validation-for="SoLuong" class="text-danger"></span>
                         </div>
 
@@ -83,6 +86,13 @@
                         <div class="form-group">
                             <label for="hinhFile" class="control-label">Hình ảnh</label>
                             <input id="hinhFile" name="hinhFile" type="file" class="form-control-file" accept="image/*" />
+                            @if (!string.IsNullOrEmpty(Model.Hinh))
+                            {
+                                <div class="mt-2">
+                                    <img src="~/images/products/@Model.Hinh" alt="@Model.TenHh" style="max-height: 100px;" class="img-thumbnail" />
+                                    <input type="hidden" asp-for="Hinh" />
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -94,7 +104,7 @@
                 </div>
 
                 <div class="form-group">
-                    <input type="submit" value="Tạo mới" class="btn btn-primary" />
+                    <input type="submit" value="Lưu thay đổi" class="btn btn-primary" />
                     <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
                 </div>
             </form>

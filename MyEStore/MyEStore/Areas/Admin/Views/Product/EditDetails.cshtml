@@ -1,43 +1,23 @@
 ﻿@model MyEStore.Entities.HangHoaChiTiet
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    ViewData["Title"] = "Thêm chi tiết sản phẩm";
+    ViewData["Title"] = "Chỉnh sửa chi tiết sản phẩm";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container-fluid">
-    <h2 class="mt-4">Chi tiết sản phẩm</h2>
+    <h2 class="mt-4">Chỉnh sửa chi tiết sản phẩm</h2>
 
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-list-alt mr-1"></i>
-            @if (ViewBag.TenHh != null)
-            {
-                <span>Chi tiết cho sản phẩm: @ViewBag.TenHh</span>
-            }
-            else
-            {
-                <span>Thêm chi tiết sản phẩm</span>
-            }
+            <span>Chi tiết cho sản phẩm: @ViewBag.TenHh</span>
         </div>
         <div class="card-body">
-            <form asp-action="CreateDetails">
+            <form asp-action="EditDetails">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                @if (ViewBag.MaHh == null)
-                {
-                    <div class="form-group">
-                        <label for="MaHh" class="control-label">Chọn sản phẩm</label>
-                        <select asp-for="MaHh" class="form-control" asp-items="ViewBag.HangHoaList" required>
-                            <option value="">-- Chọn sản phẩm --</option>
-                        </select>
-                        <span asp-validation-for="MaHh" class="text-danger"></span>
-                    </div>
-                }
-                else
-                {
-                    <input type="hidden" asp-for="MaHh" value="@ViewBag.MaHh" />
-                }
+                <input type="hidden" asp-for="MaChiTiet" />
+                <input type="hidden" asp-for="MaHh" value="@ViewBag.MaHh" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -88,7 +68,7 @@
                 </div>
 
                 <div class="form-group">
-                    <input type="submit" value="Lưu thông tin" class="btn btn-primary" />
+                    <input type="submit" value="Lưu thay đổi" class="btn btn-primary" />
                     <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
                 </div>
             </form>
