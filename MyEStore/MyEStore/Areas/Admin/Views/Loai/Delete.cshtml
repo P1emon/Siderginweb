@@ -1,0 +1,64 @@
+﻿@model MyEStore.Entities.Loai
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Xóa loại hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">@ViewData["Title"]</h1>
+
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Xác nhận xóa loại hàng
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <h5>Bạn có chắc chắn muốn xóa loại hàng này?</h5>
+                <p>Hành động này không thể hoàn tác.</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã loại:</dt>
+                        <dd class="col-sm-8">@Model.MaLoai</dd>
+
+                        <dt class="col-sm-4">Tên loại:</dt>
+                        <dd class="col-sm-8">@Model.TenLoai</dd>
+
+                        <dt class="col-sm-4">Tên loại Alias:</dt>
+                        <dd class="col-sm-8">@(Model.TenLoaiAlias ?? "Không có")</dd>
+
+                        <dt class="col-sm-4">Mô tả:</dt>
+                        <dd class="col-sm-8">@(Model.MoTa ?? "Không có mô tả")</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <h5>Hình ảnh:</h5>
+                    @if (!string.IsNullOrEmpty(Model.Hinh))
+                    {
+                        <img src="~/images/categories/@Model.Hinh" alt="@Model.TenLoai" class="img-fluid" style="max-width: 300px;" />
+                    }
+                    else
+                    {
+                        <p>Không có hình ảnh</p>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="MaLoai" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Xóa
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Trở về danh sách
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
