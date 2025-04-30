@@ -84,46 +84,111 @@ header {
     .logo:hover {
         transform: scale(1.08); /* Tăng từ 1.05 lên 1.08 */
     }
+/* CSS cho hiệu ứng highlight sản phẩm tìm kiếm */
+@keyframes highlight-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+    }
 
-/* Điều chỉnh logo trong footer để cân đối */
-.footer-logo h2 {
-    font-size: 2.8rem; /* Tăng từ 2.2rem */
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-    font-weight: 600;
+    70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
 }
-/* Form tìm kiếm */
-.search-container {
+
+.search-highlight {
+    border: 2px solid #3B82F6 !important;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    position: relative;
+    z-index: 1;
+}
+/* Đã loại bỏ phần CSS tạo nhãn "Kết quả tìm kiếm" */
+.search-icon-container {
+    position: relative;
+}
+
+.search-icon-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    max-width: 400px;
+    justify-content: center;
+}
+
+    .search-icon-btn:hover {
+        color: var(--primary-color);
+        background-color: rgba(52, 152, 219, 0.1);
+    }
+
+    .search-icon-btn:focus {
+        outline: none;
+    }
+
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
     width: 100%;
-    margin: 0 20px;
+    background-color: var(--white);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, padding 0.5s ease, height 0.5s ease;
+    z-index: 999;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding: 0;
+    height: 0;
+    border-radius: 10px; /* Thêm viền bo góc */
+    max-height: 300px; /* Giới hạn chiều cao tối đa */
+}
+
+    .search-dropdown.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+        padding: 15px 0; /* Giảm padding từ 20px xuống 15px */
+        height: auto;
+        max-height: 300px; /* Giữ giới hạn chiều cao khi active */
+        animation: slideDownSmooth 0.5s ease-in-out forwards;
+    }
+
+.search-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
     position: relative;
 }
 
 .search-input {
     width: 100%;
-    padding: 10px 15px;
-    padding-right: 45px;
-    border: 2px solid #e0e0e0;
+    padding: 12px 60px 12px 20px; /* Giảm padding từ 15px xuống 12px */
+    font-size: 16px;
+    border: 2px solid #e1e1e1;
     border-radius: 30px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    color: #333;
+    background-color: var(--light-gray);
     transition: all 0.3s ease;
-    background-color: #f9f9f9;
 }
 
     .search-input:focus {
-        border-color: #3B82F6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         outline: none;
-        background-color: #fff;
-    }
-
-    .search-input::placeholder {
-        color: #9ca3af;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
     }
 
 .search-button {
@@ -131,28 +196,110 @@ header {
     right: 5px;
     top: 50%;
     transform: translateY(-50%);
-    background-color: #000000;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--white);
     border: none;
+    width: 40px; /* Giảm kích thước từ 45px xuống 40px */
+    height: 40px; /* Giảm kích thước từ 45px xuống 40px */
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.3s ease;
 }
 
     .search-button:hover {
-        background-color: #2563eb;
-        transform: translateY(-50%) scale(1.05);
+        background-color: var(--secondary-color);
     }
 
-    .search-button i {
+.search-close-btn {
+    position: absolute;
+    top: 15px; /* Giảm từ 20px xuống 15px */
+    right: 15px; /* Giảm từ 20px xuống 15px */
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: var(--dark-gray);
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+    .search-close-btn:hover {
+        color: var(--primary-color);
+    }
+
+.search-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+    .search-backdrop.active {
+        display: block;
+        opacity: 1;
+    }
+
+@keyframes slideDownSmooth {
+    0% {
+        transform: translateY(-20%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+/* Responsive styles */
+@media (max-width: 768px) {
+    .search-container {
+        padding: 0 15px;
+    }
+
+    .search-input {
+        padding: 10px 45px 10px 15px; /* Giảm padding thêm */
         font-size: 14px;
     }
 
+    .search-button {
+        width: 34px; /* Giảm kích thước thêm */
+        height: 34px; /* Giảm kích thước thêm */
+    }
+
+    .search-dropdown {
+        max-height: 250px; /* Giảm chiều cao tối đa trên thiết bị di động */
+    }
+
+        .search-dropdown.active {
+            padding: 10px 0; /* Giảm padding trên thiết bị di động */
+        }
+}
 /* Responsive cho logo */
 @media screen and (max-width: 992px) {
     .logo h1 {
@@ -381,6 +528,218 @@ nav {
         transform: translateY(0);
     }
 }
+/* Icon Button Style - Kết hợp từ cả hai phiên bản */
+.icon-button {
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+    .icon-button i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .icon-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        border-color: var(--accent-color);
+    }
+
+        .icon-button:hover i {
+            color: var(--accent-color) !important;
+            transform: scale(1.2);
+        }
+
+/* Nav Link với Tooltip */
+.nav-link-with-tooltip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Tooltip Container - Giữ lại từ thiết kế cũ */
+.tooltip-container {
+    position: relative;
+    margin: 0 5px;
+}
+
+/* Tooltip Content - Phiên bản cũ */
+.tooltip-content {
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--bg-white);
+    min-width: 130px;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    text-align: center;
+}
+
+    .tooltip-content::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        margin-left: -8px;
+        border-width: 8px;
+        border-style: solid;
+        border-color: transparent transparent var(--bg-white) transparent;
+    }
+
+    .tooltip-content a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        display: block;
+        padding: 5px;
+        transition: color 0.3s ease;
+    }
+
+        .tooltip-content a:hover {
+            color: var(--secondary-color);
+        }
+
+/* Show tooltip on hover - Phiên bản cũ */
+.tooltip-container:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+    top: 110%;
+}
+
+/* Cải tiến tooltip đơn giản - Data Attribute */
+.icon-button[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.icon-button[data-tooltip]:after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+/* Hiển thị data-tooltip khi hover trên desktop */
+@media (min-width: 769px) {
+    .icon-button[data-tooltip]:hover:before,
+    .icon-button[data-tooltip]:hover:after {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Lớp trạng thái cho tooltip trên thiết bị di động */
+.tooltip-shown:before,
+.tooltip-shown:after {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Hiệu ứng pulse cho nút search */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+/* Badge for cart - Giữ nguyên từ code cũ */
+.icon-button .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--danger-color);
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: badge-pulse 2s infinite;
+}
+
+/* Responsive adjustments - Giữ lại từ code cũ */
+@media screen and (max-width: 768px) {
+    .icon-button {
+        width: 35px;
+        height: 35px;
+    }
+
+        .icon-button i {
+            font-size: 1rem;
+        }
+
+    .tooltip-content {
+        min-width: 110px;
+        padding: 8px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .icon-button {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Remove search icon container since we moved it */
+.search-icon-container {
+    display: none;
+}
 
 
 
@@ -432,13 +791,19 @@ nav {
 .brand-column {
     border-right: 1px solid var(--border-color);
 }
-
+/* Điều chỉnh logo trong footer để cân đối */
 .footer-logo h2 {
-    font-size: 2.2rem;
+    font-size: 2.8rem; /* Tăng từ 2.2rem */
     margin-bottom: 1rem;
     color: var(--primary-color);
     font-weight: 600;
 }
+/*.footer-logo h2 {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}*/
 
 .footer-logo .highlight {
     color: var(--secondary-color);
@@ -1239,3 +1604,92 @@ nav {
         }
     }
 }
+.mobile-search-button {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0F172A, #3B82F6);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+    .mobile-search-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-search-button i {
+        color: white;
+    }
+
+/* Chỉ hiển thị nút tìm kiếm mobile ở chế độ responsive */
+@media (max-width: 768px) {
+    .mobile-search-button {
+        display: flex;
+    }
+}
+
+/* Khi search dropdown active, điều chỉnh vị trí và độ trong suốt */
+.search-dropdown.active-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 1050;
+    background-color: rgba(15, 23, 42, 0.95);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+}
+
+/* Animation hiệu ứng cho nút */
+@keyframes pulse-search {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse-search 0.5s ease-in-out;
+}
+/* Điều chỉnh màu sắc và bo góc cho input search khi ở chế độ mobile */
+.search-dropdown.active-mobile .search-input {
+    color: #000000; /* Chữ màu đen */
+    background-color: #E0F7FA; /* Nền màu trắng xanh ngọc */
+    border: 1px solid #B2EBF2;
+    border-radius: 20px; /* Bo góc tròn hơn */
+    padding: 10px 18px; /* Tăng padding để phù hợp với bo góc */
+    width: 100%;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+    .search-dropdown.active-mobile .search-input::placeholder {
+        color: #607D8B; /* Màu placeholder nhạt hơn */
+    }
+
+    .search-dropdown.active-mobile .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 8px rgba(77, 208, 225, 0.6);
+        background-color: #FFFFFF; /* Nền trắng hơn khi focus */
+    }

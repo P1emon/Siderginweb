@@ -11,9 +11,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="~/css/LayoutStyles.css" asp-append-version="true" />
+
 </head>
 <body>
-    <!-- Header -->
     <header>
         <div class="header-container">
             <div class="logo">
@@ -21,46 +21,52 @@
                     <h1><span class="highlight">S</span>idergin</h1>
                 </a>
             </div>
-
-            <!-- Thêm form tìm kiếm vào đây -->
-            <form method="get" asp-action="Search" asp-controller="Products" class="search-container">
-                <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." />
-                <button type="submit" class="search-button">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
             <nav>
                 <ul>
-                    <li class="nav-item">
-                        <a class="main-nav-link" asp-area="" asp-controller="News" asp-action="Index">
-                            <i class="bi bi-newspaper"></i> Tin tức
+                    <form>
+                        <!-- Search button -->
+                    <li class="nav-item tooltip-container">
+                        <button type="button" id="searchToggleBtn" class="icon-button" data-tooltip="Tìm kiếm">
+                            <i class="fas fa-search"></i>
+                        </button>
+
+                    </li>
+                    </form>
+                    <!-- Menu items với tooltip -->
+                    <li class="nav-item tooltip-container">
+                        <a asp-area="" asp-controller="News" asp-action="Index" class="nav-link-with-tooltip">
+                            <span class="icon-button" data-tooltip="Tin tức">
+                                <i class="bi bi-newspaper"></i>
+                            </span>
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="main-nav-link" asp-controller="ThongBao" asp-action="Index">
-                            <i class="bi bi-bell"></i> Thông Báo
+                    <li class="nav-item tooltip-container">
+                        <a asp-controller="ThongBao" asp-action="Index" class="nav-link-with-tooltip">
+                            <span class="icon-button" data-tooltip="Thông báo">
+                                <i class="bi bi-bell"></i>
+                            </span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="main-nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-bell"></i> Admin
+
+                    <li class="nav-item cart-wrapper tooltip-container">
+                        <a asp-area="" asp-controller="Cart" asp-action="Index" class="nav-link-with-tooltip">
+                            <span class="icon-button" data-tooltip="Giỏ hàng">
+                                <i class="bi bi-cart"></i>
+                                <span class="badge" id="cart-count">0</span>
+                            </span>
                         </a>
                     </li>
-                    <li class="nav-item cart-wrapper">
-                        <a class="main-nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
-                            <i class="bi bi-cart"></i> Giỏ hàng
-                            <span class="badge" id="cart-count">0</span>
-                        </a>
-                    </li>
+
+                    <!-- User profile/Authentication - Giữ nguyên -->
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item dropdown">
                             <a class="dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> 
+                                <i class="bi bi-person-circle"></i>
                                 @if (User.Claims.Any(c => c.Type == "RankIcon" && !string.IsNullOrEmpty(c.Value)))
                                 {
-                                 <img src="~/Hinh/Others/@User.Claims.First(c => c.Type == "RankIcon").Value" alt="Rank Icon" style="width: 60px; height: 40px; margin-right: 8px; vertical-align: middle;" />
+                                    <img src="~/Hinh/Others/@User.Claims.First(c => c.Type == "RankIcon").Value" alt="Rank Icon" style="width: 60px; height: 40px; margin-right: 8px; vertical-align: middle;" />
                                 }
                                 <b>@User.Identity.Name</b>
                             </a>
@@ -89,8 +95,21 @@
                 </ul>
             </nav>
         </div>
+        <div id="searchDropdown" class="search-dropdown">
+            <div class="search-container">
+                <form method="get" action="/Products/Search" class="search-form">
+                    <input type="text" name="query" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." autofocus />
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
     </header>
 
+
+
+    <div id="searchBackdrop" class="search-backdrop"></div>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -165,6 +184,244 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Thêm đoạn code này vào phần script đã có hoặc thay thế phần script hiện tại
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Các biến cho tìm kiếm
+            const searchToggleBtn = document.getElementById('searchToggleBtn');
+            const searchDropdown = document.getElementById('searchDropdown');
+            const searchBackdrop = document.getElementById('searchBackdrop');
+            const searchInput = document.querySelector('.search-input');
+            const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+            const searchForm = document.querySelector('.search-form');
+
+            // Hàm mở search dropdown
+            function openSearchDropdown() {
+                searchDropdown.classList.add('active');
+                searchBackdrop.classList.add('active');
+
+                // Thêm class đặc biệt cho mobile nếu đang ở chế độ mobile
+                if (window.innerWidth <= 768) {
+                    searchDropdown.classList.add('active-mobile');
+                    document.body.style.overflow = 'hidden'; // Ngăn cuộn trang
+                }
+
+                setTimeout(() => {
+                    searchInput.focus();
+                }, 300);
+            }
+
+            // Hàm đóng search dropdown
+            function closeSearchDropdown() {
+                searchDropdown.classList.remove('active');
+                searchDropdown.classList.remove('active-mobile');
+                searchBackdrop.classList.remove('active');
+                document.body.style.overflow = ''; // Cho phép cuộn trang trở lại
+            }
+
+            // Toggle search dropdown từ nút trong menu
+            if (searchToggleBtn) {
+                searchToggleBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (searchDropdown.classList.contains('active')) {
+                        closeSearchDropdown();
+                    } else {
+                        openSearchDropdown();
+                        // Thêm hiệu ứng pulse cho nút
+                        this.classList.add('pulse');
+                        setTimeout(() => {
+                            this.classList.remove('pulse');
+                        }, 500);
+                    }
+                });
+            }
+
+            // Mở search dropdown từ nút mobile
+            if (mobileSearchBtn) {
+                mobileSearchBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    openSearchDropdown();
+                    // Thêm hiệu ứng pulse cho nút mobile
+                    this.classList.add('pulse');
+                    setTimeout(() => {
+                        this.classList.remove('pulse');
+                    }, 500);
+                });
+            }
+
+            // Đóng search khi click vào backdrop
+            if (searchBackdrop) {
+                searchBackdrop.addEventListener('click', function () {
+                    closeSearchDropdown();
+                });
+            }
+
+            // Đóng search khi nhấn Escape
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && searchDropdown && searchDropdown.classList.contains('active')) {
+                    closeSearchDropdown();
+                }
+            });
+
+            // Xử lý form tìm kiếm
+            if (searchForm) {
+                searchForm.addEventListener('submit', function () {
+                    // Lưu query vào localStorage để sử dụng sau khi trang tải lại
+                    const searchQuery = searchInput.value.trim();
+                    if (searchQuery) {
+                        localStorage.setItem('searchQuery', searchQuery);
+                        localStorage.setItem('searchScrollPending', 'true');
+                        closeSearchDropdown(); // Đóng dropdown sau khi submit
+                    }
+                });
+            }
+
+            // Kiểm tra nếu có yêu cầu cuộn trang sau khi tìm kiếm
+            const searchScrollPending = localStorage.getItem('searchScrollPending');
+            if (searchScrollPending === 'true') {
+                // Xóa flag để không cuộn lại trong các lần tải trang tiếp theo
+                localStorage.removeItem('searchScrollPending');
+
+                // Lấy query từ localStorage hoặc URL
+                const searchQuery = localStorage.getItem('searchQuery') || new URLSearchParams(window.location.search).get('query');
+
+                if (searchQuery) {
+                    // Đợi trang tải hoàn tất
+                    setTimeout(() => {
+                        // Tìm vị trí sản phẩm đầu tiên phù hợp với kết quả tìm kiếm
+                        const productsContainer = document.querySelector('.products-container') ||
+                            document.querySelector('.product-grid') ||
+                            document.getElementById('searchResults');
+
+                        if (productsContainer) {
+                            // Cuộn đến vị trí container sản phẩm
+                            productsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                            // Highlight các sản phẩm phù hợp với từ khóa tìm kiếm
+                            highlightSearchResults(searchQuery);
+                        }
+                    }, 500);
+                }
+            }
+
+            // Hàm highlight kết quả tìm kiếm
+            function highlightSearchResults(query) {
+                if (!query) return;
+
+                // Chuyển query thành mảng các từ khóa
+                const keywords = query.toLowerCase().split(' ').filter(k => k.length > 1);
+
+                // Tìm tất cả các tiêu đề sản phẩm
+                const productTitles = document.querySelectorAll('.product-title, .product-name, .product-card h3');
+
+                productTitles.forEach(element => {
+                    const titleText = element.textContent.toLowerCase();
+
+                    // Kiểm tra xem tiêu đề có chứa từ khóa tìm kiếm không
+                    const isMatch = keywords.some(keyword => titleText.includes(keyword));
+
+                    if (isMatch) {
+                        // Thêm class highlight cho sản phẩm phù hợp
+                        const productCard = element.closest('.product-card') || element.closest('.product-item');
+                        if (productCard) {
+                            productCard.classList.add('search-highlight');
+
+                            // Animation nhẹ để thu hút sự chú ý
+                            productCard.style.animation = 'highlight-pulse 2s ease-in-out';
+
+                            // Xóa animation sau khi hoàn thành
+                            setTimeout(() => {
+                                productCard.style.animation = '';
+                            }, 2000);
+                        }
+                    }
+                });
+            }
+
+            // Kiểm tra vị trí cuộn để điều chỉnh nút tìm kiếm nổi khi gần footer
+            function checkScrollPosition() {
+                const footer = document.querySelector('.site-footer');
+                if (footer) {
+                    const footerTop = footer.getBoundingClientRect().top;
+                    const windowHeight = window.innerHeight;
+
+                    if (footerTop < windowHeight + 100) {
+                        document.body.classList.add('has-open-footer');
+                    } else {
+                        document.body.classList.remove('has-open-footer');
+                    }
+                }
+            }
+
+            // Lắng nghe sự kiện scroll để điều chỉnh vị trí nút
+            window.addEventListener('scroll', checkScrollPosition);
+
+            // Xử lý responsive - kiểm tra khi thay đổi kích thước màn hình
+            function handleResize() {
+                if (window.innerWidth <= 768) {
+                    if (searchDropdown && searchDropdown.classList.contains('active')) {
+                        searchDropdown.classList.add('active-mobile');
+                    }
+
+                    // Kiểm tra vị trí cuộn ban đầu
+                    checkScrollPosition();
+                } else {
+                    if (searchDropdown) {
+                        searchDropdown.classList.remove('active-mobile');
+                    }
+                }
+            }
+
+            // Lắng nghe sự kiện resize của cửa sổ
+            window.addEventListener('resize', handleResize);
+
+            // Khởi tạo trạng thái ban đầu
+            handleResize();
+
+            // Xử lý đặc biệt cho thiết bị di động - hiển thị tooltip tạm thời khi nhấn
+            if (window.innerWidth <= 768) {
+                const iconButtons = document.querySelectorAll('.icon-button[data-tooltip]');
+
+                iconButtons.forEach(button => {
+                    // Không áp dụng cho nút tìm kiếm vì nó đã có xử lý riêng
+                    if (button.id !== 'searchToggleBtn') {
+                        button.addEventListener('touchstart', function (e) {
+                            // Xóa class tooltip-shown từ tất cả các nút khác
+                            iconButtons.forEach(otherButton => {
+                                if (otherButton !== button) {
+                                    otherButton.classList.remove('tooltip-shown');
+                                }
+                            });
+
+                            // Toggle lớp tooltip-shown cho nút hiện tại
+                            button.classList.toggle('tooltip-shown');
+
+                            // Nếu tooltip đang hiển thị, thiết lập timeout để ẩn nó sau 2 giây
+                            if (button.classList.contains('tooltip-shown')) {
+                                setTimeout(() => {
+                                    button.classList.remove('tooltip-shown');
+                                }, 2000);
+                            }
+                        });
+                    }
+                });
+
+                // Xóa tất cả tooltip khi click vào nơi khác trên trang
+                document.addEventListener('click', function (e) {
+                    const clickedOnTooltip = Array.from(iconButtons).some(button =>
+                        button.contains(e.target) && button.id !== 'searchToggleBtn'
+                    );
+
+                    if (!clickedOnTooltip) {
+                        iconButtons.forEach(button => {
+                            button.classList.remove('tooltip-shown');
+                        });
+                    }
+                });
+            }
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
