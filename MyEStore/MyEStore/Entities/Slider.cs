@@ -25,10 +25,6 @@ namespace MyEStore.Models
         [StringLength(250)]
         public string LinkQuangCao { get; set; }
 
-        [ForeignKey("HangHoa")]
-        public int? MaHH { get; set; }
-        public HangHoa HangHoa { get; set; }
-
         [ForeignKey("NhanVien")]
         public string MaNV { get; set; }
         public NhanVien NhanVien { get; set; }

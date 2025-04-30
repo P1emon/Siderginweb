@@ -1,6 +1,6 @@
 ﻿@model List<MyEStore.Models.Slider>
 @{
-    ViewData["Title"] = ViewData["Title"] ?? "Danh sách hàng hóa";
+    ViewData["Title"] ??= "Danh sách hàng hóa";
     var siteUrl = ViewContext.HttpContext.Request.Scheme + "://" + ViewContext.HttpContext.Request.Host;
     var sliders = ViewData["Sliders"] as List<MyEStore.Models.Slider> ?? new List<MyEStore.Models.Slider>();
     var newProducts = ViewData["NewProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
@@ -15,33 +15,36 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="@Url.Content("~/css/PHome.css")" />
 
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold text-center text-purple-700 mb-8">
+        📣 Thông Báo Sự Kiện Sắp Và Đang Diễn Ra
+    </h2>
 
-<h2 style="text-align: center;">📣Thông Báo Sự Kiện Sắp Và Đang Diễn Ra</h2>
+    @if (!Model.Any())
+    {
+        <div class="text-center text-gray-600">Không có sự kiện nào sắp diễn ra trong 7 ngày tới.</div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var s in Model)
+            {
+                <div class="bg-white shadow-lg rounded-2xl p-5 transition hover:shadow-2xl border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">@s.TieuDe</h3>
+                    <p class="text-sm text-gray-500 mb-3">🗓️ Bắt đầu: <span class="font-medium">@s.NgayBatDau.ToShortDateString()</span></p>
 
-@if (!Model.Any())
-{
-    <p>Không có sự kiện nào sắp diễn ra trong 7 ngày tới.</p>
-}
-else
-{
-    <ul>
-        @foreach (var s in Model)
-        {
-            <li style="margin-bottom: 20px;">
-                <strong>@s.TieuDe</strong> – Bắt đầu: @s.NgayBatDau.ToShortDateString()
-                <br />
+                    @if (!string.IsNullOrEmpty(s.HinhAnh))
+                    {
+                        <img src="@Url.Content($"~/{s.HinhAnh}")" alt="@s.TieuDe"
+                             class="w-full h-48 object-cover rounded-md mb-4 border" />
+                    }
 
-                @if (!string.IsNullOrEmpty(s.HinhAnh))
-                {
-                    <img src="@Url.Content($"~/{s.HinhAnh}")" alt="@s.TieuDe" style="max-width: 400px; height: auto; margin-top: 10px;" />
-                }
-
-                <br />
-                <a href="@s.LinkQuangCao" style="display:inline-block;margin-top:10px;padding:8px 16px;background:#007bff;color:white;text-decoration:none;border-radius:5px;">
-                    Xem chi tiết
-                </a>
-            </li>
-        }
-    </ul>
-}
-
+                    <a href="@s.LinkQuangCao" target="_blank"
+                       class="inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition">
+                        <i class="fas fa-info-circle mr-1"></i> Xem chi tiết
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
