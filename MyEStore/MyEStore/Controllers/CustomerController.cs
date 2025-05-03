@@ -557,7 +557,7 @@ namespace MyEStore.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateAddress(string province, string district, string ward, string streetAddress, string diaChi,string diaChiPhu)
+        public IActionResult UpdateAddress(string province, string district, string ward, string streetAddress, string diaChi, string diaChiPhu)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
@@ -585,7 +585,7 @@ namespace MyEStore.Controllers
             try
             {
                 customer.DiaChi = diaChi;
-                customer.DiaChiPhu =diaChiPhu;
+                customer.DiaChiPhu = diaChiPhu;
                 _ctx.SaveChanges();
                 TempData["Success"] = "Cập nhật địa chỉ nhận hàng thành công.";
             }
@@ -972,6 +972,7 @@ namespace MyEStore.Controllers
 
             return View(model);
         }
+        
         public IActionResult IndexPayment(int? id)
         {
             // Retrieve the user ID from claims
@@ -1037,8 +1038,56 @@ namespace MyEStore.Controllers
 
             return View(hoaDon);
         }
+        //[Authorize]
+        //[HttpGet]
+        //public IActionResult GetUnreadNotifications()
+        //{
+        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        return Json(new { count = 0, notifications = new List<object>() });
+        //    }
 
+        //    var notifications = _ctx.ThongBaos
+        //        .Where(tb => tb.MaKh == userId && !tb.DaXem)
+        //        .Select(tb => new
+        //        {
+        //            tb.MaTb,
+        //            tb.TieuDe,
+        //            tb.NoiDung,
+        //            NgayTao = tb.NgayTao.ToString("dd/MM/yyyy HH:mm")
+        //        })
+        //        .OrderByDescending(tb => tb.NgayTao)
+        //        .Take(5) // Giới hạn số lượng thông báo hiển thị
+        //        .ToList();
 
+        //    var count = notifications.Count;
+
+        //    return Json(new { count, notifications });
+        //}
+        //[Authorize]
+        //[HttpPost]
+        //public IActionResult MarkNotificationAsRead(int maTb)
+        //{
+        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        return Json(new { success = false, message = "Người dùng chưa đăng nhập." });
+        //    }
+
+        //    var notification = _ctx.ThongBaos
+        //        .FirstOrDefault(tb => tb.MaTb == maTb && tb.MaKh == userId && !tb.DaXem);
+
+        //    if (notification == null)
+        //    {
+        //        return Json(new { success = false, message = "Thông báo không tồn tại hoặc đã được xem." });
+        //    }
+
+        //    notification.DaXem = true;
+        //    _ctx.SaveChanges();
+
+        //    return Json(new { success = true });
+        //}
 
 
 

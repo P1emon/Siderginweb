@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MyEStore.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyEStore.Models
 {
@@ -8,6 +9,7 @@ namespace MyEStore.Models
         public DateTime NgayDat { get; set; }
         public DateTime? NgayGiao { get; set; }
         public int? DaysToDelivery { get; set; }
+        public List<ThongBao> ThongBaos { get; set; }
 
     }
 }

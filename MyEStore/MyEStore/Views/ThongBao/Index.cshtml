@@ -1,50 +1,41 @@
-﻿@model List<MyEStore.Models.Slider>
+﻿@model List<SliderViewModel>
+
 @{
-    ViewData["Title"] ??= "Danh sách hàng hóa";
-    var siteUrl = ViewContext.HttpContext.Request.Scheme + "://" + ViewContext.HttpContext.Request.Host;
-    var sliders = ViewData["Sliders"] as List<MyEStore.Models.Slider> ?? new List<MyEStore.Models.Slider>();
-    var newProducts = ViewData["NewProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
-    var saleProducts = ViewData["SaleProducts"] as List<MyEStore.Models.HangHoaVM> ?? new List<MyEStore.Models.HangHoaVM>();
+    ViewData["Title"] = "Danh sách Thông Báo";
 }
 
-<meta property="og:title" content="@ViewData["Title"]" />
-<meta property="og:description" content="Khám phá các sản phẩm đa dạng tại MyStore." />
-<meta property="og:image" content="@Url.Content("~/images/default-og-image.jpg")" />
-<meta property="og:url" content="@siteUrl" />
-<meta property="og:type" content="website" />
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-<link rel="stylesheet" href="@Url.Content("~/css/PHome.css")" />
+<div class="container my-4">
+    <h2 class="mb-4">Thông Báo Đang Hiển Thị</h2>
 
-<div class="max-w-6xl mx-auto px-4 py-8">
-    <h2 class="text-3xl font-bold text-center text-purple-700 mb-8">
-        📣 Thông Báo Sự Kiện Sắp Và Đang Diễn Ra
-    </h2>
-
-    @if (!Model.Any())
+    @if (Model.Any())
     {
-        <div class="text-center text-gray-600">Không có sự kiện nào sắp diễn ra trong 7 ngày tới.</div>
+            <div class="row">
+            @foreach (var slider in Model)
+            {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <img src="@slider.HinhAnh" class="card-img-top" alt="@slider.TieuDe" style="max-height: 200px; object-fit: cover;">
+                                Garden Grove                        <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="@slider.LinkQuangCao" target="_blank">@slider.TieuDe</a>
+                                    </h5>
+                                    <p class="card-text">@slider.MoTa</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Ngày tạo: @slider.NgayTao.ToString("dd/MM/yyyy")<br>
+                                            Hiệu lực: @slider.NgayBatDau.ToString("dd/MM/yyyy") - @slider.NgayKetThuc.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+            }
+            </div>
     }
     else
     {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach (var s in Model)
-            {
-                <div class="bg-white shadow-lg rounded-2xl p-5 transition hover:shadow-2xl border border-gray-200">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">@s.TieuDe</h3>
-                    <p class="text-sm text-gray-500 mb-3">🗓️ Bắt đầu: <span class="font-medium">@s.NgayBatDau.ToShortDateString()</span></p>
-
-                    @if (!string.IsNullOrEmpty(s.HinhAnh))
-                    {
-                        <img src="@Url.Content($"~/{s.HinhAnh}")" alt="@s.TieuDe"
-                             class="w-full h-48 object-cover rounded-md mb-4 border" />
-                    }
-
-                    <a href="@s.LinkQuangCao" target="_blank"
-                       class="inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition">
-                        <i class="fas fa-info-circle mr-1"></i> Xem chi tiết
-                    </a>
-                </div>
-            }
-        </div>
+            <div class="alert alert-info">
+                Hiện tại không có thông báo nào đang hiển thị.
+            </div>
     }
 </div>
