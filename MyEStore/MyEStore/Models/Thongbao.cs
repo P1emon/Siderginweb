@@ -4,14 +4,10 @@ namespace MyEStore.Models
 {
     public class Thongbao
     {
-        [Key]
-        public int MaTb { get; set; }
-        public string? TieuDe { get; set; }
-        public string? NoiDung { get; set; }
-        public DateTime NgayTao { get; set; }
-        public string MaKh { get; set; }
-        public string MaMv { get; set; }
-        public string MaSlider { get; set; }
-        public bool DaXem { get; set; }
+        public int MaHd { get; set; }
+        public DateTime NgayDat { get; set; }
+        public DateTime? NgayGiao { get; set; }
+        public int? DaysToDelivery { get; set; }
+
     }
 }
