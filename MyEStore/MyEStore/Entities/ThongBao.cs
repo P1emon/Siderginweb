@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MyEStore.Models
+namespace MyEStore.Entities
 {
-    public class Thongbao
+    public class ThongBao
     {
         [Key]
         public int MaTb { get; set; }
