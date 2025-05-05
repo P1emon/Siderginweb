@@ -651,11 +651,34 @@ namespace MyEStore.Controllers
             }
             return View(order);
         }
+        
         public async Task<IActionResult> CancelOrder(int orderId, string reason)
         {
             try
             {
-                // Lấy đơn hàng cần hủy
+                // Validate input
+                if (string.IsNullOrWhiteSpace(reason))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng cung cấp lý do hủy đơn hàng.";
+                    return RedirectToAction("TransactionHistory");
+                }
+
+                // Truncate reason to avoid exceeding column length (assuming max length of 500)
+                if (reason.Length > 500)
+                {
+                    reason = reason.Substring(0, 500);
+                }
+
+                // Check if the "Đã hủy" status exists
+                var cancelStatus = await _ctx.TrangThais
+                    .FirstOrDefaultAsync(t => t.MaTrangThai == 4);
+                if (cancelStatus == null)
+                {
+                    TempData["ErrorMessage"] = "Trạng thái 'Đã hủy' không tồn tại trong hệ thống.";
+                    return RedirectToAction("TransactionHistory");
+                }
+
+                // Retrieve the order
                 var order = await _ctx.HoaDons
                     .Include(o => o.MaTrangThaiNavigation)
                     .FirstOrDefaultAsync(o => o.MaHd == orderId);
@@ -666,7 +689,7 @@ namespace MyEStore.Controllers
                     return RedirectToAction("TransactionHistory");
                 }
 
-                // Kiểm tra xem đơn hàng có thể hủy không (sử dụng tên trạng thái nếu cần)
+                // Check if the order can be canceled
                 if (order.MaTrangThai == 1)
                 {
                     TempData["ErrorMessage"] = $"Không thể hủy đơn hàng đã {order.MaTrangThaiNavigation?.TenTrangThai}!";
@@ -679,21 +702,45 @@ namespace MyEStore.Controllers
                     return RedirectToAction("TransactionHistory");
                 }
 
-                // Cập nhật trạng thái đơn hàng thành "Đã hủy"
+                // Update order status
                 order.MaTrangThai = 4;
-
-                // Lưu lý do hủy đơn nếu có cột tương ứng
                 order.LyDo = reason;
                 order.NgayHuy = DateTime.Now;
 
-                await _ctx.SaveChangesAsync();
+                // Attempt to save changes
+                try
+                {
+                    await _ctx.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Handle concurrency conflict
+                    if (!await _ctx.HoaDons.AnyAsync(o => o.MaHd == orderId))
+                    {
+                        TempData["ErrorMessage"] = "Đơn hàng không còn tồn tại.";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Đơn hàng đã được chỉnh sửa bởi người khác. Vui lòng thử lại.";
+                    }
+                    return RedirectToAction("TransactionHistory");
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Log detailed error for debugging
+                    Console.WriteLine($"DbUpdateException: {ex.InnerException?.Message}");
+                    TempData["ErrorMessage"] = $"Lỗi khi cập nhật đơn hàng: {ex.InnerException?.Message ?? ex.Message}";
+                    return RedirectToAction("TransactionHistory");
+                }
 
-                TempData["SuccessMessage"] = "Đơn hàng #" + orderId + " đã được hủy thành công!";
+                TempData["SuccessMessage"] = $"Đơn hàng #{orderId} đã được hủy thành công!";
                 return RedirectToAction("TransactionHistory");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Đã xảy ra lỗi khi hủy đơn hàng: " + ex.Message;
+                // Log general exception
+                Console.WriteLine($"Exception: {ex.Message}, Inner: {ex.InnerException?.Message}");
+                TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi hủy đơn hàng: {ex.Message}";
                 return RedirectToAction("TransactionHistory");
             }
         }
@@ -1038,57 +1085,7 @@ namespace MyEStore.Controllers
 
             return View(hoaDon);
         }
-        //[Authorize]
-        //[HttpGet]
-        //public IActionResult GetUnreadNotifications()
-        //{
-        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        return Json(new { count = 0, notifications = new List<object>() });
-        //    }
-
-        //    var notifications = _ctx.ThongBaos
-        //        .Where(tb => tb.MaKh == userId && !tb.DaXem)
-        //        .Select(tb => new
-        //        {
-        //            tb.MaTb,
-        //            tb.TieuDe,
-        //            tb.NoiDung,
-        //            NgayTao = tb.NgayTao.ToString("dd/MM/yyyy HH:mm")
-        //        })
-        //        .OrderByDescending(tb => tb.NgayTao)
-        //        .Take(5) // Giới hạn số lượng thông báo hiển thị
-        //        .ToList();
-
-        //    var count = notifications.Count;
-
-        //    return Json(new { count, notifications });
-        //}
-        //[Authorize]
-        //[HttpPost]
-        //public IActionResult MarkNotificationAsRead(int maTb)
-        //{
-        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        return Json(new { success = false, message = "Người dùng chưa đăng nhập." });
-        //    }
-
-        //    var notification = _ctx.ThongBaos
-        //        .FirstOrDefault(tb => tb.MaTb == maTb && tb.MaKh == userId && !tb.DaXem);
-
-        //    if (notification == null)
-        //    {
-        //        return Json(new { success = false, message = "Thông báo không tồn tại hoặc đã được xem." });
-        //    }
-
-        //    notification.DaXem = true;
-        //    _ctx.SaveChanges();
-
-        //    return Json(new { success = true });
-        //}
-
+        
 
 
 

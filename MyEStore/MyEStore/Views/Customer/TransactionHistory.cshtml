@@ -1,7 +1,6 @@
 ﻿@model IEnumerable<MyEStore.Entities.HoaDon>
 @Html.Partial("livechat")
 
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,33 +8,107 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-
-
     <link rel="stylesheet" href="~/css/historyorder.css" asp-append-version="true" />
-
+    <style>
+        .cancel-modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+        .cancel-modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .cancel-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .cancel-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0066cc;
+        }
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .close-modal:hover {
+            color: #333;
+        }
+        .cancel-modal-body {
+            padding: 10px 0;
+        }
+        .cancel-modal-body p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .cancel-reason {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            margin-top: 5px;
+        }
+        .cancel-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        .btn-cancel-order {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-cancel-order:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Bộ lọc nâng cao -->
         <div class="filter-sidebar">
             <h3 class="filter-title"><i class="fas fa-filter"></i> Bộ lọc đơn hàng</h3>
-            
             <div class="filter-group">
                 <label class="filter-label">Tìm kiếm đơn hàng</label>
                 <input type="text" id="orderSearchInput" placeholder="Nhập mã đơn hàng..." class="filter-input">
             </div>
-
             <div class="filter-group">
                 <label class="filter-label">Trạng thái thanh toán</label>
                 <select id="orderStatusFilter" class="filter-select">
                     <option value="">Tất cả trạng thái</option>
                     @foreach (var status in ViewBag.TrangThais)
                     {
-                        <option value="@status.TenTrangThai">@status.TenTrangThai</option>
+                            <option value="@status.TenTrangThai">@status.TenTrangThai</option>
                     }
                 </select>
             </div>
-            
             <div class="filter-group">
                 <label class="filter-label">Khoảng thời gian</label>
                 <div class="date-range">
@@ -44,7 +117,6 @@
                     <input type="date" class="date-input" id="orderEndDate">
                 </div>
             </div>
-            
             <button class="filter-btn" id="applyFilters">
                 <i class="fas fa-search"></i> Áp dụng
             </button>
@@ -93,6 +165,7 @@
                     <div class="stat-icon"><i class="fas fa-coins"></i></div>
                 </div>
             </div>
+
             <!-- Danh sách đơn hàng -->
             <div class="order-list">
                 @foreach (var order in Model)
@@ -100,11 +173,8 @@
                     var totalDiscountedAmount = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia));
                     var totalWithShipping = totalDiscountedAmount + order.PhiVanChuyen;
                     var statusBadgeClass = "";
-
-                    // Lấy tên trạng thái từ đối tượng liên kết
                     var statusText = order.MaTrangThaiNavigation?.TenTrangThai ?? "Không xác định";
 
-                    // Xác định class cho badge dựa trên mã trạng thái
                     if (order.MaTrangThai == 1)
                     {
                         statusBadgeClass = "order-badge-success";
@@ -123,85 +193,85 @@
                     }
 
                     var isCancelled = order.MaTrangThai == 4;
-                    var canCancel = !isCancelled && order.MaTrangThai != 1; // Chỉ cho phép hủy đơn khi chưa thanh toán
+                    var canCancel = !isCancelled && order.MaTrangThai != 1;
 
-                    <div class="order-panel" data-order-id="@order.MaHd" data-status="@statusText" data-date="@order.NgayDat.ToString("yyyy-MM-dd")">
-                        <div class="panel-header" onclick="togglePanel(this)">
-                            <div class="panel-meta">
-                                <span class="order-id">#@order.MaHd</span>
-                                <span class="order-date"><i class="far fa-calendar-alt"></i> @order.NgayDat.ToString("dd/MM/yyyy")</span>
+                        <div class="order-panel" data-order-id="@order.MaHd" data-status="@statusText" data-date="@order.NgayDat.ToString("yyyy-MM-dd")">
+                            <div class="panel-header" onclick="togglePanel(this)">
+                                <div class="panel-meta">
+                                    <span class="order-id">#@order.MaHd</span>
+                                    <span class="order-date"><i class="far fa-calendar-alt"></i> @order.NgayDat.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <div class="panel-status">
+                                    <span class="order-badge @statusBadgeClass">@statusText</span>
+                                </div>
+                                <i class="fas fa-chevron-down panel-toggle"></i>
                             </div>
-                            <div class="panel-status">
-                                <span class="order-badge @statusBadgeClass">@statusText</span>
-                            </div>
-                            <i class="fas fa-chevron-down panel-toggle"></i>
-                        </div>
-                        <div class="panel-details" style="display: none;">
-                            <div class="detail-item">
-                                <span class="label">Mã đơn hàng:</span>
-                                <span class="value">#@order.MaHd</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Ngày đặt hàng:</span>
-                                <span class="value">@order.NgayDat.ToString("dd/MM/yyyy HH:mm")</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Tạm tính:</span>
-                                <span class="value">@totalDiscountedAmount.ToString("N0") đ</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Phí vận chuyển:</span>
-                                <span class="value">@order.PhiVanChuyen.ToString("N0") đ</span>
-                            </div>
-                            <div class="detail-item total-amount">
-                                <span class="label">Tổng tiền:</span>
-                                <span class="value">@totalWithShipping.ToString("N0") đ</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Trạng thái thanh toán:</span>
-                                <span class="order-badge @statusBadgeClass">@statusText</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Hành động:</span>
-                                <div class="actions">
-                                    <a href="@Url.Action("OrderDetails", "Customer", new { id = order.MaHd })" class="btn btn-info btn-sm">
-                                        <i class="fas fa-eye"></i> Xem chi tiết
-                                    </a>
+                            <div class="panel-details" style="display: none;">
+                                <div class="detail-item">
+                                    <span class="label">Mã đơn hàng:</span>
+                                    <span class="value">#@order.MaHd</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Ngày đặt hàng:</span>
+                                    <span class="value">@order.NgayDat.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Tạm tính:</span>
+                                    <span class="value">@totalDiscountedAmount.ToString("N0") đ</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Phí vận chuyển:</span>
+                                    <span class="value">@order.PhiVanChuyen.ToString("N0") đ</span>
+                                </div>
+                                <div class="detail-item total-amount">
+                                    <span class="label">Tổng tiền:</span>
+                                    <span class="value">@totalWithShipping.ToString("N0") đ</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Trạng thái thanh toán:</span>
+                                    <span class="order-badge @statusBadgeClass">@statusText</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Hành động:</span>
+                                    <div class="actions">
+                                        <a href="@Url.Action("OrderDetails", "Customer", new { id = order.MaHd })" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> Xem chi tiết
+                                        </a>
                                     @if (!isCancelled)
                                     {
                                         if (order.MaTrangThai != 1)
                                         {
-                                            <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
-                                                <i class="fas fa-credit-card"></i> Thanh toán
-                                            </a>
+                                                        <a href="@Url.Action("IndexPayment", "Customer", new { id = order.MaHd })" class="btn btn-warning btn-sm">
+                                                            <i class="fas fa-credit-card"></i> Thanh toán
+                                                        </a>
                                         }
-                                        <a href="@Url.Action("PrintInvoice", "Customer", new { maHd = order.MaHd })" class="btn btn-secondary btn-sm">
-                                            <i class="fas fa-print"></i> In hóa đơn
-                                        </a>
-                                        <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-shopping-cart"></i> Mua lại
-                                            </button>
-                                        </form>
+                                                <a href="@Url.Action("PrintInvoice", "Customer", new { maHd = order.MaHd })" class="btn btn-secondary btn-sm">
+                                                    <i class="fas fa-print"></i> In hóa đơn
+                                                </a>
+                                                <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-shopping-cart"></i> Mua lại
+                                                    </button>
+                                                </form>
                                         @if (canCancel)
                                         {
-                                            <button type="button" class="btn btn-danger btn-sm" onclick="showCancelModal(@order.MaHd)">
-                                                <i class="fas fa-times"></i> Hủy đơn
-                                            </button>
+                                                        <button type="button" class="btn btn-danger btn-sm btn-cancel" onclick="showCancelModal(@order.MaHd)">
+                                                            <i class="fas fa-times"></i> Hủy đơn
+                                                        </button>
                                         }
                                     }
                                     else
                                     {
-                                        <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-shopping-cart"></i> Đặt lại
-                                            </button>
-                                        </form>
+                                                <form method="post" action="@Url.Action("ReorderItems", "Cart", new { orderId = order.MaHd })" style="display: inline;">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-shopping-cart"></i> Đặt lại
+                                                    </button>
+                                                </form>
                                     }
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                 }
             </div>
         </div>
@@ -217,17 +287,22 @@
             <div class="cancel-modal-body">
                 <p>Bạn có chắc chắn muốn hủy đơn hàng #<span id="cancelOrderId"></span>?</p>
                 <p>Hành động này không thể hoàn tác sau khi xác nhận.</p>
-                <label for="cancelReason">Lý do hủy đơn:</label>
-                <select id="cancelReason" class="cancel-reason">
-                    <option value="Thay đổi ý định mua hàng">Thay đổi ý định mua hàng</option>
-                    <option value="Tìm thấy sản phẩm tốt hơn">Tìm thấy sản phẩm tốt hơn</option>
-                    <option value="Không đủ tiền thanh toán">Không đủ tiền thanh toán</option>
-                    <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
-                    <option value="Lý do khác">Lý do khác</option>
-                </select>
-                <div id="otherReasonContainer" style="display: none; margin-top: 10px;">
+                <div class="form-group">
+                    <label for="cancelReason">Lý do hủy đơn:</label>
+                    <select id="cancelReason" class="cancel-reason form-control">
+                        <option value="" disabled selected>Chọn lý do</option>
+                        <option value="Thay đổi ý định mua hàng">Thay đổi ý định mua hàng</option>
+                        <option value="Tìm thấy sản phẩm tốt hơn">Tìm thấy sản phẩm tốt hơn</option>
+                        <option value="Không đủ tiền thanh toán">Không đủ tiền thanh toán</option>
+                        <option value="Đặt nhầm sản phẩm">Đặt nhầm sản phẩm</option>
+                        <option value="Lý do khác">Lý do khác</option>
+                    </select>
+                    <div id="reasonError" class="error-message">Vui lòng chọn lý do hủy đơn hàng.</div>
+                </div>
+                <div id="otherReasonContainer" style="display: none; margin-top: 15px;">
                     <label for="otherReason">Lý do khác:</label>
-                    <textarea id="otherReason" class="cancel-reason" rows="3"></textarea>
+                    <textarea id="otherReason" class="cancel-reason form-control" rows="3" placeholder="Nhập lý do cụ thể..."></textarea>
+                    <div id="otherReasonError" class="error-message">Vui lòng nhập lý do cụ thể.</div>
                 </div>
             </div>
             <div class="cancel-modal-footer">
@@ -248,12 +323,12 @@
             const details = header.nextElementSibling;
             const toggleIcon = header.querySelector('.panel-toggle');
             const isVisible = details.style.display === 'block';
-            
+
             details.style.display = isVisible ? 'none' : 'block';
             toggleIcon.className = isVisible 
                 ? 'fas fa-chevron-down panel-toggle' 
                 : 'fas fa-chevron-up panel-toggle';
-                
+
             if (!isVisible) {
                 header.closest('.order-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -263,42 +338,54 @@
         function showCancelModal(orderId) {
             document.getElementById('cancelOrderId').textContent = orderId;
             document.getElementById('hiddenOrderId').value = orderId;
+            document.getElementById('cancelReason').value = ''; // Reset lý do
+            document.getElementById('otherReason').value = ''; // Reset lý do khác
+            document.getElementById('otherReasonContainer').style.display = 'none';
+            document.getElementById('reasonError').style.display = 'none';
+            document.getElementById('otherReasonError').style.display = 'none';
             document.getElementById('cancelOrderModal').style.display = 'block';
         }
-        
+
         function closeCancelModal() {
             document.getElementById('cancelOrderModal').style.display = 'none';
         }
-        
+
         // Xử lý khi người dùng chọn lý do hủy
         document.getElementById('cancelReason').addEventListener('change', function() {
             const otherReasonContainer = document.getElementById('otherReasonContainer');
+            const reasonError = document.getElementById('reasonError');
             if (this.value === 'Lý do khác') {
                 otherReasonContainer.style.display = 'block';
             } else {
                 otherReasonContainer.style.display = 'none';
             }
+            reasonError.style.display = 'none';
         });
-        
+
         // Xử lý form hủy đơn hàng
         document.getElementById('cancelOrderForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const selectReason = document.getElementById('cancelReason').value;
+            const reasonError = document.getElementById('reasonError');
+            const otherReasonError = document.getElementById('otherReasonError');
             let finalReason = selectReason;
-            
+
+            if (!selectReason) {
+                reasonError.style.display = 'block';
+                return;
+            }
+
             if (selectReason === 'Lý do khác') {
                 const otherReason = document.getElementById('otherReason').value.trim();
                 if (otherReason === '') {
-                    alert('Vui lòng nhập lý do hủy đơn hàng');
+                    otherReasonError.style.display = 'block';
                     return;
                 }
                 finalReason = otherReason;
             }
-            
+
             document.getElementById('hiddenReason').value = finalReason;
-            
-            // Gửi form
             this.submit();
         });
 
@@ -309,11 +396,9 @@
         const endDateInput = document.getElementById('orderEndDate');
         const applyFiltersBtn = document.getElementById('applyFilters');
         const resetFiltersBtn = document.getElementById('resetFilters');
-        
-        // Apply filters when clicking the button
+
         applyFiltersBtn.addEventListener('click', filterOrders);
-        
-        // Reset filters
+
         resetFiltersBtn.addEventListener('click', function() {
             searchInput.value = '';
             statusFilter.value = '';
@@ -321,8 +406,7 @@
             endDateInput.value = '';
             filterOrders();
         });
-        
-        // Real-time filtering for search and status
+
         searchInput.addEventListener('input', filterOrders);
         statusFilter.addEventListener('change', filterOrders);
 
@@ -331,21 +415,16 @@
             const statusValue = statusFilter.value;
             const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
             const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
-            
+
             const panels = document.querySelectorAll('.order-panel');
-            
+
             panels.forEach(panel => {
                 const orderId = panel.dataset.orderId.toLowerCase();
                 const status = panel.dataset.status;
                 const orderDate = panel.dataset.date ? new Date(panel.dataset.date) : null;
-                
-                // Check if matches search term
+
                 const matchesSearch = !searchTerm || orderId.includes(searchTerm);
-                
-                // Check if matches status
                 const matchesStatus = !statusValue || status === statusValue;
-                
-                // Check if within date range
                 let matchesDate = true;
                 if (startDate && orderDate) {
                     matchesDate = matchesDate && orderDate >= startDate;
@@ -353,21 +432,18 @@
                 if (endDate && orderDate) {
                     matchesDate = matchesDate && orderDate <= endDate;
                 }
-                
-                // Show or hide based on all filters
+
                 panel.style.display = (matchesSearch && matchesStatus && matchesDate) ? '' : 'none';
             });
         }
-        
-        // Initialize with animation delay for a staggered effect
+
         document.addEventListener('DOMContentLoaded', function() {
             const panels = document.querySelectorAll('.order-panel');
             panels.forEach((panel, index) => {
                 panel.style.animationDelay = `${index * 0.05}s`;
             });
         });
-        
-        // Đóng modal khi nhấp ngoài vùng modal
+
         window.onclick = function(event) {
             const modal = document.getElementById('cancelOrderModal');
             if (event.target == modal) {
