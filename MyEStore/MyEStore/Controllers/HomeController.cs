@@ -12,8 +12,12 @@ namespace MyEStore.Controllers
 		{
 			_logger = logger;
 		}
+        public IActionResult Comingsoon()
+		{ 
+			return View(); 
+		}
 
-		public IActionResult Index()
+        public IActionResult Index()
 		{
 			return View();
 		}
