@@ -161,7 +161,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">Tổng giá trị</div>
-                    <div class="stat-value">@Model.Where(o => o.MaTrangThai != 4).Sum(o => o.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + o.PhiVanChuyen).ToString("N0") đ</div>
+                    <div class="stat-value">@Model.Where(o => o.MaTrangThai != 4).Sum(o => o.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) ).ToString("N0") đ</div>
                     <div class="stat-icon"><i class="fas fa-coins"></i></div>
                 </div>
             </div>
@@ -171,7 +171,7 @@
                 @foreach (var order in Model)
                 {
                     var totalDiscountedAmount = order.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia));
-                    var totalWithShipping = totalDiscountedAmount + order.PhiVanChuyen;
+                    var totalWithShipping = totalDiscountedAmount ;
                     var statusBadgeClass = "";
                     var statusText = order.MaTrangThaiNavigation?.TenTrangThai ?? "Không xác định";
 
@@ -219,10 +219,10 @@
                                     <span class="label">Tạm tính:</span>
                                     <span class="value">@totalDiscountedAmount.ToString("N0") đ</span>
                                 </div>
-                                <div class="detail-item">
+                                @* <div class="detail-item">
                                     <span class="label">Phí vận chuyển:</span>
                                     <span class="value">@order.PhiVanChuyen.ToString("N0") đ</span>
-                                </div>
+                                </div> *@
                                 <div class="detail-item total-amount">
                                     <span class="label">Tổng tiền:</span>
                                     <span class="value">@totalWithShipping.ToString("N0") đ</span>

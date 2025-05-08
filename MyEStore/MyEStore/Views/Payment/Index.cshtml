@@ -98,15 +98,15 @@
                     </div>
 
                     <div class="mb-4 text-center">
-                        <div id="distanceResult" class="mt-2 fw-bold text-primary"></div>
-                        <div>Phí giao hàng: <span id="shippingFee" class="text-danger fw-bold"></span></div>
+                        @* <div id="distanceResult" class="mt-2 fw-bold text-primary"></div>
+                        <div>Phí giao hàng: <span id="shippingFee" class="text-danger fw-bold"></span></div> *@
 
                         @* <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label> *@
                         <input type="date" id="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem; position: absolute; left: -9999px;" />
                     </div>
 
                 </div>
-                <div id="map" style="height: 400px;"></div>
+                @* <div id="map" style="height: 400px;"></div> *@
 
 
             </div>
@@ -212,7 +212,7 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
+@* <script>
     const defaultLat = 10.8450343;
     const defaultLng = 106.8036769;
 
@@ -335,7 +335,7 @@
             }
         });
     });
-</script>
+</script> *@
 <script>
     // Đồng bộ hiển thị phí trong bảng
     document.addEventListener("DOMContentLoaded", () => {
