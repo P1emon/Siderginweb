@@ -298,7 +298,7 @@ namespace MyEStore.Controllers
                         CachThanhToan = "Paypal",
                         CachVanChuyen = "N/A",
                         MaTrangThai = 1,
-                        PhiVanChuyen = PhiVanChuyen,
+                        PhiVanChuyen = 0,
                         NgayGiao = ngayGiaoDate,
                         GhiChu = $"Thanh toán thành công, phí vận chuyển sẽ trả khi nhận hàng, reference_id={reference}, transactionId={transactionId}"
                     };
@@ -373,7 +373,7 @@ namespace MyEStore.Controllers
         [HttpPost]
         public IActionResult VnpayOrder(string ngayGiao, string selectedAddress, double PhiVanChuyen, List<CartItem> CartItems)
         {
-            var tongTien = CartItems.Sum(p => p.ThanhTien) + PhiVanChuyen;
+            var tongTien = CartItems.Sum(p => p.ThanhTien) ;
             var userId = User.FindFirstValue("UserId");
             var userProfile = _ctx.KhachHangs.FirstOrDefault(u => u.MaKh == userId);
             DateTime? ngayGiaoDate = DateTime.TryParse(ngayGiao, out DateTime parsedDate) ? parsedDate : (DateTime?)null;
@@ -389,7 +389,7 @@ namespace MyEStore.Controllers
                     CachThanhToan = "VNPay",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 0,
-                    PhiVanChuyen = PhiVanChuyen,
+                    PhiVanChuyen = 0,
                     NgayGiao = ngayGiaoDate,
                     GhiChu = "Đang chờ thanh toán VNPay"
                 };
@@ -573,7 +573,7 @@ namespace MyEStore.Controllers
                     return View("VnpayCancel");
                 }
 
-                var tongTien = hoaDon.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia)) + hoaDon.PhiVanChuyen;
+                var tongTien = hoaDon.ChiTietHds.Sum(ct => ct.SoLuong * ct.DonGia * (1 - ct.GiamGia));
 
                 var paymentRequest = new VnPaymentRequestModel
                 {
@@ -622,7 +622,7 @@ namespace MyEStore.Controllers
                     CachThanhToan = "COD",
                     CachVanChuyen = "N/A",
                     MaTrangThai = 0,
-                    PhiVanChuyen = PhiVanChuyen,
+                    PhiVanChuyen = 0,
                     NgayGiao = giaoDate,
                     GhiChu = "Thanh toán khi nhận hàng"
                 };
@@ -844,7 +844,7 @@ namespace MyEStore.Controllers
                             <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                             <p><strong>💳 Thanh toán:</strong> {order.CachThanhToan}</p>
                             <p><strong>🏠 Địa chỉ giao hàng:</strong> {order.DiaChi}</p>
-                            <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
+                            
                             <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                         </div>
 
@@ -923,7 +923,7 @@ namespace MyEStore.Controllers
                 <p><strong>📦 Tổng số lượng sản phẩm:</strong> {_ctx.ChiTietHds.Where(ct => ct.MaHd == order.MaHd).Sum(ct => ct.SoLuong)}</p>
                 <p><strong>💰 Tổng tiền:</strong> {formattedAmount}</p>
                 <p><strong>🏠 Địa chỉ giao hàng:</undry> {order.DiaChi}</p>
-                <p><strong>💳 Phí vận chuyển:</strong> {order.PhiVanChuyen.ToString("N0") + " VNĐ"}</p>
+                
                 <p><strong>💳 Phương thức thanh toán:</strong> {order.CachThanhToan}</p>
                 <p><strong>📝 Ghi chú:</strong> {filteredNote}</p>
                 <hr>
@@ -972,7 +972,7 @@ namespace MyEStore.Controllers
                     GiamGia = item.GiamGia,
                     MaHhNavigation = _ctx.HangHoas.FirstOrDefault(hh => hh.MaHh == item.MaHh)
                 }).ToList(),
-                PhiVanChuyen = shippingFee // Assign the shipping fee to the HoaDon object
+                PhiVanChuyen = 0 // Assign the shipping fee to the HoaDon object
             };
 
             ViewBag.HoaDon = hoaDon; // Use ViewBag to pass HoaDon to the view
