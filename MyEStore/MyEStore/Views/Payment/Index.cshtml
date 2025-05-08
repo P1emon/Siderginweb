@@ -27,33 +27,33 @@
                                     <th>Giảm Giá</th> <!-- Cột mới -->
                                 </tr>
                             </thead>
-                             <tbody>
-                                        @foreach (var item in Model)
-                                        {
-                                            var giaGoc = item.DonGia * item.SoLuong;
-                                            var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc * 100 : 0;
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    var giaGoc = item.DonGia * item.SoLuong;
+                                    var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc * 100 : 0;
 
-                                            <tr>
-                                                <td>
-                                                    <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="img-thumbnail rounded" style="width: 80px; height: 80px;">
-                                                </td>
-                                                <td>@item.TenHh</td>
-                                                <td>@item.DonGia.ToString("#,##0") Vnđ</td>
-                                                <td>@item.SoLuong</td>
-                                                <td class="text-danger fw-bold">@item.ThanhTien.ToString("#,##0") Vnđ</td>
-                                                <td>
-                                                        @if (giamGia > 0)
-                                                        {
-                                                    <span class="text-success fw-semibold">-@giamGia% </span>
-                                                        }
-                                                        else
-                                                        {
-                                                    <span class="text-muted">0%</span>
-                                                        }
-                                                </td>
-                                            </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="~/Hinh/HangHoa/@item.Hinh" alt="@item.TenHh" class="img-thumbnail rounded" style="width: 80px; height: 80px;">
+                                        </td>
+                                        <td>@item.TenHh</td>
+                                        <td>@item.DonGia.ToString("#,##0") Vnđ</td>
+                                        <td>@item.SoLuong</td>
+                                        <td class="text-danger fw-bold">@item.ThanhTien.ToString("#,##0") Vnđ</td>
+                                        <td>
+                                            @if (giamGia > 0)
+                                            {
+                                                <span class="text-success fw-semibold">-@giamGia% </span>
                                             }
-                                </tbody>
+                                            else
+                                            {
+                                                <span class="text-muted">0%</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
 
                         </table>
                     </div>
@@ -67,25 +67,25 @@
 
                     <!-- Địa chỉ nhận hàng -->
                     <div class="mb-3 text-center">
-                         <label for="selectedAddress" class="form-label fw-bold fs-5">Chọn Địa Chỉ Nhận Hàng:</label>
+                        <label for="selectedAddress" class="form-label fw-bold fs-5">Chọn Địa Chỉ Nhận Hàng:</label>
                         <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mb-3">
                             <select id="selectedAddress" class="form-select" style="width: 280px; font-size: 1.05rem;">
                                 @if (ViewBag.KhachHangs is MyEStore.Entities.KhachHang kh)
                                 {
                                     if (!string.IsNullOrWhiteSpace(kh.DiaChi))
                                     {
-                              <option value="@kh.DiaChi">@kh.DiaChi (Mặc định)</option>
+                                        <option value="@kh.DiaChi">@kh.DiaChi (Mặc định)</option>
                                     }
                                     if (!string.IsNullOrWhiteSpace(kh.DiaChiPhu))
                                     {
-                                <option value="@kh.DiaChiPhu">@kh.DiaChiPhu (Phụ)</option>
+                                        <option value="@kh.DiaChiPhu">@kh.DiaChiPhu (Phụ)</option>
                                     }
                                 }
                                 else
                                 {
-                         <option disabled selected>Không có địa chỉ</option>
+                                    <option disabled selected>Không có địa chỉ</option>
                                 }
-                             </select>
+                            </select>
 
                             <button class="btn btn-outline-warning rounded-circle" onclick="openEditAddress()" title="Sửa Địa Chỉ Chính">
                                 <i class="bi bi-pencil-square fs-5"></i>
@@ -99,15 +99,15 @@
 
                     <div class="mb-4 text-center">
                         <div id="distanceResult" class="mt-2 fw-bold text-primary"></div>
-                        <div  >Phí giao hàng: <span id="shippingFee" class="text-danger fw-bold"></span></div>
-                        
+                        <div>Phí giao hàng: <span id="shippingFee" class="text-danger fw-bold"></span></div>
+
                         @* <label for="ngayGiao" class="form-label fw-bold">Ngày Giao Hàng:</label> *@
                         <input type="date" id="ngayGiao" class="form-control d-inline-block" style="width: 250px; font-size: 1.2rem; position: absolute; left: -9999px;" />
                     </div>
 
                 </div>
-                 <div id="map" style="height: 400px;"></div>
-                
+                <div id="map" style="height: 400px;"></div>
+
 
             </div>
         </div>
@@ -120,7 +120,7 @@
                     <div class="d-flex flex-column gap-3">
 
                         <!-- MoMo -->
-                       
+
                         <form method="post" action="/Payment/MomoPayment" onsubmit="return attachCommonData(this)" style="display: none;">
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
@@ -133,21 +133,20 @@
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
-                             @for (int i = 0; i < Model.Count(); i++)
-                                {
-                                    var item = Model.ElementAt(i);
-                                    var giaGoc = item.DonGia * item.SoLuong;
-                                    var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
-                                    <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
-                                    <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
-                                    <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
-                                    <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
-                                 }
-                            @* <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button> *@
-                            <button type="button" class="btn btn-primary btn-lg w-100 fw-bold" onclick="showVnpayNotSupported()">Thanh Toán Bằng VNPay</button>
+                            @for (int i = 0; i < Model.Count(); i++)
+                            {
+                                var item = Model.ElementAt(i);
+                                var giaGoc = item.DonGia * item.SoLuong;
+                                var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
+                                <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
+                                <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
+                                <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
+                                <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
+                            }
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button>
                         </form>
 
-                      @*   <!-- Paypal -->
+                        @*   <!-- Paypal -->
                         <form id="paymentForm" method="post" action="@Url.Action("PaypalCapture", "Payment")">
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="selectedAddress" />
@@ -156,7 +155,7 @@
                         </form> *@
 
                         <!-- COD -->
-                       <form method="post" action="/Payment/CodPayment" onsubmit="return attachCommonData(this)">
+                        <form method="post" action="/Payment/CodPayment" onsubmit="return attachCommonData(this)">
                             <input type="hidden" name="ngayGiao" />
                             <input type="hidden" name="selectedAddress" />
                             <input type="hidden" name="PhiVanChuyen" />
@@ -165,17 +164,17 @@
                                 var item = Model.ElementAt(i);
                                 var giaGoc = item.DonGia * item.SoLuong;
                                 var giamGia = giaGoc > 0 ? (giaGoc - item.ThanhTien) / giaGoc : 0;
-                                        <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
-                                        <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
-                                        <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
-                                        <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
+                                <input type="hidden" name="CartItems[@i].MaHh" value="@item.MaHh" />
+                                <input type="hidden" name="CartItems[@i].DonGia" value="@item.DonGia" />
+                                <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
+                                <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
                             }
 
                             <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
                                 Thanh Toán Khi Nhận Hàng (COD)
                             </button>
                         </form>
-                        <a href="@Url.Action("PrintInvoice", "Payment")?shippingFee=" + document.getElementById('shippingFee').textContent.replace(' đ', '').trim()" class="btn btn-primary">Xem và In Hóa Đơn</a>
+                        <a href="@Url.Action("PrintInvoice", "Payment")?shippingFee =" + document.getElementById('shippingFee').textContent.replace(' đ', '').trim()" class="btn btn-primary">Xem và In Hóa Đơn</a>
 
                     </div>
                 </div>
@@ -319,15 +318,7 @@
             document.getElementById("shippingFeeView").innerText = "";
         }
     }
-    function showVnpayNotSupported() {
-    Swal.fire({
-        icon: 'warning',
-        title: 'Không hỗ trợ',
-        text: 'Host Somee hiện tại không hỗ trợ VNPay.',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#d33'
-    });
-}
+
     document.addEventListener("DOMContentLoaded", () => {
         const addressSelect = document.getElementById("selectedAddress");
         if (addressSelect && addressSelect.value) {
@@ -353,7 +344,7 @@
     });
 </script>
 
-@* <script>
+                            @* <script>
     let map;
     let marker;
     let geocoder;
@@ -459,356 +450,356 @@
             }
         });
     });
-    </script>
+</script>
 <script async
-    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
 </script>
 <script>
-    function openEditAddress() {
-        Swal.fire({
-            title: 'Sửa Địa Chỉ Chính',
-            html: `
-                <input id="mainAddress" class="swal2-input" placeholder="Ví dụ 1 Đường ...">
-                <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
-                <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
-                <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Cập nhật',
-            cancelButtonText: 'Hủy',
-            confirmButtonColor: '#3085d6',
-            preConfirm: () => {
-                const address = document.getElementById('mainAddress').value.trim();
-                const province = document.getElementById('provinceSelect');
-                const district = document.getElementById('districtSelect');
-                const ward = document.getElementById('wardSelect');
+        function openEditAddress() {
+            Swal.fire({
+                title: 'Sửa Địa Chỉ Chính',
+                html: `
+                    <input id="mainAddress" class="swal2-input" placeholder="Ví dụ 1 Đường ...">
+                    <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
+                    <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
+                    <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Cập nhật',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#3085d6',
+                preConfirm: () => {
+                    const address = document.getElementById('mainAddress').value.trim();
+                    const province = document.getElementById('provinceSelect');
+                    const district = document.getElementById('districtSelect');
+                    const ward = document.getElementById('wardSelect');
 
-                if (!address || !province.value || !district.value || !ward.value) {
-                    Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin.');
-                    return false;
-                }
-
-                const fullAddress = `${address}, ${ward.options[ward.selectedIndex].text}, ${district.options[district.selectedIndex].text}, ${province.options[province.selectedIndex].text}`;
-                return { fullAddress };
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                fetch('/Payment/UpdateAddress', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({ newAddress: result.value.fullAddress })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire('Thành công!', 'Địa chỉ đã được cập nhật.', 'success');
-                        updateAddressDropdown(data.diaChi, null);
-                        location.reload();
-                    } else {
-                        Swal.fire('Lỗi!', 'Không thể cập nhật địa chỉ.', 'error');
+                    if (!address || !province.value || !district.value || !ward.value) {
+                        Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin.');
+                        return false;
                     }
-                });
-            }
-        });
 
-        loadProvinces();
-    }
-
-    function openAddSecondary() {
-        Swal.fire({
-            title: 'Thêm Địa Chỉ Phụ',
-            html: `
-                <input id="secondaryAddress" class="swal2-input" placeholder="Ví dụ 1 Đường ...">
-                <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
-                <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
-                <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Lưu',
-            cancelButtonText: 'Hủy',
-            confirmButtonColor: '#28a745',
-            preConfirm: () => {
-                const address = document.getElementById('secondaryAddress').value.trim();
-                const province = document.getElementById('provinceSelect');
-                const district = document.getElementById('districtSelect');
-                const ward = document.getElementById('wardSelect');
-
-                if (!address || !province.value || !district.value || !ward.value) {
-                    Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin.');
-                    return false;
+                    const fullAddress = `${address}, ${ward.options[ward.selectedIndex].text}, ${district.options[district.selectedIndex].text}, ${province.options[province.selectedIndex].text}`;
+                    return { fullAddress };
                 }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch('/Payment/UpdateAddress', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({ newAddress: result.value.fullAddress })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Thành công!', 'Địa chỉ đã được cập nhật.', 'success');
+                            updateAddressDropdown(data.diaChi, null);
+                            location.reload();
+                        } else {
+                            Swal.fire('Lỗi!', 'Không thể cập nhật địa chỉ.', 'error');
+                        }
+                    });
+                }
+            });
 
-                const fullAddress = `${address}, ${ward.options[ward.selectedIndex].text}, ${district.options[district.selectedIndex].text}, ${province.options[province.selectedIndex].text}`;
-                return { fullAddress };
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                fetch('/Payment/AddSecondaryAddress', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({ secondaryAddress: result.value.fullAddress })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire('Thành công!', 'Địa chỉ phụ đã được lưu.', 'success');
-                        updateAddressDropdown(null, data.diaChiPhu);
-                        location.reload();
+            loadProvinces();
+        }
 
-                    } else {
-                        Swal.fire('Lỗi!', 'Không thể lưu địa chỉ phụ.', 'error');
+        function openAddSecondary() {
+            Swal.fire({
+                title: 'Thêm Địa Chỉ Phụ',
+                html: `
+                    <input id="secondaryAddress" class="swal2-input" placeholder="Ví dụ 1 Đường ...">
+                    <select id="provinceSelect" class="swal2-select"><option value="">Chọn Tỉnh/Thành phố</option></select>
+                    <select id="districtSelect" class="swal2-select" disabled><option value="">Chọn Quận/Huyện</option></select>
+                    <select id="wardSelect" class="swal2-select" disabled><option value="">Chọn Phường/Xã</option></select>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Lưu',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#28a745',
+                preConfirm: () => {
+                    const address = document.getElementById('secondaryAddress').value.trim();
+                    const province = document.getElementById('provinceSelect');
+                    const district = document.getElementById('districtSelect');
+                    const ward = document.getElementById('wardSelect');
+
+                    if (!address || !province.value || !district.value || !ward.value) {
+                        Swal.showValidationMessage('Vui lòng nhập đầy đủ thông tin.');
+                        return false;
                     }
-                });
+
+                    const fullAddress = `${address}, ${ward.options[ward.selectedIndex].text}, ${district.options[district.selectedIndex].text}, ${province.options[province.selectedIndex].text}`;
+                    return { fullAddress };
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch('/Payment/AddSecondaryAddress', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({ secondaryAddress: result.value.fullAddress })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Thành công!', 'Địa chỉ phụ đã được lưu.', 'success');
+                            updateAddressDropdown(null, data.diaChiPhu);
+                            location.reload();
+
+                        } else {
+                            Swal.fire('Lỗi!', 'Không thể lưu địa chỉ phụ.', 'error');
+                        }
+                    });
+                }
+            });
+
+            loadProvinces();
+        }
+
+        function updateAddressDropdown(mainAddress, secondaryAddress) {
+            const select = document.getElementById('selectedAddress');
+            select.innerHTML = ''; // Clear old options
+
+            if (mainAddress) {
+                const mainOpt = document.createElement('option');
+                mainOpt.value = mainAddress;
+                mainOpt.textContent = `${mainAddress} (Mặc định)`;
+                select.appendChild(mainOpt);
             }
-        });
 
-        loadProvinces();
-    }
+            if (secondaryAddress) {
+                const subOpt = document.createElement('option');
+                subOpt.value = secondaryAddress;
+                subOpt.textContent = `${secondaryAddress} (Phụ)`;
+                select.appendChild(subOpt);
+            }
 
-    function updateAddressDropdown(mainAddress, secondaryAddress) {
-        const select = document.getElementById('selectedAddress');
-        select.innerHTML = ''; // Clear old options
-
-        if (mainAddress) {
-            const mainOpt = document.createElement('option');
-            mainOpt.value = mainAddress;
-            mainOpt.textContent = `${mainAddress} (Mặc định)`;
-            select.appendChild(mainOpt);
+            if (!mainAddress && !secondaryAddress) {
+                const empty = document.createElement('option');
+                empty.disabled = true;
+                empty.selected = true;
+                empty.textContent = 'Không có địa chỉ';
+                select.appendChild(empty);
+            }
         }
 
-        if (secondaryAddress) {
-            const subOpt = document.createElement('option');
-            subOpt.value = secondaryAddress;
-            subOpt.textContent = `${secondaryAddress} (Phụ)`;
-            select.appendChild(subOpt);
-        }
+        async function loadProvinces() {
+        const provinceSelect = document.getElementById('provinceSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const wardSelect = document.getElementById('wardSelect');
 
-        if (!mainAddress && !secondaryAddress) {
-            const empty = document.createElement('option');
-            empty.disabled = true;
-            empty.selected = true;
-            empty.textContent = 'Không có địa chỉ';
-            select.appendChild(empty);
-        }
-    }
+        try {
+            const res = await fetch('https://provinces.open-api.vn/api/p/');
+            const data = await res.json();
 
-    async function loadProvinces() {
-    const provinceSelect = document.getElementById('provinceSelect');
-    const districtSelect = document.getElementById('districtSelect');
-    const wardSelect = document.getElementById('wardSelect');
-
-    try {
-        const res = await fetch('https://provinces.open-api.vn/api/p/');
-        const data = await res.json();
-
-        // Clear existing options
-        provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
-        districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-
-        // Use a DocumentFragment to minimize DOM manipulations
-        const provinceFragment = document.createDocumentFragment();
-        data.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.code;
-            option.textContent = p.name;
-            provinceFragment.appendChild(option);
-        });
-        provinceSelect.appendChild(provinceFragment);
-
-        provinceSelect.onchange = async function () {
-            districtSelect.disabled = true;
-            wardSelect.disabled = true;
+            // Clear existing options
+            provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
             districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
             wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
 
-            if (this.value) {
-                const res = await fetch(`https://provinces.open-api.vn/api/p/${this.value}?depth=2`);
-                const data = await res.json();
+            // Use a DocumentFragment to minimize DOM manipulations
+            const provinceFragment = document.createDocumentFragment();
+            data.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.code;
+                option.textContent = p.name;
+                provinceFragment.appendChild(option);
+            });
+            provinceSelect.appendChild(provinceFragment);
 
-                const districtFragment = document.createDocumentFragment();
-                data.districts.forEach(d => {
-                    const option = document.createElement('option');
-                    option.value = d.code;
-                    option.textContent = d.name;
-                    districtFragment.appendChild(option);
-                });
-                districtSelect.appendChild(districtFragment);
+            provinceSelect.onchange = async function () {
+                districtSelect.disabled = true;
+                wardSelect.disabled = true;
+                districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+                wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
 
-                districtSelect.disabled = false;
+                if (this.value) {
+                    const res = await fetch(`https://provinces.open-api.vn/api/p/${this.value}?depth=2`);
+                    const data = await res.json();
 
-                districtSelect.onchange = async function () {
-                    wardSelect.disabled = true;
-                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                    if (this.value) {
-                        const res = await fetch(`https://provinces.open-api.vn/api/d/${this.value}?depth=2`);
-                        const data = await res.json();
+                    const districtFragment = document.createDocumentFragment();
+                    data.districts.forEach(d => {
+                        const option = document.createElement('option');
+                        option.value = d.code;
+                        option.textContent = d.name;
+                        districtFragment.appendChild(option);
+                    });
+                    districtSelect.appendChild(districtFragment);
 
-                        const wardFragment = document.createDocumentFragment();
-                        data.wards.forEach(w => {
-                            const option = document.createElement('option');
-                            option.value = w.code;
-                            option.textContent = w.name;
-                            wardFragment.appendChild(option);
-                        });
-                        wardSelect.appendChild(wardFragment);
-                        wardSelect.disabled = false;
-                    }
-                };
-            }
-        };
+                    districtSelect.disabled = false;
 
-    } catch (err) {
-        console.error('Error loading provinces:', err);
-        // Handle the error appropriately (e.g., display a message to the user)
+                    districtSelect.onchange = async function () {
+                        wardSelect.disabled = true;
+                        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                        if (this.value) {
+                            const res = await fetch(`https://provinces.open-api.vn/api/d/${this.value}?depth=2`);
+                            const data = await res.json();
+
+                            const wardFragment = document.createDocumentFragment();
+                            data.wards.forEach(w => {
+                                const option = document.createElement('option');
+                                option.value = w.code;
+                                option.textContent = w.name;
+                                wardFragment.appendChild(option);
+                            });
+                            wardSelect.appendChild(wardFragment);
+                            wardSelect.disabled = false;
+                        }
+                    };
+                }
+            };
+
+        } catch (err) {
+            console.error('Error loading provinces:', err);
+            // Handle the error appropriately (e.g., display a message to the user)
+        }
     }
-}
 
-document.addEventListener('DOMContentLoaded', loadProvinces);
+    document.addEventListener('DOMContentLoaded', loadProvinces);
 </script>
 
 
 <script>
-    // Hàm lấy ngày mai ở định dạng yyyy-mm-dd
-    function getTomorrowDateString() {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 7);
-        const year = tomorrow.getFullYear();
-        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const day = String(tomorrow.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
+        // Hàm lấy ngày mai ở định dạng yyyy-mm-dd
+        function getTomorrowDateString() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 7);
+            const year = tomorrow.getFullYear();
+            const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const day = String(tomorrow.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-    // Đặt 7 ngày  vào input khi trang tải
-    document.addEventListener("DOMContentLoaded", function () {
-        const ngayGiaoInput = document.getElementById("ngayGiao");
-        ngayGiaoInput.value = getTomorrowDateString();
-    });
-
-    function getToday() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return today;
-    }
-
-    function isFutureDate(date) {
-        const selectedDate = new Date(date);
-        return selectedDate >= getToday();
-    }
-
-    function attachCommonData(form) {
-    const ngayGiao = document.getElementById("ngayGiao").value;
-    const address = document.getElementById("selectedAddress").value;
-
-    if (!address || !ngayGiao || !isFutureDate(ngayGiao)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi!',
-            text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#d33'
+        // Đặt 7 ngày  vào input khi trang tải
+        document.addEventListener("DOMContentLoaded", function () {
+            const ngayGiaoInput = document.getElementById("ngayGiao");
+            ngayGiaoInput.value = getTomorrowDateString();
         });
-        return false;
+
+        function getToday() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today;
+        }
+
+        function isFutureDate(date) {
+            const selectedDate = new Date(date);
+            return selectedDate >= getToday();
+        }
+
+        function attachCommonData(form) {
+        const ngayGiao = document.getElementById("ngayGiao").value;
+        const address = document.getElementById("selectedAddress").value;
+
+        if (!address || !ngayGiao || !isFutureDate(ngayGiao)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#d33'
+            });
+            return false;
+        }
+
+        form.querySelector('[name="ngayGiao"]').value = ngayGiao;
+        form.querySelector('[name="selectedAddress"]').value = address;
+
+        const shippingText = document.getElementById("shippingFee").innerText;
+        const match = shippingText.match(/([\d.,]+)/); // Lấy số tiền
+        const phiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+        form.querySelector('[name="PhiVanChuyen"]').value = phiVanChuyen;
+
+        return true;
     }
-
-    form.querySelector('[name="ngayGiao"]').value = ngayGiao;
-    form.querySelector('[name="selectedAddress"]').value = address;
-
-    const shippingText = document.getElementById("shippingFee").innerText;
-    const match = shippingText.match(/([\d.,]+)/); // Lấy số tiền
-    const phiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
-    form.querySelector('[name="PhiVanChuyen"]').value = phiVanChuyen;
-
-    return true;
-}
 
 </script>
 
 
-@section Scripts {
-            <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
-            <script>
-                paypal.Buttons({
-                    style: {
-                        layout: 'horizontal',
-                        color: 'blue',
-                        shape: 'rect',
-                        label: 'pay'
+                            @section Scripts {
+    <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.PaypalClientId"></script>
+    <script>
+        paypal.Buttons({
+            style: {
+                layout: 'horizontal',
+                color: 'blue',
+                shape: 'rect',
+                label: 'pay'
+            },
+            createOrder: (data, actions) => {
+                const ngayGiao = document.getElementById('ngayGiao').value;
+                const address = document.getElementById('selectedAddress').value;
+
+                // Lấy phí vận chuyển từ span
+                const shippingText = document.getElementById("shippingFee").innerText;
+                const match = shippingText.match(/([\d.,]+)/);
+                const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+
+                if (!ngayGiao || !isFutureDate(ngayGiao) || !address) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#d33'
+                    });
+                    return;
+                }
+
+                return fetch("/Payment/PaypalOrder", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
-                    createOrder: (data, actions) => {
-                        const ngayGiao = document.getElementById('ngayGiao').value;
-                        const address = document.getElementById('selectedAddress').value;
+                    body: JSON.stringify({
+                        ngayGiao,
+                        selectedAddress: address,
+                        PhiVanChuyen // 👈 Gửi kèm phí
+                    })
+                })
+                .then(res => res.json())
+                .then(order => order.id);
+            },
+            onApprove: (data, actions) => {
+                const ngayGiao = document.getElementById('ngayGiao').value;
+                const address = document.getElementById('selectedAddress').value;
 
-                        // Lấy phí vận chuyển từ span
-                        const shippingText = document.getElementById("shippingFee").innerText;
-                        const match = shippingText.match(/([\d.,]+)/);
-                        const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+                // Lấy phí vận chuyển (lại) nếu cần
+                const shippingText = document.getElementById("shippingFee").innerText;
+                const match = shippingText.match(/([\d.,]+)/);
+                const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+                console.log("Shipping fee before fetch:", PhiVanChuyen);  // Add this line
 
-                        if (!ngayGiao || !isFutureDate(ngayGiao) || !address) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi!',
-                                text: 'Vui lòng chọn địa chỉ và ngày giao hàng hợp lệ.',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#d33'
-                            });
-                            return;
-                        }
-
-                        return fetch("/Payment/PaypalOrder", {
-                            method: "POST",
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ 
-                                ngayGiao, 
-                                selectedAddress: address,
-                                PhiVanChuyen // 👈 Gửi kèm phí
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(order => order.id);
-                    },
-                    onApprove: (data, actions) => {
-                        const ngayGiao = document.getElementById('ngayGiao').value;
-                        const address = document.getElementById('selectedAddress').value;
-
-                        // Lấy phí vận chuyển (lại) nếu cần
-                        const shippingText = document.getElementById("shippingFee").innerText;
-                        const match = shippingText.match(/([\d.,]+)/);
-                        const PhiVanChuyen = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
-                        console.log("Shipping fee before fetch:", PhiVanChuyen);  // Add this line
-
-                        return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}&PhiVanChuyen=${PhiVanChuyen}`, {
-                            method: "POST"
-                        })
-                        .then(() => {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Thành công!',
-                                text: 'Đơn hàng đã được thanh toán.',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#3085d6'
-                            }).then(() => {
-                                window.location.href = "/Payment/Success";
-                            });
-                        })
-                        .catch(() => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Thất bại!',
-                                text: 'Có lỗi xảy ra khi xử lý đơn hàng.',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#d33'
-                            });
-                        });
-                    }
-                }).render('#paypal-button-container');
-            </script>
+                return fetch(`/Payment/PaypalCapture?orderId=${data.orderID}&ngayGiao=${ngayGiao}&selectedAddress=${encodeURIComponent(address)}&PhiVanChuyen=${PhiVanChuyen}`, {
+                    method: "POST"
+                })
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Đơn hàng đã được thanh toán.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
+                    }).then(() => {
+                        window.location.href = "/Payment/Success";
+                    });
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Thất bại!',
+                        text: 'Có lỗi xảy ra khi xử lý đơn hàng.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#d33'
+                    });
+                });
+            }
+        }).render('#paypal-button-container');
+    </script>
 }
