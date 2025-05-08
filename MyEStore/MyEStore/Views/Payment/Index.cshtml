@@ -143,7 +143,8 @@
                                     <input type="hidden" name="CartItems[@i].SoLuong" value="@item.SoLuong" />
                                     <input type="hidden" name="CartItems[@i].GiamGia" value="@giamGia" />
                                  }
-                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button>
+                            @* <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Thanh Toán Bằng VNPay</button> *@
+                            <button type="button" class="btn btn-primary btn-lg w-100 fw-bold" onclick="showVnpayNotSupported()">Thanh Toán Bằng VNPay</button>
                         </form>
 
                       @*   <!-- Paypal -->
@@ -318,7 +319,15 @@
             document.getElementById("shippingFeeView").innerText = "";
         }
     }
-
+    function showVnpayNotSupported() {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Không hỗ trợ',
+        text: 'Host Somee hiện tại không hỗ trợ VNPay.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#d33'
+    });
+}
     document.addEventListener("DOMContentLoaded", () => {
         const addressSelect = document.getElementById("selectedAddress");
         if (addressSelect && addressSelect.value) {
