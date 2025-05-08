@@ -1,0 +1,192 @@
+﻿
+:root {
+    --primary-color: #3a86ff;
+    --secondary-color: #ff006e;
+    --accent-color: #8338ec;
+    --text-color: #2b2d42;
+    --light-bg: #f8f9fa;
+    --border-radius: 15px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    animation: gradientShift 15s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    50% {
+        background: linear-gradient(135deg, #c3cfe2 0%, #f5f7fa 100%);
+    }
+
+    100% {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+}
+
+.coming-soon-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.coming-soon-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    color: var(--primary-color);
+    font-size: 32px;
+    margin: 0 auto 20px;
+    animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.welcome-text {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 1s ease-out forwards;
+}
+
+.text-muted {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 1s ease-out 0.3s forwards;
+}
+
+.contact-link {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 1s ease-out 0.6s forwards;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.register-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .register-link:hover {
+        color: var(--accent-color);
+        text-decoration: underline;
+    }
+
+.floating-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(58, 134, 255, 0.1);
+    pointer-events: none;
+}
+
+    .floating-bubble:nth-child(1) {
+        width: 80px;
+        height: 80px;
+        top: 15%;
+        left: 10%;
+        animation: float 12s ease-in-out infinite;
+    }
+
+    .floating-bubble:nth-child(2) {
+        width: 120px;
+        height: 120px;
+        bottom: 20%;
+        right: 15%;
+        animation: float 18s ease-in-out infinite reverse;
+    }
+
+    .floating-bubble:nth-child(3) {
+        width: 50px;
+        height: 50px;
+        top: 50%;
+        left: 30%;
+        animation: float 10s ease-in-out infinite 1s;
+    }
+
+    .floating-bubble:nth-child(4) {
+        width: 100px;
+        height: 100px;
+        bottom: 10%;
+        left: 20%;
+        animation: float 15s ease-in-out infinite 2s;
+    }
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    25% {
+        transform: translate(15px, 15px);
+    }
+
+    50% {
+        transform: translate(0, 30px);
+    }
+
+    75% {
+        transform: translate(-15px, 15px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+@media (max-width: 576px) {
+    .coming-soon-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .welcome-text {
+        font-size: 1.5rem;
+    }
+}
