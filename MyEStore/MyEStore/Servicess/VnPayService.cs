@@ -24,7 +24,14 @@ namespace MyEStore.Servicess
             // ✅ Chỉ để dòng này
             vnpay.AddRequestData("vnp_TxnRef", model.OrderId.ToString());
 
-            vnpay.AddRequestData("vnp_CreateDate", model.CreatedDate.ToString("yyyyMMddHHmmss"));
+            // Chuyển UTC sang giờ Việt Nam (SE Asia Standard Time ~ GMT+7)
+            TimeZoneInfo vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTime vnTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnTimeZone);
+
+            vnpay.AddRequestData("vnp_CreateDate", vnTime.ToString("yyyyMMddHHmmss"));
+            DateTime vnExpire = vnTime.AddMinutes(15);
+            vnpay.AddRequestData("vnp_ExpireDate", vnExpire.ToString("yyyyMMddHHmmss"));
+
             vnpay.AddRequestData("vnp_CurrCode", _config["VnPay:CurrCode"]);
             vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress(context));
             vnpay.AddRequestData("vnp_Locale", _config["VnPay:Locale"]);
