@@ -147,5 +147,6 @@ namespace MyEStore.Controllers
             ViewData["Title"] = $"Kết quả tìm kiếm cho '{query}'";
             return View("Index", results);
         }
+
     }
 }
