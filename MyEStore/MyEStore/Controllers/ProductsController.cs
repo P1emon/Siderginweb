@@ -36,7 +36,24 @@ namespace MyEStore.Controllers
                 return RedirectToActionPermanent("Detail", new { categorySlug = expectedCategorySlug, productSlug });
             }
 
+            // Lấy danh sách sản phẩm đề xuất cùng loại (trừ sản phẩm hiện tại)
+            var recommendedProducts = _ctx.HangHoas
+                .Where(h => h.MaLoai == hangHoa.MaLoai && h.MaHh != hangHoa.MaHh)
+                .Select(h => new HangHoaVM
+                {
+                    MaHh = h.MaHh,
+                    TenHh = h.TenHh,
+                    TenAlias = h.TenAlias,
+                    DonGia = h.DonGia ?? 0,
+                    Hinh = h.Hinh,
+                    GiamGia = h.GiamGia,
+                    IsInStock = h.SoLuong > 0
+                })
+                .Take(4)
+                .ToList();
+
             ViewData["ImageUrl"] = "~/Hinh/HangHoa/" + hangHoa.Hinh;
+            ViewData["RecommendedProducts"] = recommendedProducts;
 
             return View(hangHoa);
         }
@@ -147,6 +164,5 @@ namespace MyEStore.Controllers
             ViewData["Title"] = $"Kết quả tìm kiếm cho '{query}'";
             return View("Index", results);
         }
-
     }
 }
