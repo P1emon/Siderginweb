@@ -64,10 +64,10 @@
 </section>
 
 <!-- New Products Section -->
-<section class="products-section">
-    <h1 class="section-title">Sản Phẩm Mới</h1>
-    @if (newProducts.Any())
-    {
+@if (newProducts.Any())
+{
+    <section class="products-section">
+        <h1 class="section-title">Sản Phẩm Mới</h1>
         <div class="product-grid">
             @foreach (var hh in newProducts)
             {
@@ -90,33 +90,29 @@
                         <p class="product-price">
                             @if (hh.GiamGia > 0)
                             {
-                                <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
-                                <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") VND</span>
+                                <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
+                                <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") đ</span>
                             }
                             else
                             {
-                                <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
+                                <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
                             }
                         </p>
-                                <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
-                                    Mua ngay
-                                </a>
+                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                            Mua ngay
+                        </a>
                     </div>
                 </div>
             }
         </div>
-    }
-    else
-    {
-        <p class="no-products">Hiện chưa có sản phẩm mới.</p>
-    }
-</section>
+    </section>
+}
 
 <!-- Sale Products Section -->
-<section class="products-section">
-    <h1 class="section-title">Sản Phẩm Giảm Giá</h1>
-    @if (saleProducts.Any())
-    {
+@if (saleProducts.Any())
+{
+    <section class="products-section">
+        <h1 class="section-title">Sản Phẩm Giảm Giá</h1>
         <div class="product-grid">
             @foreach (var hh in saleProducts)
             {
@@ -133,22 +129,18 @@
                     <div class="product-info">
                         <h2 class="product-name">@hh.TenHh</h2>
                         <p class="product-price">
-                            <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
-                            <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") VND</span>
+                            <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
+                            <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") đ</span>
                         </p>
-                                <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
-                                    Mua ngay
-                                </a>
+                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                            Mua ngay
+                        </a>
                     </div>
                 </div>
             }
         </div>
-    }
-    else
-    {
-        <p class="no-products">Hiện chưa có sản phẩm giảm giá.</p>
-    }
-</section>
+    </section>
+}
 
 <!-- All Products Section -->
 <section class="products-section">
@@ -174,17 +166,17 @@
                     <p class="product-price">
                         @if (hh.GiamGia > 0)
                         {
-                            <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
-                            <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") VND</span>
+                            <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
+                            <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") đ</span>
                         }
                         else
                         {
-                            <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") VND</span>
+                            <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
                         }
                     </p>
-                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
-                            Mua ngay
-                        </a>
+                    <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                        Mua ngay
+                    </a>
                 </div>
             </div>
         }
@@ -303,7 +295,7 @@
                 transform: translate(-50%, -50%);
                 background-color: rgba(0, 0, 0, 0.7);
                 color: #fff;
-                padding: 10px 15px;
+                padding: 6px 10px;
                 border-radius: 5px;
                 font-weight: bold;
                 display: flex;
@@ -314,10 +306,11 @@
                 cursor: pointer;
                 z-index: 10;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                font-size: 0.75rem;
             }
 
             .quick-view i {
-                margin-right: 5px;
+                margin-right: 3px;
             }
 
             .product-image:hover .quick-view {
@@ -330,13 +323,13 @@
 
             .stock-label {
                 position: absolute;
-                bottom: 10px;
-                right: 10px;
+                bottom: 6px;
+                right: 6px;
                 background-color: rgba(0, 0, 0, 0.7);
                 color: #fff;
-                padding: 5px 10px;
+                padding: 3px 6px;
                 border-radius: 3px;
-                font-size: 12px;
+                font-size: 9px;
                 font-weight: bold;
                 z-index: 10;
                 transition: opacity 0.3s ease;
@@ -354,18 +347,19 @@
 
             .buy-now-button {
                 display: inline-block;
-                padding: 10px 20px;
-                background-color: #007bff;
+                padding: 6px 12px;
+                background-color: var(--primary);
                 color: #fff;
                 text-align: center;
                 border-radius: 5px;
                 text-decoration: none;
                 font-weight: bold;
                 transition: background-color 0.3s ease;
+                font-size: 0.8rem;
             }
 
             .buy-now-button:hover {
-                background-color: #0056b3;
+                background-color: var(--primary-dark);
             }
 
             .buy-now-button.disabled {

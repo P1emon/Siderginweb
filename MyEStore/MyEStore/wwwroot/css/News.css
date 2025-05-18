@@ -14,7 +14,7 @@
 }
 
 .news-container {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     color: var(--dark);
     background-color: var(--light);
     overflow-x: hidden;
