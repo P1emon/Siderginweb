@@ -4,6 +4,8 @@ using System.Linq;
 using MyEStore.Helpers;
 using MyEStore.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace MyEStore.Controllers
 {
@@ -36,7 +38,6 @@ namespace MyEStore.Controllers
                 return RedirectToActionPermanent("Detail", new { categorySlug = expectedCategorySlug, productSlug });
             }
 
-            // Lấy danh sách sản phẩm đề xuất cùng loại (trừ sản phẩm hiện tại)
             var recommendedProducts = _ctx.HangHoas
                 .Where(h => h.MaLoai == hangHoa.MaLoai && h.MaHh != hangHoa.MaHh)
                 .Select(h => new HangHoaVM
@@ -60,7 +61,6 @@ namespace MyEStore.Controllers
 
         public IActionResult Index(int? cateid, int page = 1, int pageSize = 10)
         {
-            // Fetch new products (created within the last 7 days)
             var newProducts = _ctx.HangHoas
                 .Where(hh => hh.NgayTao >= DateTime.Now.AddDays(-7))
                 .Select(hh => new HangHoaVM
@@ -71,12 +71,11 @@ namespace MyEStore.Controllers
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
                     GiamGia = hh.GiamGia,
-                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
+                    IsInStock = hh.SoLuong > 0
                 })
                 .Take(8)
                 .ToList();
 
-            // Fetch sale products (all products with discount)
             var saleProducts = _ctx.HangHoas
                 .Where(hh => hh.GiamGia > 0)
                 .Select(hh => new HangHoaVM
@@ -87,12 +86,11 @@ namespace MyEStore.Controllers
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
                     GiamGia = hh.GiamGia,
-                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
+                    IsInStock = hh.SoLuong > 0
                 })
                 .Take(8)
                 .ToList();
 
-            // Fetch all products with pagination
             var data = _ctx.HangHoas.AsQueryable();
 
             if (cateid.HasValue)
@@ -122,10 +120,9 @@ namespace MyEStore.Controllers
                     DonGia = hh.DonGia ?? 0,
                     Hinh = hh.Hinh,
                     GiamGia = hh.GiamGia,
-                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
+                    IsInStock = hh.SoLuong > 0
                 }).ToList();
 
-            // Fetch active sliders
             var sliders = _ctx.Sliders
                 .Where(s => s.HieuLuc && s.NgayBatDau <= DateTime.Now && s.NgayKetThuc >= DateTime.Now)
                 .OrderBy(s => s.MaSlider)
@@ -141,28 +138,69 @@ namespace MyEStore.Controllers
             return View(allProducts);
         }
 
-        public IActionResult Search(string query)
+        public IActionResult Search(string query, int page = 1, int pageSize = 10)
         {
             if (string.IsNullOrEmpty(query))
             {
                 return RedirectToAction("Index");
             }
 
-            var results = _ctx.HangHoas
-                .Where(hh => hh.TenHh.Contains(query) || hh.TenAlias.Contains(query))
-                .Select(hh => new HangHoaVM
+            // Chuẩn hóa chuỗi tìm kiếm
+            query = query.Trim().ToLower();
+            var keywords = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            // Tìm kiếm trong TenHh, TenAlias và MoTa
+            var rawResults = _ctx.HangHoas
+                .AsQueryable()
+                .Where(hh => keywords.Any(k =>
+                    (hh.TenHh != null && hh.TenHh.ToLower().Contains(k)) ||
+                    (hh.TenAlias != null && hh.TenAlias.ToLower().Contains(k)) ||
+                    (hh.MoTa != null && hh.MoTa.ToLower().Contains(k))))
+                .Select(hh => new
                 {
-                    MaHh = hh.MaHh,
+                    HangHoa = hh,
                     TenHh = hh.TenHh,
                     TenAlias = hh.TenAlias,
-                    DonGia = hh.DonGia ?? 0,
-                    Hinh = hh.Hinh,
-                    GiamGia = hh.GiamGia,
-                    IsInStock = hh.SoLuong > 0 // Check stock using SoLuong
-                }).ToList();
+                    MoTa = hh.MoTa
+                })
+                .AsEnumerable() // Chuyển sang xử lý trong bộ nhớ
+                .Select(x => new
+                {
+                    x.HangHoa,
+                    Relevance = keywords.Sum(k =>
+                        (x.TenHh != null && x.TenHh.ToLower().Contains(k) ? 3 : 0) +
+                        (x.TenAlias != null && x.TenAlias.ToLower().Contains(k) ? 2 : 0) +
+                        (x.MoTa != null && x.MoTa.ToLower().Contains(k) ? 1 : 0))
+                })
+                .OrderByDescending(x => x.Relevance)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new HangHoaVM
+                {
+                    MaHh = x.HangHoa.MaHh,
+                    TenHh = x.HangHoa.TenHh,
+                    TenAlias = x.HangHoa.TenAlias,
+                    DonGia = x.HangHoa.DonGia ?? 0,
+                    Hinh = x.HangHoa.Hinh,
+                    GiamGia = x.HangHoa.GiamGia,
+                    IsInStock = x.HangHoa.SoLuong > 0
+                })
+                .ToList();
 
+            // Tính tổng số kết quả để phân trang
+            int totalItems = _ctx.HangHoas
+                .Count(hh => keywords.Any(k =>
+                    (hh.TenHh != null && hh.TenHh.ToLower().Contains(k)) ||
+                    (hh.TenAlias != null && hh.TenAlias.ToLower().Contains(k)) ||
+                    (hh.MoTa != null && hh.MoTa.ToLower().Contains(k))));
+
+            // Cập nhật ViewData
             ViewData["Title"] = $"Kết quả tìm kiếm cho '{query}'";
-            return View("Index", results);
+            ViewData["CurrentPage"] = page;
+            ViewData["TotalPages"] = (int)Math.Ceiling((double)totalItems / pageSize);
+            ViewData["Query"] = query;
+
+            return View("Index", rawResults);
         }
     }
 }

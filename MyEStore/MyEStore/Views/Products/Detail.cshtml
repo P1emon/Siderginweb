@@ -14,6 +14,34 @@
 <link rel="stylesheet" href="@Url.Content("~/css/PHome.css")" />
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 
+<style>
+    .buy-now-button {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: var(--primary);
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+        font-size: 0.9rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .buy-now-button:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .buy-now-button.disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+
 <div class="container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
@@ -73,7 +101,9 @@
                         }
                         else
                         {
-                            <p class="text-danger fw-bold" style="font-size: 0.9rem;">Hết hàng</p>
+                            <button class="flex items-center justify-center bg-gray-400 text-white font-semibold py-2 px-4 rounded-full cursor-not-allowed" disabled>
+                                <i class="fas fa-cart-plus mr-2"></i> Thêm vào giỏ
+                            </button>
                         }
 
                         <!-- Social Share -->
@@ -168,7 +198,7 @@
                                                 <span style="font-size: 1rem;">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
                                             }
                                         </p>
-                                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh" style="padding: 8px 16px; font-size: 0.9rem; width: 100%; box-sizing: border-box;">
+                                        <a class="buy-now-button @(hh.IsInStock ? "" : "disabled")" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
                                             Thêm vào giỏ
                                         </a>
                                     </div>

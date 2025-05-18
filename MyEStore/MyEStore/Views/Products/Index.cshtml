@@ -98,7 +98,7 @@
                                 <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
                             }
                         </p>
-                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                        <a class="buy-now-button @(hh.IsInStock ? "" : "disabled")" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
                             Mua ngay
                         </a>
                     </div>
@@ -132,7 +132,7 @@
                             <span class="original-price">@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
                             <span class="discounted-price">@Decimal.Parse((hh.DonGia * (1 - hh.GiamGia)).ToString()).ToString("N0") đ</span>
                         </p>
-                        <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                        <a class="buy-now-button @(hh.IsInStock ? "" : "disabled")" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
                             Mua ngay
                         </a>
                     </div>
@@ -174,7 +174,7 @@
                             <span>@Decimal.Parse(hh.DonGia.ToString()).ToString("N0") đ</span>
                         }
                     </p>
-                    <a class="buy-now-button" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
+                    <a class="buy-now-button @(hh.IsInStock ? "" : "disabled")" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@hh.MaHh">
                         Mua ngay
                     </a>
                 </div>
