@@ -652,7 +652,6 @@ namespace MyEStore.Controllers
             }
             return View(order);
         }
-        
         public async Task<IActionResult> CancelOrder(int orderId, string reason)
         {
             try
@@ -708,108 +707,131 @@ namespace MyEStore.Controllers
                 order.LyDo = reason;
                 order.NgayHuy = DateTime.Now;
 
+                // Retrieve order details to restore product quantities and calculate points
+                var orderDetails = await _ctx.ChiTietHds
+                    .Include(ct => ct.MaHhNavigation)
+                    .Where(ct => ct.MaHd == order.MaHd)
+                    .ToListAsync();
+
+                // Restore product quantities
+                foreach (var item in orderDetails)
+                {
+                    var product = await _ctx.HangHoas
+                        .FirstOrDefaultAsync(h => h.MaHh == item.MaHh);
+                    if (product != null)
+                    {
+                        product.SoLuong += item.SoLuong; // Restore the quantity
+                    }
+                }
+
+                // Calculate total price and deduct points
+                double totalAmount = 0;
+                foreach (var item in orderDetails)
+                {
+                    totalAmount += item.SoLuong * item.DonGia * (1 - item.GiamGia);
+                }
+                int pointsToDeduct = (int)(totalAmount / 60000);
+
+                // Update customer points
+                var customer = await _ctx.KhachHangs
+                    .FirstOrDefaultAsync(k => k.MaKh == order.MaKh);
+                if (customer != null)
+                {
+                    customer.Diem = Math.Max(0, customer.Diem - pointsToDeduct); // Ensure points don't go negative
+                }
+
                 // Attempt to save changes
                 try
                 {
                     await _ctx.SaveChangesAsync();
 
-                    // Gửi email thông báo hủy đơn hàng
-                    var customer = await _ctx.KhachHangs.FirstOrDefaultAsync(k => k.MaKh == order.MaKh);
+                    // Send email notification (reusing existing email logic)
                     if (customer != null)
                     {
-                        // Lấy chi tiết sản phẩm trong đơn hàng
-                        var orderDetails = await _ctx.ChiTietHds
-                            .Include(ct => ct.MaHhNavigation)
-                            .Where(ct => ct.MaHd == order.MaHd)
-                            .ToListAsync();
-
-                        // Tạo bảng chi tiết sản phẩm
                         var productsTable = new StringBuilder();
                         productsTable.Append(@"
-                            <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
-                                <thead>
-                                    <tr style='background-color: #f8f9fa;'>
-                                        <th style='padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;'>Sản phẩm</th>
-                                        <th style='padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;'>Số lượng</th>
-                                        <th style='padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6;'>Đơn giá</th>
-                                        <th style='padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6;'>Thành tiền</th>
-                                    </tr>
-                                </thead>
-                                <tbody>");
+                    <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
+                        <thead>
+                            <tr style='background-color: #f8f9fa;'>
+                                <th style='padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;'>Sản phẩm</th>
+                                <th style='padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;'>Số lượng</th>
+                                <th style='padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6;'>Đơn giá</th>
+                                <th style='padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6;'>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>");
 
-                        double totalAmount = 0;
                         foreach (var item in orderDetails)
                         {
                             var itemTotal = item.SoLuong * item.DonGia * (1 - item.GiamGia);
-                            totalAmount += itemTotal;
                             productsTable.Append($@"
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #dee2e6;'>{item.MaHhNavigation.TenHh}</td>
-                                    <td style='padding: 12px; text-align: center; border-bottom: 1px solid #dee2e6;'>{item.SoLuong}</td>
-                                    <td style='padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6;'>{item.DonGia:N0} đ</td>
-                                    <td style='padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6;'>{itemTotal:N0} đ</td>
-                                </tr>");
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #dee2e6;'>{item.MaHhNavigation.TenHh}</td>
+                            <td style='padding: 12px; text-align: center; border-bottom: 1px solid #dee2e6;'>{item.SoLuong}</td>
+                            <td style='padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6;'>{item.DonGia:N0} đ</td>
+                            <td style='padding: 12px; text-align: right; border-bottom: 1px solid #dee2e6;'>{itemTotal:N0} đ</td>
+                        </tr>");
                         }
 
-                        // Thêm tổng tiền
                         productsTable.Append($@"
-                                <tr style='background-color: #f8f9fa;'>
-                                    <td colspan='3' style='padding: 12px; text-align: right; font-weight: bold;'>Tổng cộng:</td>
-                                    <td style='padding: 12px; text-align: right; font-weight: bold;'>{totalAmount:N0} đ</td>
-                                </tr>
-                            </tbody>
-                        </table>");
+                        <tr style='background-color: #f8f9fa;'>
+                            <td colspan='3' style='padding: 12px; text-align: right; font-weight: bold;'>Tổng cộng:</td>
+                            <td style='padding: 12px; text-align: right; font-weight: bold;'>{totalAmount:N0} đ</td>
+                        </tr>
+                    </tbody>
+                </table>");
 
                         var message = $@"
-                        <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
-                            <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
-                                <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
-                                    <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
-                                    <p style='color: #666; margin: 5px 0 0;'>Thông báo hủy đơn hàng</p>
-                                </div>
-                                <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {customer.HoTen},</h2>
-                                <p style='line-height: 1.6; margin-bottom: 20px;'>Đơn hàng #{order.MaHd} của bạn đã được hủy thành công.</p>
-                                
-                                <div style='background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;'>
-                                    <h3 style='color: #333; margin-top: 0;'>Chi tiết đơn hàng:</h3>
-                                    <p style='margin: 5px 0;'><strong>Mã đơn hàng:</strong> #{order.MaHd}</p>
-                                    <p style='margin: 5px 0;'><strong>Ngày đặt:</strong> {order.NgayDat.ToString("dd/MM/yyyy HH:mm")}</p>
-                                    <p style='margin: 5px 0;'><strong>Ngày hủy:</strong> {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}</p>
-                                    <p style='margin: 5px 0;'><strong>Lý do hủy:</strong> {reason}</p>
-                                </div>
+                <div style='font-family: Arial, sans-serif; padding: 25px; background-color: #f5f7fa; color: #333;'>
+                    <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);'>
+                        <div style='text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px;'>
+                            <h1 style='color: #0066cc; font-size: 24px; margin: 0;'>SiderGin Support</h1>
+                            <p style='color: #666; margin: 5px 0 0;'>Thông báo hủy đơn hàng</p>
+                        </div>
+                        <h2 style='color: #0066cc; margin-top: 0;'>Xin chào {customer.HoTen},</h2>
+                        <p style='line-height: 1.6; margin-bottom: 20px;'>Đơn hàng #{order.MaHd} của bạn đã được hủy thành công.</p>
+                        <p style='line-height: 1.6; margin-bottom: 20px;'>Số điểm đã bị trừ: {pointsToDeduct} điểm.</p>
+                        
+                        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;'>
+                            <h3 style='color: #333; margin-top: 0;'>Chi tiết đơn hàng:</h3>
+                            <p style='margin: 5px 0;'><strong>Mã đơn hàng:</strong> #{order.MaHd}</p>
+                            <p style='margin: 5px 0;'><strong>Ngày đặt:</strong> {order.NgayDat.ToString("dd/MM/yyyy HH:mm")}</p>
+                            <p style='margin: 5px 0;'><strong>Ngày hủy:</strong> {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}</p>
+                            <p style='margin: 5px 0;'><strong>Lý do hủy:</strong> {reason}</p>
+                        </div>
 
-                                <div style='margin: 20px 0;'>
-                                    <h3 style='color: #333; margin-bottom: 15px;'>Danh sách sản phẩm:</h3>
-                                    {productsTable}
-                                </div>
+                        <div style='margin: 20px 0;'>
+                            <h3 style='color: #333; margin-bottom: 15px;'>Danh sách sản phẩm:</h3>
+                            {productsTable}
+                        </div>
 
-                                <div style='background-color: #fff8e1; padding: 15px; border-radius: 6px; margin-bottom: 20px;'>
-                                    <p style='margin: 0; display: flex; align-items: center;'>
-                                        <span style='font-size: 20px; margin-right: 10px;'>ℹ️</span>
-                                        <span>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua:</span>
-                                    </p>
-                                </div>
+                        <div style='backgroundColor: #fff8e1; padding: 15px; border-radius: 6px; margin-bottom: 20px;'>
+                            <p style='margin: 0; display: flex; align-items: center;'>
+                                <span style='font-size: 20px; margin-right: 10px;'>ℹ️</span>
+                                <span>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua:</span>
+                            </p>
+                        </div>
 
-                                <div style='display: flex; margin: 15px 0 25px;'>
-                                    <div style='margin-right: 20px;'>
-                                        <p style='margin: 0; color: #666;'>
-                                            <span style='font-size: 16px;'>📞</span> Hotline
-                                        </p>
-                                        <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
-                                    </div>
-                                    <div>
-                                        <p style='margin: 0; color: #666;'>
-                                            <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
-                                        </p>
-                                        <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
-                                    </div>
-                                </div>
-
-                                <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
-                                    <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
-                                </div>
+                        <div style='display: flex; margin: 15px 0 25px;'>
+                            <div style='margin-right: 20px;'>
+                                <p style='margin: 0; color: #666;'>
+                                    <span style='font-size: 16px;'>📞</span> Hotline
+                                </p>
+                                <p style='margin: 5px 0 0; font-weight: bold;'>0123 456 789</p>
                             </div>
-                        </div>";
+                            <div>
+                                <p style='margin: 0; color: #666;'>
+                                    <span style='font-size: 16px;'>✉️</span> Email hỗ trợ
+                                </p>
+                                <p style='margin: 5px 0 0; font-weight: bold;'>support@sidergin.com</p>
+                            </div>
+                        </div>
+
+                        <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;'>
+                            <p style='margin: 0;'>Trân trọng,<br><strong>Đội ngũ hỗ trợ SiderGin</strong></p>
+                        </div>
+                    </div>
+                </div>";
 
                         await SendEmail(customer.Email, $"Thông báo hủy đơn hàng #{order.MaHd}", message);
                     }
@@ -818,7 +840,6 @@ namespace MyEStore.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    // Handle concurrency conflict
                     if (!await _ctx.HoaDons.AnyAsync(o => o.MaHd == orderId))
                     {
                         TempData["ErrorMessage"] = "Đơn hàng không còn tồn tại.";
@@ -831,7 +852,6 @@ namespace MyEStore.Controllers
                 }
                 catch (DbUpdateException ex)
                 {
-                    // Log detailed error for debugging
                     Console.WriteLine($"DbUpdateException: {ex.InnerException?.Message}");
                     TempData["ErrorMessage"] = $"Lỗi khi cập nhật đơn hàng: {ex.InnerException?.Message ?? ex.Message}";
                     return RedirectToAction("TransactionHistory");
@@ -841,7 +861,6 @@ namespace MyEStore.Controllers
             }
             catch (Exception ex)
             {
-                // Log general exception
                 Console.WriteLine($"Exception: {ex.Message}, Inner: {ex.InnerException?.Message}");
                 TempData["ErrorMessage"] = $"Đã xảy ra lỗi khi hủy đơn hàng: {ex.Message}";
                 return RedirectToAction("TransactionHistory");

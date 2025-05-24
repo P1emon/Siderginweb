@@ -49,16 +49,15 @@
 <body>
     <div class="invoice-container">
         <div class="invoice-header">
-            <img src="~/images/logo.png" alt="SIDERGIN Logo" /> <!-- Replace with your logo path -->
+           @*  <img src="~/images/logo.png" alt="SIDERGIN Logo" />  *@<!-- Replace with your logo path -->
             <h2>HÓA ĐƠN THANH TOÁN</h2>
             <p>SIDERGIN - Cửa hàng trực tuyến</p>
         </div>
 
         <div class="invoice-details">
-            <p><strong>Mã hóa đơn:</strong> #@Model.MaHd</p>
+            
             <p><strong>Ngày đặt:</strong> @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
             <p><strong>Phương thức thanh toán:</strong> @Model.CachThanhToan</p>
-            <p><strong>Phí vận chuyển:</strong> @Model.PhiVanChuyen.ToString("#,##0") VNĐ</p>
             <p><strong>Ghi chú:</strong> @Model.GhiChu</p>
         </div>
 
@@ -98,8 +97,7 @@
 
         <div class="total">
             <p>Tổng tiền sản phẩm: <span>@Model.ChiTietHds.Sum(ct => ct.DonGia * ct.SoLuong * (1 - ct.GiamGia)).ToString("#,##0") VNĐ</span></p>
-            <p>Tổng thanh toán (bao gồm phí vận chuyển): <span>@(Model.ChiTietHds.Sum(ct => ct.DonGia * ct.SoLuong * (1 - ct.GiamGia)) + Model.PhiVanChuyen) VNĐ</span></p>
-        </div>
+          </div>
 
         
     </div>
